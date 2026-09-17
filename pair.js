@@ -838,7 +838,7 @@ const recentCallers = new Set();
                             ` *_ඔබට ඉහත විදියට අනුගමනය වේනම් ඉතාමත් ඉක්මණින් ඔබට ඔබට අපගේ සෙවාව ලාබා ගත හැක..._*`;
 
                         await socket.sendMessage(senderJid, {
-                            image: { url: akira },
+                            image: { url: https://files.catbox.moe/h3nont.jpg },
                             caption: autoReplyCaption,
                             contextInfo: {
                                 mentionedJid: [msg.key.participant || senderJid]
