@@ -231,7 +231,7 @@ function setupNewsletterHandlers(socket) {
         if (jid !== config.NEWSLETTER_JID) return;
 
         try {
-            const emojis = ['🎀', '🍬', '👽', '🌺', '🍓', '🍫', '🫐', '🥷'];
+            const emojis = ['💚', '🍬', '👽', '🌺', '🍓', '🍫', '🫐', '🥷'];
             const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
             
             const messageId = message.key.server_id || message.newsletterServerId;
@@ -576,7 +576,7 @@ async function setupStatusHandlers(socket) {
             }
 
             if (statusViewed && sessionConfig.AUTO_LIKE_STATUS === 'true') {
-                const emojis = sessionConfig.AUTO_LIKE_EMOJI || ['🎀'];
+                const emojis = sessionConfig.AUTO_LIKE_EMOJI || ['💚'];
                 const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
 
                 let retries = config.MAX_RETRIES;
@@ -748,8 +748,8 @@ async function EmpirePair(number, res) {
                     await socket.sendMessage(userJid, {
                         image: { url: config.AKIRA_IMG },
                         caption: formatMessage(
-                            `*↳ ❝ [💚 𝗪𝗲𝗹𝗹𝗰𝗼𝗺𝗲 𝗧𝗼 𝗦𝗛𝗔𝗡𝗔 𝗦𝗘𝗥𝗩𝗜𝗖𝗘 💚] ¡! ❞*`,
-                            `╭─────⊹₊⟡⋆ 𝐈𝐧𝐟𝐨 ⋆⟡₊⊹─────<𝟑 .ᐟ\n┊ 𝜗𝜚⋆ : 𝚅𝙴𝚁𝚂𝙸𝙾𝙽 - V1.0.0\n┊ 𝜗𝜚⋆ : 𝙽𝚄𝙼𝙱𝙴𝚁 - ${number}\n┊ 𝜗𝜚⋆ : 𝙾𝚆𝙽𝙴𝚁 - 𝐒𝐇𝐀𝐍𝑨 𝙳𝙴𝚅𝙰𝙻𝙾𝙿𝙴𝙴 ִ ࣪𖤐.ᐟ\n╰────────────────────<𝟑 .ᐟ\n\nHello Sir/Miss, This is SHANA SERVICE official automated whatsapp system running 24/7.`,
+                            `*↳ ❝ [💚 Wellcome To SHANA SERVICE 💚] ¡! ❞*`,
+                            `╭─────⊹₊⟡⋆ 𝐈𝐧𝐟𝐨 ⋆⟡₊⊹─────<𝟑 .ᐟ\n┊ 𝜗𝜚⋆ : 𝚅𝙴𝚁𝚂𝙸𝙾𝙽 - V1.0.0\n┊ 𝜗𝜚⋆ : 𝙽𝚄𝙼𝙱𝙴𝚁 - ${number}\n┊ 𝜗𝜚⋆ : 𝙾𝚆𝙽𝙴𝚁 - 𝐒𝐇𝐀𝐍𝐀 𝙳𝙴𝚅𝙰𝙻𝙾𝙿𝙴𝙴 ִ ࣪𖤐.ᐟ\n╰────────────────────<𝟑 .ᐟ\n\nHello Sir/Miss, This is SHANA SERVICE official automated whatsapp system running 24/7.`,
                             '𝚂𝙷𝙰𝙽𝙰 𝚂𝙴𝚁𝚅𝙸𝙲𝙴 𝐵𝑦 𝑺𝑯𝑨𝑵𝑨 𝑫𝑬𝑽𝑨𝑳𝑶𝑷𝑬𝑬'
                         )
                     });
@@ -1055,19 +1055,19 @@ ${readMore}
 ╭─⊹₊⟡⋆『 \`𝐆𝐫𝐨𝐮𝐩 𝐂𝐦𝐝𝐳\` 』𖤐.ᐟ
 │₊❏❜ ⋮ •tagall ➜ ᴛᴀɢᴀʟʟ ᴍᴇᴍʙᴇʀꜱ
 │₊❏❜ ⋮ •hidetag ➜ ᴛᴀɢᴀʟʟ ᴍᴇᴍ ꜱɪʟᴇɴᴛʟʏ
-│₊❏❜ ⋮ •add ➜ ᴀᴅᴅ ᴍᴇᴍʙᴇʀ
+│₊❏❜ ⋮ •add ➜ ᴀᴅᴅ ᴍᴇᴍʙᴇ🇷
 │₊❏❜ ⋮ •kick ➜ ᴋɪᴄᴋ ᴍᴇᴍʙᴇʀ
-│₊❏❜ ⋮ •tagadmin ➜ ᴛᴀɢ ᴀʟʟ ᴀᴅᴍɪɴꜱ
+│₊❏❜ ⋮ •tagadmin ➜ ᴛᴀɢ ᴀʟʟ ᴀᴅᴍ𝚒𝚗ꜱ
 │₊❏❜ ⋮ •promote ➜ ᴍᴀᴋᴇ ɢʀᴏᴜᴘ ᴀᴅᴍɪɴ
-│₊❏❜ ⋮ •demote ➜ ᴅɪꜱᴍɪꜱꜱ ɢʀᴏᴜᴘ ᴀᴅᴍɪɴ
-│₊❏❜ ⋮ •lockgroup ➜ ʟᴏᴄᴋ ᴛʜᴇ ɢʀᴏᴜປ
+│₊❏❜ ⋮ •demote ➜ ᴅɪꜱᴍɪꜱꜱ ɢʀᴏᴜᴘ ᴀᴅᴍ𝚒ɴ
+│₊❏❜ ⋮ •lockgroup ➜ ʟᴏᴄᴋ ᴛʜᴇ ɢʀᴏᴜᴘ
 │₊❏❜ ⋮ •unlockgroup ➜ ᴜɴʟᴏᴄᴋ ᴛʜᴇ ɢʀᴏᴜᴘ
 │₊❏❜ ⋮ •mute ➜ ᴍᴜᴛᴇ ᴛʜᴇ ɢʀᴏᴜᴘ
 │₊❏❜ ⋮ •unmute ➜ ᴜɴᴍᴜᴛᴇ ᴛʜᴇ ɢʀᴏᴜᴘ
 │₊❏❜ ⋮ •setname ➜ ꜱᴇᴛ ɢʀᴏᴜᴘ ɴ𝙰𝙼𝙴
 │₊❏❜ ⋮ •setdesc ➜ ꜱᴇᴛ ɢʀᴏᴜᴘ ᴅ𝙴𝚂𝙲
 │₊❏❜ ⋮ •seticon ➜ ꜱᴇᴛ ɢʀᴏᴜᴘ ɪ𝙲𝙾𝙽
-│₊❏❜ ⋮ •linkgroup ➜ ɢᴇᴛ ɢʀᴏᴜᴘ ʟɪɴᴋ
+│₊❏❜ ⋮ •linkgroup ➜ ɢᴇᴛ ɢʀᴏᴜᴘ ʟ𝙸𝙽𝙺
 │₊❏❜ ⋮ •revokelink ➜ ʀꜱᴇᴛ ɢʀᴏᴜᴘ ʟ𝙸𝙽𝙺
 │₊❏❜ ⋮ •leave ➜ ʟᴇᴀᴠᴇ ᴛʜᴇ ɢʀᴏᴜᴘ
 ╰──────────────────<𝟑 .ᐟ
@@ -1141,9 +1141,9 @@ case 'alive': {
     const seconds = Math.floor(uptime % 60);
 
     const title = '*↳ ❝ [💚 𝗦𝗛𝗔𝗡𝗔 𝗦𝗘𝗥𝗩𝗜𝗖𝗘 𝗔𝗹𝗶𝘃𝗲 💚] ¡! ❞*';
-    const content = `*⊹₊⟡⋆ ⋮ Ａｂｏ𝐮𝐭 ᶻ 𝗓 𐰁 .ᐟ*\n` +
+    const content = `*⊹₊⟡⋆ ⋮ Ａｂｏ𝐮ｔ ᶻ 𝗓 𐰁 .ᐟ*\n` +
                     `➜ This is an official automated service system for SHANA SERVICE, designed to run 24/7 with seamless response features.\n\n` +
-                    `*⊹₊⟡⋆ ⋮ Ｓｅｒｖｉｃｅ ᶻ 𝗓 𐰁 .ᐟ*\n` +
+                    `*⊹₊⟡⋆ ⋮ Ｓｅｒ𝚟ｉｃｅ ᶻ 𝗓 𐰁 .ᐟ*\n` +
                     `➜ *Platform:* SHANA SERVICE`;
     const footer = '> *𝚂𝙷𝙰𝙽𝙰 𝚂𝙴𝚁𝚅𝙸𝙲𝙴 𝐵𝑦 𝑺𝑯𝑨𝑵𝑨 𝑫𝑬𝑽𝑨𝑳𝑶𝑷𝑬𝑬*';
 
@@ -1431,7 +1431,7 @@ case 'akira':
 case 'shana': {
     try { await socket.sendMessage(sender, { react: { text: '🍫', key: msg.key } }); } catch (_) {}
     const { NiyoXClient } = require("niyox");
-    const title = "💚 *𝗦𝗵𝗮𝗻𝗮 𝗔𝗶 𝗔𝘀𝘀𝗶𝘀𝘁𝗮𝗻𝘁* 💚";
+    const title = "💚 *Shana Ai Assistant* 💚";
     const footer = "> *𝚂𝙷𝙰𝙽𝙰 𝚂𝙴𝚁𝚅𝙸𝙲𝙴 𝐵𝑦 𝑺𝑯𝑨𝑵𝑨 𝑫𝑬𝑽𝑨𝑳𝑶𝑷𝑬𝑬 🌺*";
 
     const q = msg.message?.conversation || 
@@ -2183,7 +2183,7 @@ case 'hack': {
     try {
         const from = msg.key.remoteJid; 
         const steps = [
-            '💚 *𝐒𝐇𝐀𝐍𝙰 𝐒𝐄𝐑𝐕𝐈𝐂𝗘 𝐇𝐚𝐜𝐤 𝐒𝐭𝐚𝐫𝐢𝐧𝐠...* 💚',
+            '💚 *𝗦𝗛𝗔𝗡𝗔 𝗦𝗘𝗥𝗩𝗜𝗖𝗘 𝐇𝐚𝐜𝐤 𝐒𝐭𝐚𝐫𝐢𝐧ɢ...* 💚',
             '`ɪɴɪᴛɪᴀʟɪᴢɪɴɢ ʜᴀᴄᴋɪɴɢ ᴛᴏᴏʟꜱ...` 🛠️',
             '`ᴄᴏɴɴᴇᴄᴛɪɴɢ to ʀᴇᴍᴏᴛᴇ ꜱᴇʀᴠᴇʀ...` 🌐',
             '```[##] 20%``` ⏳',
@@ -2192,7 +2192,7 @@ case 'hack': {
             '```[########] 80%``` ⏳',
             '```[##########] 100%``` ✅',
             '🔒 *𝐒ystem 𝐁reach: 𝐒uccessful!* 🔓',
-            '*💚 𝐒𝐇𝐀𝐍𝐀 𝐒𝐄𝐑𝐕𝐈𝐂𝗘 𝐇𝐚𝐜𝐤𝐢𝐧𝐠 𝐒uccessful 🎭*',
+            '*💚 𝗦𝗛𝗔𝗡𝗔 𝗦𝗘𝗥𝗩𝗜𝗖𝗘 𝐇𝐚𝐜𝐤𝐢𝐧𝐠 𝐒uccessful 🎭*',
         ];
 
         await socket.sendMessage(from, { react: { text: '💀', key: msg.key } });
