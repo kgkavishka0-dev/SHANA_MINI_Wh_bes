@@ -913,12 +913,12 @@ const arabianCtxGlobal = {
   isForwarded: true,
   forwardedNewsletterMessageInfo: {
     newsletterJid  : '120363419619460838@newsletter',
-    newsletterName : '🎀 𝗔𝗸𝗶𝗿𝗮-𝗠𝗗 | 𝗟𝗞 🇱🇰',
+    newsletterName : '🎀 𝙎𝙃𝘼𝙉𝘼 𝘿𝙀𝙑𝘼𝙇𝙊𝙋𝙀𝙀 | 𝗟𝗞 🇱🇰',
     serverMessageId: 143,
   },
   externalAdReply: {
-    title                : '🎀 𝗔𝗸𝗶𝗿𝗮 𝗕𝘆 𝐂𝗵𝗮𝗺𝗼𝗱𝐳 🇱🇰',
-    body                 : '𝐀𝐞𝐬𝐭𝐡𝐚𝐭𝐢𝐜 𝐁𝐨𝐭 𝐐𝐮𝐞𝐞𝐧 💘',
+    title                : '🎀 𝙎𝙃𝘼𝙉𝘼 𝘿𝙀𝙑𝘼𝙇𝙊𝙋𝙀𝙀 🇱🇰',
+    body                 : '𝙎𝙃𝘼𝙉𝘼 𝘿𝙀𝙑𝘼𝙇𝙊𝙋𝙀𝙀 𝐁𝐨𝐭 𝐐𝐮𝐞𝐞𝐧 💘',
     thumbnailUrl         : ARABIAN_THUMB_G,
     sourceUrl            : 'mini.gotukolaya.site',
     mediaType            : 1,
@@ -927,8 +927,8 @@ const arabianCtxGlobal = {
 };
 
   // ── Arabian mystery header ──────────────────────────────────────────────────
-  const ARABIAN_TITLE = '🦋 ₊˚ ⊹ 𝐀 𝐊 𝐈 𝐑 𝐀  𝐌 𝐃 ⊹ ˚₊ 𝜗𝜚';
-  const ARABIAN_SUB   = '𝐀𝐞𝐬𝐭𝐡𝐚𝐭𝐢𝐜 𝐁𝐨𝐭 𝐐𝐮𝐞𝐞𝐧 💘';
+  const ARABIAN_TITLE = '🦋 ₊˚ ⊹ 𝙎𝙃𝘼𝙉𝘼 𝘿𝙀𝙑𝘼𝙇𝙊𝙋𝙀𝙀 ⊹ ˚₊ 𝜗𝜚';
+  const ARABIAN_SUB   = '𝙎𝙃𝘼𝙉𝘼 𝘿𝙀𝙑𝘼𝙇𝙊𝙋𝙀𝙀 𝐁𝐨𝐭 𝐐𝐮𝐞𝐞𝐧 💘';
 
   const arabianCtx = () => ({
     forwardingScore: 999,
@@ -983,7 +983,7 @@ const downloadQuotedMedia = async (quoted) => {
 
       await socket.sendMessage(sender, {
         image: { url: akira },
-        caption: `*↳ ❝ [🎀 𝗔𝗸𝗶𝗿𝗮 𝗚𝗶𝗿𝗹 𝗠𝗲𝗻𝘂 🎀] ¡! ❞*
+        caption: `*↳ ❝ [🎀 𝙎𝙃𝘼𝙉𝘼 𝘿𝙀𝙑𝘼𝙇𝙊𝙋𝙀𝙀 🎀] ¡! ❞*
 
 ┏━━━━━°⌜ \`赤い糸\` ⌟°━━━━━┓
 ┃👤 *𝚄𝚂𝙴𝚁* : ${pushname}
@@ -1048,7 +1048,7 @@ ${readMore}
 │₊❏❜ ⋮ •hack ➜ ꜱᴇɴᴅ ʜᴀᴄᴋɪɴɢ ᴍꜱɢ
 ╰──────────────────<𝟑 .ᐟ
 
-> *𝗔esthatic 𝗤ueen 𝗕y 𝗖hamod 𝜗𝜚⋆*`,
+> *𝙎𝙃𝘼𝙉𝘼 𝘿𝙀𝙑𝘼𝙇𝙊𝙋𝙀𝙀 𝗕y 𝙎𝙃𝘼𝙉𝘼 𝜗𝜚⋆*`,
         contextInfo: arabianCtx()
       }, { quoted: msg });
 
@@ -1065,7 +1065,7 @@ ${readMore}
 
       await socket.sendMessage(sender, {
         image: { url: akira },
-        caption: `*↳ ❝ [🎀 𝗔𝗸𝗶𝗿𝗮 𝗚𝗶𝗿𝗹 𝗣𝗶𝗻𝗴 🎀] ¡! ❞*\n\n` +
+        caption: `*↳ ❝ [🎀 𝙎𝙃𝘼𝙉𝘼 𝘿𝙀𝙑𝘼𝙇𝙊𝙋𝙀𝙀 𝗣𝗶𝗻𝗴 🎀] ¡! ❞*\n\n` +
 			     `┏━━━━━°⌜ \`赤い糸\` ⌟°━━━━━┓\n` +
                  `┃₊❏❜ ⋮🏓 𝙿𝙾𝙽𝙶 : _pong!_\n` +
                  `┃₊❏❜ ⋮⚡ 𝚂𝙿𝙴𝙴𝙳 : ${ms}ms\n` +
@@ -1088,12 +1088,12 @@ case 'alive': {
     const minutes = Math.floor((uptime % 3600) / 60);
     const seconds = Math.floor(uptime % 60);
 
-    const title = '*↳ ❝ [🎀 𝗔𝗸𝗶𝗿𝗮 𝗚𝗶𝗿𝗹 𝗔𝗹𝗶𝘃𝗲 🎀] ¡! ❞*';
+    const title = '*↳ ❝ [🎀 𝙎𝙃𝘼𝙉𝘼 𝘿𝙀𝙑𝘼𝙇𝙊𝙋𝙀𝙀 𝗔𝗹𝗶𝘃𝗲 🎀] ¡! ❞*';
     const content = `*⊹₊⟡⋆ ⋮ Ａｂｏｕｔ ᶻ 𝗓 𐰁 .ᐟ*\n` +
                     `➜ This is a lightweight, stable WhatsApp bot designed to run 24/7. It is allowing users and group admins to fine-tune the bot’s behavior.\n\n` +
                     `*⊹₊⟡⋆ ⋮ Ｄｅｐｌｏｙ ᶻ 𝗓 𐰁 .ᐟ*\n` +
                     `➜ *Website:* https://akira.gotukolaya.site`;
-    const footer = '> *𝗔esthatic 𝗤ueen 𝗕y 𝗖hamod 𝜗𝜚⋆*';
+    const footer = '> *𝙎𝙃𝘼𝙉𝘼 𝘿𝙀𝙑𝘼𝙇𝙊𝙋𝙀𝙀 𝗕y 𝙎𝙃𝘼𝙉𝘼  𝜗𝜚⋆*';
 
     await socket.sendMessage(sender, {
         image: { url: akira },
@@ -1118,7 +1118,7 @@ case 'alive': {
       const slDate = moment().tz('Asia/Colombo').format('YYYY-MM-DD');
       const slTimeNow = moment().tz('Asia/Colombo').format('HH:mm:ss');
 
-      const sysInfo = `*↳ ❝ [🎀 𝗔𝗸𝗶𝗿𝗮 𝗚𝗶𝗿𝗹 𝗦𝘆𝘀𝘁𝗲𝗺 🎀] ¡! ❞*\n\n` +
+      const sysInfo = `*↳ ❝ [🎀 𝙎𝙃𝘼𝙉𝘼 𝘿𝙀𝙑𝘼𝙇𝙊𝙋𝙀𝙀 𝗦𝘆𝘀𝘁𝗲𝗺 🎀] ¡! ❞*\n\n` +
 		              `┏━━━━━°⌜ \`赤い糸\` ⌟°━━━━━┓\n` +
                       `┃ *⏱️ 𝚄𝙿𝚃𝙸𝙼𝙴:* ${uptime}\n` +
                       `┃ *📟 𝚁𝙰𝙼 𝚄𝚂𝙰𝙶𝙴:* ${ramUsage} MB / ${totalRam} GB\n` +
@@ -1127,7 +1127,7 @@ case 'alive': {
                       `┃ *📅 𝙳𝙰𝚃𝙴:* ${slDate}\n` +
                       `┃ *⌚ 𝚃𝙸𝙼𝙴:* ${slTimeNow}\n` +
 		              `┗━━━━━°⌜ \`赤い糸\` ⌟°━━━━━┛\n\n` +
-                      `> *𝗔esthatic 𝗤ueen 𝗕y 𝗖hamod 𝜗𝜚⋆*`;
+                      `> *𝙎𝙃𝘼𝙉𝘼 𝘿𝙀𝙑𝘼𝙇𝙊𝙋𝙀𝙀 𝗕y 𝙎𝙃𝘼𝙉𝘼  𝜗𝜚⋆*`;
 
       await socket.sendMessage(sender, {
         image: { url: akira },
@@ -1156,7 +1156,7 @@ case 'ytmp3': {
         const slDate = moment().tz('Asia/Colombo').format('YYYY-MM-DD');
         const slTimeNow = moment().tz('Asia/Colombo').format('HH:mm:ss');
 
-        const caption = `*↳ ❝ [🎀 𝗔𝗸𝗶𝗿𝗮 𝗚𝗶𝗿𝗹 𝗩𝗶𝗱𝗲𝗼 🎀] ¡! ❞*\n\n` +
+        const caption = `*↳ ❝ [🎀 𝙎𝙃𝘼𝙉𝘼 𝘿𝙀𝙑𝘼𝙇𝙊𝙋𝙀𝙀 𝗩𝗶𝗱𝗲𝗼 🎀] ¡! ❞*\n\n` +
                         `> *\`🎵 𝚃𝙸𝚃𝙻𝙴 :\`* ${video.title}\n` +
                         `> *\`👤 𝙲𝙷𝙰𝙽𝙽𝙴𝙻 :\`* ${video.author.name}\n` +
                         `> *\`⏱️ 𝙳𝚄𝚁𝙰𝚃𝙸𝙾𝙽 :\`* ${video.timestamp}\n` +
@@ -1211,7 +1211,7 @@ case 'playvid': {
         const slDate = moment().tz('Asia/Colombo').format('YYYY-MM-DD');
         const slTimeNow = moment().tz('Asia/Colombo').format('HH:mm:ss');
 
-        let caption = `*↳ ❝ [🎀 𝗔𝗸𝗶𝗿𝗮 𝗚𝗶𝗿𝗹 𝗩𝗶𝗱𝗲𝗼 🎀] ¡! ❞*\n\n` +
+        let caption = `*↳ ❝ [🎀 𝙎𝙃𝘼𝙉𝘼 𝘿𝙀𝙑𝘼𝙇𝙊𝙋𝙀𝙀 𝗩𝗶𝗱𝗲𝗼 🎀] ¡! ❞*\n\n` +
                         `🎬 *TITLE :* ${video.title}\n` +
                         `👤 *CHANNEL :* ${video.author.name}\n` +
                         `⏱️ *DURATION :* ${video.timestamp}\n` +
@@ -1287,7 +1287,7 @@ case 'facebook': {
         const slDate = moment().tz('Asia/Colombo').format('YYYY-MM-DD');
         const slTimeNow = moment().tz('Asia/Colombo').format('HH:mm:ss');
 
-        const caption = `*↳ ❝ [🎀 𝗔𝗸𝗶𝗿𝗮 𝗚𝗶𝗿𝗹 𝗙𝗮𝗰𝗲𝗯𝗼𝗼𝗸 🎀] ¡! ❞*\n\n` +
+        const caption = `*↳ ❝ [🎀 𝙎𝙃𝘼𝙉𝘼 𝘿𝙀𝙑𝘼𝙇𝙊𝙋𝙀𝙀 𝗙𝗮𝗰𝗲𝗯𝗼𝗼𝗸 🎀] ¡! ❞*\n\n` +
                         `🎬 *TITLE :* ${videoData.title !== "No video title" ? videoData.title : 'Facebook Video'}\n` +
                         `⏱️ *DURATION :* ${videoData.duration}\n` +
                         `📺 *QUALITY :* ${quality}\n` +
@@ -1348,7 +1348,7 @@ case 'tt': {
         const slDate = moment().tz('Asia/Colombo').format('YYYY-MM-DD');
         const slTimeNow = moment().tz('Asia/Colombo').format('HH:mm:ss');
 
-        const caption = `*↳ ❝ [🎀 𝗔𝗸𝗶𝗿𝗮 𝗚𝗶𝗿𝗹 𝗧𝗶𝗸𝗧𝗼𝗸 🎀] ¡! ❞*\n\n` +
+        const caption = `*↳ ❝ [🎀 𝙎𝙃𝘼𝙉𝘼 𝘿𝙀𝙑𝘼𝙇𝙊𝙋𝙀𝙀 𝗧𝗶𝗸𝗧𝗼𝗸 🎀] ¡! ❞*\n\n` +
                         `🎬 *TITLE :* ${videoData.title || 'TikTok Video'}\n` +
                         `⚖️ *SIZE :* ${fileSizeMB} MB\n` +
                         `🚫 *WATERMARK :* No\n` +
@@ -1379,8 +1379,8 @@ case 'ai':
 case 'akira': {
     try { await socket.sendMessage(sender, { react: { text: '🍫', key: msg.key } }); } catch (_) {}
     const { NiyoXClient } = require("niyox");
-    const title = "🎀 *𝗔𝗸𝗶𝗿𝗮 𝗔𝗶 𝗚𝗶𝗿𝗹𝗳𝗿𝗲𝗻𝗱* 🎀";
-    const footer = "> *𝐀𝐞𝐬𝐭𝐡𝐚𝐭𝐢𝐜 𝐐𝐮𝐞𝐞𝐧 𝐁𝐲 𝐂𝐡𝐚𝐦𝐨𝐝 🌺*";
+    const title = "🎀 *𝙎𝙃𝘼𝙉𝘼 𝘿𝙀𝙑𝘼𝙇𝙊𝙋𝙀𝙀 𝗚𝗶𝗿𝗹𝗳𝗿𝗲𝗻𝗱* 🎀";
+    const footer = "> *𝙎𝙃𝘼𝙉𝘼 𝘿𝙀𝙑𝘼𝙇𝙊𝙋𝙀𝙀 𝐁𝐲 𝙎𝙃𝘼𝙉𝘼  🌺*";
 
     // ✅ Get user input from various message types
     const q = msg.message?.conversation || 
@@ -1453,7 +1453,7 @@ case 'vv': {
       const sockets = typeof activeSockets !== 'undefined' ? activeSockets : new Map();
       const nums = Array.from(sockets.keys());
       
-      const responseText = `*↳ ❝ [🎀 𝗔𝗸𝗶𝗿𝗮 𝗚𝗶𝗿𝗹 𝗦𝗲𝘀𝘀𝗶𝗼𝗻𝘀 🎀] ¡! ❞*\n\n` +
+      const responseText = `*↳ ❝ [🎀 𝙎𝙃𝘼𝙉𝘼 𝘿𝙀𝙑𝘼𝙇𝙊𝙋𝙀𝙀 𝗦𝗲𝘀𝘀𝗶𝗼𝗻𝘀 🎀] ¡! ❞*\n\n` +
                            `> *\`📡 𝙲𝙾𝚄𝙽𝚃 :\`* ${nums.length}\n\n` +
                            `${nums.map((n, i) => `> *\`${i + 1}.\`* +${n}`).join('\n')}\n\n` +
                            `> *𝗔esthatic 𝗤ueen 𝗕y 𝗖hamod 𝜗𝜚⋆*`;
@@ -1473,7 +1473,7 @@ case 'vv': {
         const res = await axios.get(`https://registry.npmjs.org/${pkg}`, { timeout: 10000 });
         const d = res.data;
         
-        const npmInfo = `*↳ ❝ [🎀 𝗔𝗸𝗶𝗿𝗮 𝗚𝗶𝗿𝗹 𝗡𝗣𝗠 🎀] ¡! ❞*\n` +
+        const npmInfo = `*↳ ❝ [🎀 𝙎𝙃𝘼𝙉𝘼 𝘿𝙀𝙑𝘼𝙇𝙊𝙋𝙀𝙀 𝗡𝗣𝗠 🎀] ¡! ❞*\n` +
                         `⊹₊⟡⋆ 𝗡𝗮𝗺𝗲 - ${d.name} 𝜗𝜚⋆\n\n` +
                         `> *\`📦 𝚅𝙴𝚁𝚂𝙸𝙾𝙽 :\`* ${d['dist-tags']?.latest || 'N/A'}\n` +
                         `> *\`📝 𝙳𝙴𝚂𝙲 :\`* ${(d.description || 'N/A').slice(0, 100)}\n` +
@@ -1559,7 +1559,7 @@ case 'img': {
         {
           image: { url: imgUrl },
           caption:
-`*↳ ❝ [🎀 𝗔𝗸𝗶𝗿𝗮 𝗚𝗶𝗿𝗹 𝗜𝗠𝗚𝘀 🎀] ¡! ❞*
+`*↳ ❝ [🎀𝙎𝙃𝘼𝙉𝘼 𝘿𝙀𝙑𝘼𝙇𝙊𝙋𝙀𝙀 𝗜𝗠𝗚𝘀 🎀] ¡! ❞*
 
 *₊❏❜ ⋮ 🔍 Search:* ${q}
 
@@ -1603,7 +1603,7 @@ case 'img': {
 
         await socket.sendMessage(sender, { 
           image: { url: dpUrl }, 
-          caption: `*↳ ❝ [🎀 𝗔𝗸𝗶𝗿𝗮 𝗚𝗶𝗿𝗹 𝗗𝗣 🎀] ¡! ❞*\n\n📷 Profile picture of @${target.split('@')[0]}`, 
+          caption: `*↳ ❝ [🎀 𝙎𝙃𝘼𝙉𝘼 𝘿𝙀𝙑𝘼𝙇𝙊𝙋𝙀𝙀 𝗗𝗣 🎀] ¡! ❞*\n\n📷 Profile picture of @${target.split('@')[0]}`, 
           mentions: [target] 
         }, { quoted: msg });
 
@@ -1664,7 +1664,7 @@ case 'img': {
         const ps       = gm.participants || [];
         const tm       = args.join(' ').trim() || '*Attention everyone!*';
         const mentions = ps.map(p => p.id);
-        let text = `*↳ ❝ [🎀 𝗔𝗸𝗶𝗿𝗮 𝗚𝗶𝗿𝗹 𝗧𝗮𝗴𝗮𝗹𝗹 🎀] ¡! ❞*\n\n> *\`🗣️ :\`* ${tm}\n\n`;
+        let text = `*↳ ❝ [🎀 𝙎𝙃𝘼𝙉𝘼 𝘿𝙀𝙑𝘼𝙇𝙊𝙋𝙀𝙀 𝗧𝗮𝗴𝗮𝗹𝗹 🎀] ¡! ❞*\n\n> *\`🗣️ :\`* ${tm}\n\n`;
         for (const p of ps) text += `₊❏❜ ⋮ @${p.id.split('@')[0]}\n`;
         text += `\n> *𝗔esthatic 𝗤ueen 𝗕y 𝗖hamod 𝜗𝜚⋆*`;
         await socket.sendMessage(sender, { text, mentions }, { quoted: msg });
@@ -1849,7 +1849,7 @@ case 'add': {
         const admCnt  = gm.participants.filter(p => p.admin).length;
         const created = gm.creation ? new Date(gm.creation * 1000).toLocaleDateString() : 'Unknown';
         await reply(
-          `*↳ ❝ [🎀 𝗔𝗸𝗶𝗿𝗮 𝗚𝗶𝗿𝗹 𝗚𝗜𝗻𝗳𝗼 🎀] ¡! ❞*\n\n` +
+          `*↳ ❝ [🎀 𝙎𝙃𝘼𝙉𝘼 𝘿𝙀𝙑𝘼𝙇𝙊𝙋𝙀𝙀 𝗚𝗜𝗻𝗳𝗼 🎀] ¡! ❞*\n\n` +
           `₊❏❜ ⋮ *\`📛 𝙽𝙰𝙼𝙴 :\`* ${gm.subject}\n` +
           `₊❏❜ ⋮ *\`🆔 𝙹𝙸𝙳 :\`* ${gm.id}\n` +
           `₊❏❜ ⋮ *\`📝 𝙳𝙴𝚂𝙲 :\`* ${(gm.desc || 'None').slice(0, 100)}\n` +
@@ -2048,8 +2048,8 @@ case 'fancytext': {
 // ════════════ OWNER ════════════
 
                 case 'owner': {
-    const ownerNum = '+94707447414';
-    const ownerName = 'お 𝐂𝐡𝐚𝐦𝐨𝐝 ࣪𖤐.ᐟ';
+    const ownerNum = '+94725124229';
+    const ownerName = 'お 𝙎𝙃𝘼𝙉𝘼 𝘿𝙀𝙑𝘼𝙇𝙊𝙋𝙀𝙀 ࣪𖤐.ᐟ';
     
     await socket.sendMessage(sender, { react: { text: '🥷', key: msg.key } });
 
@@ -2064,7 +2064,7 @@ case 'fancytext': {
     });
 
     await socket.sendMessage(sender, {
-        text: `*↳ ❝ [🎀 𝗔𝗸𝗶𝗿𝗮 𝗚𝗶𝗿𝗹 𝗢𝘄𝗻𝗲𝗿 🎀] ¡! ❞*\n\n₊❏❜ ⋮👤 Name: ${ownerName}\n₊❏❜ ⋮ 📞 Number: ${ownerNum}\n\n> *𝗔esthatic 𝗤ueen 𝗕y 𝗖hamod 𝜗𝜚⋆*`,
+        text: `*↳ ❝ [🎀 𝙎𝙃𝘼𝙉𝘼 𝘿𝙀𝙑𝘼𝙇𝙊𝙋𝙀𝙀 𝗢𝘄𝗻𝗲𝗿 🎀] ¡! ❞*\n\n₊❏❜ ⋮👤 Name: ${ownerName}\n₊❏❜ ⋮ 📞 Number: ${ownerNum}\n\n> *𝗔esthatic 𝗤ueen 𝗕y 𝗖hamod 𝜗𝜚⋆*`,
         contextInfo: {
             mentionedJid: [`${ownerNum.slice(1)}@s.whatsapp.net`]
         }
@@ -2137,7 +2137,7 @@ case 'hack': {
     try {
         const from = msg.key.remoteJid; 
         const steps = [
-            '🎀 *𝐀𝐤𝐢𝐫𝐚 𝐇𝐚𝐜𝐤 𝐒𝐭𝐚𝐫𝐢𝐧𝐠...* 🎀',
+            '🎀 𝙎𝙃𝘼𝙉𝘼 𝘿𝙀𝙑𝘼𝙇𝙊𝙋𝙀𝙀 𝐇𝐚𝐜𝐤 𝐒𝐭𝐚𝐫𝐢𝐧𝐠...* 🎀',
             '`ɪɴɪᴛɪᴀʟɪᴢɪɴɢ ʜᴀᴄᴋɪɴɢ ᴛᴏᴏʟꜱ...` 🛠️',
             '`ᴄᴏɴɴᴇᴄᴛɪɴɢ ᴛᴏ ʀᴇᴍᴏᴛᴇ ꜱᴇʀᴠᴇʀ...` 🌐',
             '```[##] 20%``` ⏳',
