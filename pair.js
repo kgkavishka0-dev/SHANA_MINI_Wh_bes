@@ -27,18 +27,18 @@ const ffmpeg = require("fluent-ffmpeg");
 const ffmpegPath = require("ffmpeg-static");
 ffmpeg.setFfmpegPath(ffmpegPath);
   const images = [
-    'https://i.ibb.co/FZjptLY/tourl-1779693358137.jpg',
-    'https://i.ibb.co/nsvyKzHq/tourl-1779693358584.jpg',
-    'https://i.ibb.co/nqr1zs58/tourl-1779693359381.jpg',
-    'https://i.ibb.co/hFgRrkHG/tourl-1779693362084.jpg',
-    'https://i.ibb.co/b5BGG3qy/tourl-1779693381594.jpg',
-    'https://i.ibb.co/Xxwq0KbL/tourl-1779693384509.jpg',
-    'https://i.ibb.co/p60X2gCY/tourl-1779693391761.jpg',
-    'https://i.ibb.co/8LDKt9St/tourl-1779693394059.jpg',
-    'https://i.ibb.co/5XSxSGrd/tourl-1779693398804.jpg',
-    'https://i.ibb.co/NdJ2LFJp/tourl-1779693402284.jpg',
-    'https://i.ibb.co/rKRD8cCT/tourl-1779693404589.jpg',
-    'https://i.ibb.co/4nVwLGXm/tourl-1779693406982.jpg'
+    'https://files.catbox.moe/o0uesm.jpg',
+    'https://files.catbox.moe/o0uesm.jpg',
+    'https://files.catbox.moe/o0uesm.jpg',
+    'https://files.catbox.moe/o0uesm.jpg',
+    'https://files.catbox.moe/o0uesm.jpg',
+    'https://files.catbox.moe/o0uesm.jpg',
+    'https://files.catbox.moe/o0uesm.jpg',
+    'https://files.catbox.moe/o0uesm.jpg',
+    'https://files.catbox.moe/o0uesm.jpg',
+    'https://files.catbox.moe/o0uesm.jpg',
+    'https://files.catbox.moe/o0uesm.jpg',
+    'https://files.catbox.moe/o0uesm.jpg'
   ]; 
 
 const akira = images[Math.floor(Math.random() * images.length)];
