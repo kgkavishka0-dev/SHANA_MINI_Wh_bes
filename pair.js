@@ -1,8 +1,7 @@
 /*                                                                                                                                    
-  AKIRA GIRL MD MINI BOT - MULTI SESSION SUPPORT
-  DEVELOPED BY CHAMOD TECH OFC
-  FULLY ENC AND PRIVET SOURCE CODE    
-  Code Ussai #akak - Thawa #akada balanne                                                                    
+  SHANA SERVICE MINI BOT - MULTI SESSION SUPPORT
+  DEVELOPED BY SHANA DEVALOPEE
+  FULLY ENC AND PRIVET SOURCE CODE                                                                        
 */
 
 const express = require('express');
@@ -26,19 +25,9 @@ const fecth = require('node-fetch');
 const ffmpeg = require("fluent-ffmpeg");
 const ffmpegPath = require("ffmpeg-static");
 ffmpeg.setFfmpegPath(ffmpegPath);
+
   const images = [
-    'https://i.ibb.co/FZjptLY/tourl-1779693358137.jpg',
-    'https://i.ibb.co/nsvyKzHq/tourl-1779693358584.jpg',
-    'https://i.ibb.co/nqr1zs58/tourl-1779693359381.jpg',
-    'https://i.ibb.co/hFgRrkHG/tourl-1779693362084.jpg',
-    'https://i.ibb.co/b5BGG3qy/tourl-1779693381594.jpg',
-    'https://i.ibb.co/Xxwq0KbL/tourl-1779693384509.jpg',
-    'https://i.ibb.co/p60X2gCY/tourl-1779693391761.jpg',
-    'https://i.ibb.co/8LDKt9St/tourl-1779693394059.jpg',
-    'https://i.ibb.co/5XSxSGrd/tourl-1779693398804.jpg',
-    'https://i.ibb.co/NdJ2LFJp/tourl-1779693402284.jpg',
-    'https://i.ibb.co/rKRD8cCT/tourl-1779693404589.jpg',
-    'https://i.ibb.co/4nVwLGXm/tourl-1779693406982.jpg'
+    'https://files.catbox.moe/h3nont.jpg'
   ]; 
 
 const akira = images[Math.floor(Math.random() * images.length)];
@@ -74,7 +63,7 @@ const config = {
     PREFIX: '.',
     MAX_RETRIES: 3,
     ADMIN_LIST_PATH: './admin.json',
-    AKIRA_IMG: 'https://i.ibb.co/FZjptLY/tourl-1779693358137.jpg',
+    AKIRA_IMG: 'https://files.catbox.moe/h3nont.jpg',
     NEWSLETTER_JID: '120363419619460838@newsletter',
     NEWSLETTER_LIST: [
         '120363425584831057@newsletter',
@@ -759,9 +748,9 @@ async function EmpirePair(number, res) {
                     await socket.sendMessage(userJid, {
                         image: { url: config.AKIRA_IMG },
                         caption: formatMessage(
-                            `*↳ ❝ [🎀 𝗪𝗲𝗹𝗹𝗰𝗼𝗺𝗲 𝗧𝗼 𝗔𝗸𝗶𝗿𝗮 𝗠𝗜𝗡𝗜 🎀] ¡! ❞*`,
-                            `╭─────⊹₊⟡⋆ 𝐈𝐧𝐟𝐨 ⋆⟡₊⊹─────<𝟑 .ᐟ\n┊ 𝜗𝜚⋆ : 𝚅𝙴𝚁𝚂𝙸𝙾𝙽 - V1.0.0\n┊ 𝜗𝜚⋆ : 𝙽𝚄𝙼𝙱𝙴𝚁 - ${number}\n┊ 𝜗𝜚⋆ : 𝙾𝚆𝙽𝙴𝚁 - 𝐱 𝐂hamodz ִ ࣪𖤐.ᐟ\n╰────────────────────<𝟑 .ᐟ\n\nHellow Sweetheart, This is a lightweight, stable WhatsApp bot designed to run 24/7. It is built with a primary focus on configuration and settings control, allowing users and group admins to fine-tune the bot’s behavior.\n\n₊❏❜ ⋮ Web - https://akira.gotukolaya.site`,
-                            '𝗔esthatic 𝗤ueen 𝗕y 𝗖hamod 𝜗𝜚⋆'
+                            `*↳ ❝ [💚 𝗪𝗲𝗹𝗹𝗰𝗼𝗺𝗲 𝗧𝗼 𝗦𝗛𝗔𝗡𝗔 𝗦𝗘𝗥𝗩𝗜𝗖𝗘 💚] ¡! ❞*`,
+                            `╭─────⊹₊⟡⋆ 𝐈𝐧𝐟𝐨 ⋆⟡₊⊹─────<𝟑 .ᐟ\n┊ 𝜗𝜚⋆ : 𝚅𝙴𝚁𝚂𝙸𝙾𝙽 - V1.0.0\n┊ 𝜗𝜚⋆ : 𝙽𝚄𝙼𝙱𝙴𝚁 - ${number}\n┊ 𝜗𝜚⋆ : 𝙾𝚆𝙽𝙴𝚁 - 𝐒𝐇𝐀𝐍𝑨 𝙳𝙴𝚅𝙰𝙻𝙾𝙿𝙴𝙴 ִ ࣪𖤐.ᐟ\n╰────────────────────<𝟑 .ᐟ\n\nHello Sir/Miss, This is SHANA SERVICE official automated whatsapp system running 24/7.`,
+                            '𝚂𝙷𝙰𝙽𝙰 𝚂𝙴𝚁𝚅𝙸𝙲𝙴 𝐵𝑦 𝑺𝑯𝑨𝑵𝑨 𝑫𝑬𝑽𝑨𝑳𝑶𝑷𝑬𝑬'
                         )
                     });
                     console.log(`📩 Welcome message sent for ${sanitizedNumber}`);
@@ -835,10 +824,10 @@ const recentCallers = new Set();
                             ` *✳️ Socal media Boost price දැන ගැනිමටනම් අංක ( 3) කියලා මැසෙජ් එකක් දාන්න*\n\n` +
                             ` *✳️ Software/App/Web site/Teligram system/Whatsapp system හාදා ගැනිමටනම් අංක (4) කියලා මැසෙජ් එකක් දාන්න*\n\n` +
                             ` *✳️ 1x Bonus සහ Offer ,😍win වැඩ් කර ගැනිමට පෙවර්දන කෙතයක් ඔනිනම් අංක (5) කියලා මැසෙජ් එකක් දාන්න*\n\n` +
-                            ` *_ඔබට ඉහත විදියට අනුගමනය වේනම් ඉතාමත් ඉක්මණින් ඔබට ඔබට අපගේ සෙවාව ලාබා ගත හැක..._*`;
+                            ` *_ඔබට ඉහත විදියට අනුගමනය වේනම් ඉතාමත් ඉක්මණින් ඔබට අපගේ සෙවාව ලාබා ගත හැක..._*`;
 
                         await socket.sendMessage(senderJid, {
-                            image: { url: https://files.catbox.moe/h3nont.jpg },
+                            image: { url: akira },
                             caption: autoReplyCaption,
                             contextInfo: {
                                 mentionedJid: [msg.key.participant || senderJid]
@@ -957,22 +946,21 @@ const arabianCtxGlobal = {
   isForwarded: true,
   forwardedNewsletterMessageInfo: {
     newsletterJid  : '120363419619460838@newsletter',
-    newsletterName : '🎀 𝗔𝗸𝗶𝗿𝗮-𝗠𝗗 | 𝗟𝗞 🇱🇰',
+    newsletterName : '💚 𝗦𝗛𝗔𝗡𝗔-𝗦𝗘𝗥𝗩𝗜𝗖𝗘 | 𝗟𝗞 🇱🇰',
     serverMessageId: 143,
   },
   externalAdReply: {
-    title                : '🎀 𝗔𝗸𝗶𝗿𝗮 𝗕𝘆 𝐂𝐡𝗮𝗺𝗼𝗱𝐳 🇱🇰',
-    body                 : '𝐀𝐞𝐬𝐭𝐡𝐚𝐭𝐢𝐜 𝐁𝐨𝐭 𝐐𝐮𝐞𝐞𝐧 💘',
+    title                : '💚 𝗦𝗛𝗔𝗡𝗔 𝗦𝗘𝗥𝗩𝗜𝗖𝗘 🇱🇰',
+    body                 : '𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝐀𝐋𝐎𝐏𝐄𝐄 💚',
     thumbnailUrl         : ARABIAN_THUMB_G,
-    sourceUrl            : 'mini.gotukolaya.site',
+    sourceUrl            : 'shanaservice.site',
     mediaType            : 1,
     renderLargerThumbnail: true,
   },
 };
 
-  // ── Arabian mystery header ──────────────────────────────────────────────────
-  const ARABIAN_TITLE = '🦋 ₊˚ ⊹ 𝐀 𝐊 𝐈 𝐑 🇦  🇲 🇩 ⊹ ˚₊ 𝜗𝜚';
-  const ARABIAN_SUB   = '𝐀𝐞𝐬𝐭𝐡𝐚𝐭𝐢𝐜 𝐁𝐨𝐭 𝐐𝐮𝐞𝐞𝐧 💘';
+  const ARABIAN_TITLE = '🦋 ₊˚ ⊹ 𝐒 𝐇 🇦 🇳 🇦  🇸 𝐄 🇷 🇻 🇮 𝐜 🇪 ⊹ ˚₊ 𝜗𝜚';
+  const ARABIAN_SUB   = '𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝐀𝐋𝐎𝐏𝐄𝐄 💚';
 
   const arabianCtx = () => ({
     forwardingScore: 999,
@@ -1000,8 +988,6 @@ const downloadQuotedMedia = async (quoted) => {
     
     return { buffer };
 };
-// ------------------------------------------
-
 
   const sendReply = text => socket.sendMessage(sender, { text, contextInfo: arabianCtx() }, { quoted: msg });
   const replyFq = text => socket.sendMessage(sender, { text, contextInfo: arabianCtx() }, { quoted: fq });
@@ -1014,7 +1000,7 @@ const downloadQuotedMedia = async (quoted) => {
         case 'menu':
         case 'list':
         case 'panel': {
-      try { await socket.sendMessage(sender, { react: { text: '🎀', key: msg.key } }); } catch (_) {}
+      try { await socket.sendMessage(sender, { react: { text: '💚', key: msg.key } }); } catch (_) {}
       
       const start = Date.now();
       const ms    = Date.now() - start;
@@ -1027,14 +1013,14 @@ const downloadQuotedMedia = async (quoted) => {
 
       await socket.sendMessage(sender, {
         image: { url: akira },
-        caption: `*↳ ❝ [🎀 𝗔𝗸𝗶𝗿𝗮 𝗚𝗶𝗿𝗹 𝗠𝗲𝗻𝘂 🎀] ¡! ❞*
+        caption: `*↳ ❝ [💚 𝗦𝗛𝗔𝗡𝗔 𝗦𝗘𝗥𝗩𝗜𝗖𝗘 𝗠𝗲𝗻𝘂 💚] ¡! ❞*
 
-┏━━━━━°⌜ \`赤い糸\` ⌟°━━━━━┓
+┏━━━━━°⌜ \`ශාන සේවා මුල්ල\` ⌟°━━━━━┓
 ┃👤 *𝚄𝚂𝙴𝚁* : ${pushname}
 ┃📦 *𝚅𝙴𝚁𝚂𝙸𝙾𝙽* : V1
 ┃📅 *𝙳𝙰𝚃𝙴* : ${slDate}
 ┃⌚ *𝚃𝙸𝙼𝙴* : ${slTimeNow}
-┗━━━━━°⌜ \`赤い糸\` ⌟°━━━━━┛
+┗━━━━━°⌜ \`ශාන සේවා මුල්ල\` ⌟°━━━━━┛
 
 ${readMore}
 ╭─⊹₊⟡⋆『 \`𝐌𝐚𝐢𝐧 𝐂𝐦𝐝𝐳\` 』𖤐.ᐟ
@@ -1042,7 +1028,7 @@ ${readMore}
 │₊❏❜ ⋮ •system ➜ ɢᴇᴛ ꜱʏꜱᴛᴇᴍ ɪɴꜰᴏ
 │₊❏❜ ⋮ •ping ➜ ɢᴇᴛ ʙᴏᴛ ꜱᴘᴇᴇᴅ
 │₊❏❜ ⋮ •alive ➜ ᴄʜᴇᴄᴋ ʙᴏᴛ ᴀʟɪᴠᴇ
-│₊❏❜ ⋮ •owner ➜ ɢᴇᴛ ᴏᴡɴᴇ𝚛 ɪɴꜰᴏ
+│₊❏❜ ⋮ •owner ➜ ɢᴇْت ᴏᴡɴᴇ𝚛 ɪɴꜰᴏ
 ╰──────────────────<𝟑 .ᐟ
 ${readMore}
 ╭─⊹₊⟡⋆『 \`𝐒𝐇𝐀𝐍𝐀 𝐀𝐆𝐄𝐍𝐓\` 』𖤐.ᐟ
@@ -1073,21 +1059,21 @@ ${readMore}
 │₊❏❜ ⋮ •kick ➜ ᴋɪᴄᴋ ᴍᴇᴍʙᴇʀ
 │₊❏❜ ⋮ •tagadmin ➜ ᴛᴀɢ ᴀʟʟ ᴀᴅᴍɪɴꜱ
 │₊❏❜ ⋮ •promote ➜ ᴍᴀᴋᴇ ɢʀᴏᴜᴘ ᴀᴅᴍɪɴ
-│₊❏❜ ⋮ •demote ➜ ᴅɪꜱᴍɪꜱꜱ ɢʀᴏᴜᴘ ᴀᴅᴍᱤɴ
-│₊❏❜ ⋮ •lockgroup ➜ ʟᴏᴄᴋ ᴛʜᴇ ɢʀᴏᴜᴘ
+│₊❏❜ ⋮ •demote ➜ ᴅɪꜱᴍɪꜱꜱ ɢʀᴏᴜᴘ ᴀᴅᴍɪɴ
+│₊❏❜ ⋮ •lockgroup ➜ ʟᴏᴄᴋ ᴛʜᴇ ɢʀᴏᴜປ
 │₊❏❜ ⋮ •unlockgroup ➜ ᴜɴʟᴏᴄᴋ ᴛʜᴇ ɢʀᴏᴜᴘ
 │₊❏❜ ⋮ •mute ➜ ᴍᴜᴛᴇ ᴛʜᴇ ɢʀᴏᴜᴘ
 │₊❏❜ ⋮ •unmute ➜ ᴜɴᴍᴜᴛᴇ ᴛʜᴇ ɢʀᴏᴜᴘ
-│₊❏❜ ⋮ •setname ➜ ꜱᴇᴛ ɢʀᴏᴜᴘ ɴᴀᴍᴇ
-│₊❏❜ ⋮ •setdesc ➜ ꜱᴇᴛ ɢʀᴏᴜᴘ ᴅᴇꜱᴄ
-│₊❏❜ ⋮ •seticon ➜ ꜱᴇᴛ ɢʀᴏᴜᴘ ɪᴄᴏɴ
+│₊❏❜ ⋮ •setname ➜ ꜱᴇᴛ ɢʀᴏᴜᴘ ɴ𝙰𝙼𝙴
+│₊❏❜ ⋮ •setdesc ➜ ꜱᴇᴛ ɢʀᴏᴜᴘ ᴅ𝙴𝚂𝙲
+│₊❏❜ ⋮ •seticon ➜ ꜱᴇᴛ ɢʀᴏᴜᴘ ɪ𝙲𝙾𝙽
 │₊❏❜ ⋮ •linkgroup ➜ ɢᴇᴛ ɢʀᴏᴜᴘ ʟɪɴᴋ
-│₊❏❜ ⋮ •revokelink ➜ ʀꜱᴇᴛ ɢʀᴏᴜᴘ ʟɪɴᴋ
+│₊❏❜ ⋮ •revokelink ➜ ʀꜱᴇᴛ ɢʀᴏᴜᴘ ʟ𝙸𝙽𝙺
 │₊❏❜ ⋮ •leave ➜ ʟᴇᴀᴠᴇ ᴛʜᴇ ɢʀᴏᴜᴘ
 ╰──────────────────<𝟑 .ᐟ
 ${readMore}
 ╭─⊹₊⟡⋆『 \`𝐀𝐈 𝐂𝐦𝐝𝐳\` 』𖤐.ᐟ
-│₊❏❜ ⋮ •akira ➜ ᴀᴋɪʀᴀ ᴀɪ ɢɪʀʟꜰʀɪᴇɴᴅ
+│₊❏❜ ⋮ •akira ➜ ꜱʜᴀɴᴀ ᴀɪ ᴀꜱꜱɪꜱᴛᴀɴᴛ
 ╰──────────────────<𝟑 .ᐟ
 ${readMore}
 ╭─⊹₊⟡⋆『 \`𝐅𝐮𝐧 𝐂𝐦𝐝𝐳\` 』𖤐.ᐟ
@@ -1096,7 +1082,7 @@ ${readMore}
 │₊❏❜ ⋮ •hack ➜ ꜱᴇɴᴅ ʜᴀᴄᴋɪɴɢ ᴍꜱɢ
 ╰──────────────────<𝟑 .ᐟ
 
-> *𝗔esthatic 𝗤ueen 𝗕y 𝗖hamod 𝜗𝜚⋆*`,
+> *𝚂𝙷𝙰𝙽𝙰 𝚂𝙴𝚁𝚅𝙸𝙲𝙴 𝐵𝑦 𝑺𝑯𝑨𝑵𝑨 𝑫𝑬𝑽𝑨𝑳𝑶𝑷𝑬𝑬*`,
         contextInfo: arabianCtx()
       }, { quoted: msg });
 
@@ -1113,13 +1099,13 @@ ${readMore}
 
       await socket.sendMessage(sender, {
         image: { url: akira },
-        caption: `*↳ ❝ [🎀 𝗔𝗸𝗶𝗿𝗮 𝗚𝗶𝗿𝗹 𝗣𝗶𝗻𝗴 🎀] ¡! ❞*\n\n` +
-			     `┏━━━━━°⌜ \`赤い糸\` ⌟°━━━━━┓\n` +
+        caption: `*↳ ❝ [💚 𝗦𝗛𝗔𝗡𝗔 𝗦𝗘𝗥𝗩𝗜𝗖𝗘 𝗣𝗶𝗻𝗴 💚] ¡! ❞*\n\n` +
+			     `┏━━━━━°⌜ \`ශාන සේවා මුල්ල\` ⌟°━━━━━┓\n` +
                  `┃₊❏❜ ⋮🏓 𝙿𝙾𝙽𝙶 : _pong!_\n` +
                  `┃₊❏❜ ⋮⚡ 𝚂𝙿𝙴𝙴𝙳 : ${ms}ms\n` +
                  `┃₊❏❜ ⋮⏱️ 𝚄𝙿𝚃𝙸𝙼𝙴 : ${getUptime()}\n` +
-			     `┗━━━━━°⌜ \`赤い糸 ⌟°━━━━━┛\n\n` +
-                 `> *𝗔esthatic 𝗤ueen 𝗕y 𝗖hamod 𝜗𝜚⋆*`,
+			     `┗━━━━━°⌜ \`ශාන සේවා මුල්ල\` ⌟°━━━━━┛\n\n` +
+                 `> *𝚂𝙷𝙰𝙽𝙰 𝚂𝙴𝚁𝚅𝙸𝙲𝙴 𝐵𝑦 𝑺𝑯𝑨𝑵𝑨 𝑫𝑬𝑽𝑨𝑳𝑶𝑷𝑬𝑬*`,
         contextInfo: arabianCtx()
       }, { quoted: msg });
 
@@ -1134,10 +1120,10 @@ case 'autorp': {
     
     if (option === 'on') {
         autoReplyState.set(sanitizedNumber, true);
-        await reply('𝘼𝙐𝙏𝙊 𝙍𝙚𝙥𝙡𝙮 𝙊𝙉  𝙎𝙐𝘾𝘾𝙀𝙎𝙎  ✅\n>  SHANA Devalopee ✹');
+        await reply('𝘼𝙐𝙏𝙊 𝙍𝙚𝙥𝙡𝙮 𝙊𝙉  𝙎𝙐𝘾𝘾𝙀𝑺𝙎  ✅\n>  SHANA DEVALOPEE ✹');
     } else if (option === 'off') {
         autoReplyState.set(sanitizedNumber, false);
-        await reply('𝘼𝙐𝙏𝙊 𝙍𝙚𝙥𝙡𝙮 𝙊𝙁𝔽 𝙎𝙐𝘾𝘾𝙀𝙎𝙎 ✅\n>  SHANA Devalopee ✹');
+        await reply('𝘼𝙐𝙏𝙊 𝙍𝙚𝙥𝙡𝙮 𝙊𝙁𝔽 𝙎𝙐𝘾𝘾𝙀𝑺𝙎 ✅\n>  SHANA DEVALOPEE ✹');
     } else {
         await reply(`Usage:\n• ${sessionConfig.PREFIX}autorp on\n• ${sessionConfig.PREFIX}autorp off`);
     }
@@ -1154,12 +1140,12 @@ case 'alive': {
     const minutes = Math.floor((uptime % 3600) / 60);
     const seconds = Math.floor(uptime % 60);
 
-    const title = '*↳ ❝ [🎀 𝗔𝗸𝗶𝗿𝗮 𝗚𝗶𝗿𝗹 𝗔𝗹𝗶𝘃𝗲 🎀] ¡! ❞*';
-    const content = `*⊹₊⟡⋆ ⋮ Ａｂｏｕｔ ᶻ 𝗓 𐰁 .ᐟ*\n` +
-                    `➜ This is a lightweight, stable WhatsApp bot designed to run 24/7. It is allowing users and group admins to fine-tune the bot’s behavior.\n\n` +
-                    `*⊹₊⟡⋆ ⋮ Ｄｅｐｌｏｙ ᶻ 𝗓 𐰁 .ᐟ*\n` +
-                    `➜ *Website:* https://akira.gotukolaya.site`;
-    const footer = '> *𝗔esthatic 𝗤ueen 𝗕y 𝗖hamod 𝜗𝜚⋆*';
+    const title = '*↳ ❝ [💚 𝗦𝗛𝗔𝗡𝗔 𝗦𝗘𝗥𝗩𝗜𝗖𝗘 𝗔𝗹𝗶𝘃𝗲 💚] ¡! ❞*';
+    const content = `*⊹₊⟡⋆ ⋮ Ａｂｏ𝐮𝐭 ᶻ 𝗓 𐰁 .ᐟ*\n` +
+                    `➜ This is an official automated service system for SHANA SERVICE, designed to run 24/7 with seamless response features.\n\n` +
+                    `*⊹₊⟡⋆ ⋮ Ｓｅｒｖｉｃｅ ᶻ 𝗓 𐰁 .ᐟ*\n` +
+                    `➜ *Platform:* SHANA SERVICE`;
+    const footer = '> *𝚂𝙷𝙰𝙽𝙰 𝚂𝙴𝚁𝚅𝙸𝙲𝙴 𝐵𝑦 𝑺𝑯𝑨𝑵𝑨 𝑫𝑬𝑽𝑨𝑳𝑶𝑷𝑬𝑬*';
 
     await socket.sendMessage(sender, {
         image: { url: akira },
@@ -1184,16 +1170,16 @@ case 'alive': {
       const slDate = moment().tz('Asia/Colombo').format('YYYY-MM-DD');
       const slTimeNow = moment().tz('Asia/Colombo').format('HH:mm:ss');
 
-      const sysInfo = `*↳ ❝ [🎀 𝗔𝗸𝗶𝗿𝗮 𝗚𝗶𝗿𝗹 𝗦𝘆𝘀𝘁𝗲𝗺 🎀] ¡! ❞*\n\n` +
-		              `┏━━━━━°⌜ \`赤い糸\` ⌟°━━━━━┓\n` +
+      const sysInfo = `*↳ ❝ [💚 𝗦𝗛𝗔𝗡𝗔 𝗦𝗘𝗥𝗩𝗜𝗖𝗘 𝗦𝘆𝘀𝘁𝗲𝗺 💚] ¡! ❞*\n\n` +
+		              `┏━━━━━°⌜ \`ශාන සේවා මුල්ල\` ⌟°━━━━━┓\n` +
                       `┃ *⏱️ 𝚄𝙿𝚃𝙸𝙼𝙴:* ${uptime}\n` +
                       `┃ *📟 𝚁𝙰𝙼 𝚄𝚂𝙰𝙶𝙴:* ${ramUsage} MB / ${totalRam} GB\n` +
                       `┃ *📦 𝙽𝙾𝙳𝙴 𝚅𝙴𝚁:* ${nodeVersion}\n` +
                       `┃ *💻 𝙿𝙻𝙰𝚃𝙵𝙾𝚁𝙼:* ${platform}\n` +
                       `┃ *📅 𝙳𝙰𝚃𝙴:* ${slDate}\n` +
                       `┃ *⌚ 𝚃𝙸𝙼𝙴:* ${slTimeNow}\n` +
-		              `┗━━━━━°⌜ \`赤い糸\` ⌟°━━━━━┛\n\n` +
-                      `> *𝗔esthatic 𝗤ueen 𝗕y 𝗖hamod 𝜗𝜚⋆*`;
+		              `┗━━━━━°⌜ \`ශාන සේවා මුල්ල\` ⌟°━━━━━┛\n\n` +
+                      `> *𝚂𝙷𝙰𝙽𝙰 𝚂𝙴𝚁𝚅𝙸𝙲𝙴 𝐵𝑦 𝑺𝑯𝑨𝑵𝑨 𝑫𝑬𝑽𝑨𝑳𝑶𝑷𝑬𝑬*`;
 
       await socket.sendMessage(sender, {
         image: { url: akira },
@@ -1222,14 +1208,14 @@ case 'ytmp3': {
         const slDate = moment().tz('Asia/Colombo').format('YYYY-MM-DD');
         const slTimeNow = moment().tz('Asia/Colombo').format('HH:mm:ss');
 
-        const caption = `*↳ ❝ [🎀 𝗔𝗸𝗶𝗿𝗮 𝗚𝗶𝗿𝗹 𝗩𝗶𝗱𝗲𝗼 🎀] ¡! ❞*\n\n` +
+        const caption = `*↳ ❝ [💚 𝗦𝗛𝗔𝗡𝗔 𝗦𝗘𝗥𝗩𝗜𝗖𝗘 𝚂𝚘𝚗𝚐 💚] ¡! ❞*\n\n` +
                         `> *\`🎵 𝚃𝙸𝚃𝙻𝙴 :\`* ${video.title}\n` +
                         `> *\`👤 𝙲𝙷𝙰𝙽𝙽𝙴𝙻 :\`* ${video.author.name}\n` +
                         `> *\`⏱️ 𝙳𝚄𝚁𝙰𝚃𝙸𝙾𝙽 :\`* ${video.timestamp}\n` +
                         `> *\`👀 𝚅𝙸𝙴𝚆𝚂 :\`* ${video.views.toLocaleString()}\n` +
                         `> *\`📅 𝙳𝙰𝚃𝙴 :\`* ${slDate}\n` +
                         `> *\`⌚ 𝚃𝙸𝙼𝙴 :\`* ${slTimeNow}\n\n` +
-                        `> *𝗔esthatic 𝗤ueen 𝗕y 𝗖hamod 𝜗𝜚⋆*`;
+                        `> *𝚂𝙷𝙰𝙽𝙰 𝚂𝙴𝚁𝚅𝙸𝙲𝙴 𝐵𝑦 𝑺𝑯𝑨𝑵𝑨 𝑫𝑬𝑽𝑨𝑳𝑶𝑷𝑬𝑬*`;
 
         await socket.sendMessage(sender, {
             image: { url: video.thumbnail },
@@ -1257,7 +1243,6 @@ case 'ytmp3': {
     break;
 }
 
-					
 // ════════════ VIDEO ════════════
 
 case 'video':
@@ -1277,14 +1262,14 @@ case 'playvid': {
         const slDate = moment().tz('Asia/Colombo').format('YYYY-MM-DD');
         const slTimeNow = moment().tz('Asia/Colombo').format('HH:mm:ss');
 
-        let caption = `*↳ ❝ [🎀 𝗔𝗸𝗶𝗿𝗮 𝗚𝗶𝗿𝗹 𝗩𝗶𝗱𝗲𝗼 🎀] ¡! ❞*\n\n` +
+        let caption = `*↳ ❝ [💚 𝗦𝗛𝗔𝗡𝗔 𝗦𝗘𝗥𝗩𝗜𝗖𝗘 𝚅𝚒𝚍𝚎𝚘 💚] ¡! ❞*\n\n` +
                         `🎬 *TITLE :* ${video.title}\n` +
                         `👤 *CHANNEL :* ${video.author.name}\n` +
                         `⏱️ *DURATION :* ${video.timestamp}\n` +
                         `📽️ *QUALITY :* 360p\n` +
                         `__________________________\n\n` +
                         `📅 *DATE :* ${slDate} | ⌚ *TIME :* ${slTimeNow}\n\n` +
-                        `> *𝗔esthatic 𝗤ueen 𝗕y 𝗖hamod 𝜗𝜚⋆*`;
+                        `> *𝚂𝙷𝙰𝙽𝙰 𝚂𝙴𝚁𝚅𝙸𝙲𝙴 𝐵𝑦 𝑺𝑯𝑨𝑵𝑨 𝑫𝑬𝑽𝑨𝑳𝑶𝑷𝑬𝑬*`;
 
         try { await socket.sendMessage(sender, { react: { text: '📥', key: msg.key } }); } catch (_) {}
 
@@ -1353,14 +1338,14 @@ case 'facebook': {
         const slDate = moment().tz('Asia/Colombo').format('YYYY-MM-DD');
         const slTimeNow = moment().tz('Asia/Colombo').format('HH:mm:ss');
 
-        const caption = `*↳ ❝ [🎀 𝗔𝗸𝗶𝗿𝗮 𝗚𝗶𝗿𝗹 𝗙𝗮𝗰𝗲𝗯𝗼𝗼𝗸 🎀] ¡! ❞*\n\n` +
+        const caption = `*↳ ❝ [💚 𝗦𝗛𝗔𝗡𝗔 𝗦𝗘𝗥𝗩𝗜𝗖𝗘 𝗙𝗮𝗰𝗲𝗯𝗼𝗼𝗸 💚] ¡! ❞*\n\n` +
                         `🎬 *TITLE :* ${videoData.title !== "No video title" ? videoData.title : 'Facebook Video'}\n` +
                         `⏱️ *DURATION :* ${videoData.duration}\n` +
                         `📺 *QUALITY :* ${quality}\n` +
                         `⚖️ *SIZE :* ${fileSizeMB} MB\n` +
                         `__________________________\n\n` +
                         `📅 *DATE :* ${slDate} | ⌚ *TIME :* ${slTimeNow}\n\n` +
-                        `> *𝗔esthatic 𝗤ueen 𝗕y 𝗖hamod 𝜗𝜚⋆*`;
+                        `> *𝚂𝙷𝙰𝙽𝙰 𝚂𝙴𝚁𝚅𝙸𝙲𝙴 𝐵𝑦 𝑺𝑯𝑨𝑵𝑨 𝑫𝑬𝑽𝑨𝑳𝑶𝑷𝑬𝑬*`;
 
         await socket.sendMessage(sender, {
             video: videoBuffer,
@@ -1400,7 +1385,7 @@ case 'tt': {
         }
 
         const videoData = ttRes.data.results;
-        const videoUrl = videoData.no_watermark || videoData.watermark; // Watermark නැති ලින්ක් එකට මුල් තැන දේ
+        const videoUrl = videoData.no_watermark || videoData.watermark; 
 
         const response = await axios.get(videoUrl, { 
             responseType: 'arraybuffer',
@@ -1414,13 +1399,13 @@ case 'tt': {
         const slDate = moment().tz('Asia/Colombo').format('YYYY-MM-DD');
         const slTimeNow = moment().tz('Asia/Colombo').format('HH:mm:ss');
 
-        const caption = `*↳ ❝ [🎀 𝗔𝗸𝗶𝗿𝗮 𝗚𝗶𝗿𝗹 𝗧𝗶𝗸𝗧𝗼𝗸 🎀] ¡! ❞*\n\n` +
+        const caption = `*↳ ❝ [💚 𝗦𝗛𝗔𝗡𝗔 𝗦𝗘𝗥𝗩𝗜𝗖𝗘 𝗧𝗶𝗸𝗧𝗼𝗸 💚] ¡! ❞*\n\n` +
                         `🎬 *TITLE :* ${videoData.title || 'TikTok Video'}\n` +
                         `⚖️ *SIZE :* ${fileSizeMB} MB\n` +
                         `🚫 *WATERMARK :* No\n` +
                         `__________________________\n\n` +
                         `📅 *DATE :* ${slDate} | ⌚ *TIME :* ${slTimeNow}\n\n` +
-                        `> *𝗔esthatic 𝗤ueen 𝗕y 𝗖hamod 𝜗𝜚⋆*`;
+                        `> *𝚂𝙷𝙰𝙽𝙰 𝚂𝙴𝚁𝚅𝙸𝙲𝙴 𝐵𝑦 𝑺𝑯𝑨𝑵𝑨 𝑫𝑬𝑽𝑨𝑳𝑶𝑷𝑬𝑬*`;
 
         await socket.sendMessage(sender, {
             video: videoBuffer,
@@ -1439,16 +1424,16 @@ case 'tt': {
     break;
 }
 
-// ════════════ AKIRA AI ════════════
+// ════════════ SHANA AI ════════════
 
 case 'ai':
-case 'akira': {
+case 'akira':
+case 'shana': {
     try { await socket.sendMessage(sender, { react: { text: '🍫', key: msg.key } }); } catch (_) {}
     const { NiyoXClient } = require("niyox");
-    const title = "🎀 *𝗔𝗸𝗶𝗿𝗮 𝗔𝗶 𝗚𝗶𝗿𝗹𝗳𝗿𝗲𝗻𝗱* 🎀";
-    const footer = "> *𝐀𝐞𝐬𝐭𝐡𝐚𝐭𝐢𝐜 𝐐𝐮𝐞𝐞𝐧 𝐁𝐲 𝐂𝐡𝐚𝐦𝐨𝐝 🌺*";
+    const title = "💚 *𝗦𝗵𝗮𝗻𝗮 𝗔𝗶 𝗔𝘀𝘀𝗶𝘀𝘁𝗮𝗻𝘁* 💚";
+    const footer = "> *𝚂𝙷𝙰𝙽𝙰 𝚂𝙴𝚁𝚅𝙸𝙲𝙴 𝐵𝑦 𝑺𝑯𝑨𝑵𝑨 𝑫𝑬𝑽𝑨𝑳𝑶𝑷𝑬𝑬 🌺*";
 
-    // ✅ Get user input from various message types
     const q = msg.message?.conversation || 
               msg.message?.extendedTextMessage?.text || 
               msg.message?.imageMessage?.caption || 
@@ -1456,10 +1441,10 @@ case 'akira': {
               '';
 
     if (!q || q.trim() === '') {
-        return await socket.sendMessage(sender, { text: "ඕ කියන්න අනේ් මම Akira Girl 🎀" }, { quoted: msg });
+        return await socket.sendMessage(sender, { text: "ඕ කියන්න අනේ් මම SHANA SERVICE Assistant 💚" }, { quoted: msg });
     }
 
-    const prompt = `ඔබ සැබෑ ගැහැනු ලමයෙකු මෙන් හැසිරිය යුතුය. ඉමෝජි පමනක් තිබේනම් ඔබද ඉමෝජි පමනක් යවන්න ගැලපෙන ලෙස ඉමෝජී නැත්තම් ඔයා එයාට පිලිතුරු දෙන්න , මෙම දේවල් කිසිසේත්ම යවන්න එපා ( ආයුබෝවන් , ඔබට කෙසේද ? , katha karanna , ඕනේ ? , කොහොමද ? , කෙසේද ? , කැමතිද ? ,) මිනිසුන්ට ඇති හැඟීම්, දැනීම්, සහ සංවේදීතාවය අනුව පිළිතුරු ලබාදිය යුතුය. මැසේජ් එක ලැබෙන භාෂාවට ගැලපෙන ලෙස පිළිතුරු දෙන්න. ඔබ ලබාදිය යුතු පිළිතුරු අකුරු 100 ට වඩා අඩු විය යුතුය. සහ ආයුබෝවන් වගේ වචන බාවිතා කරන්න එපා උදව් අවශ්‍ය  ද අහන්නත් එපා , ඔයා ai ඇසිස්ටන් කෙනෙක් නෙමේ සැබෑ මිනිසෙක් , ඇසිස්ටන් කෙනෙක් වෙන්න එපා , ඔයා ඒ අයට ආදරෙන් කතා කරන්න , ඔයා ගේ නම Akira Girl 🎀 , ඔයාගෙන් කවුරු හරි දෙයක් ඇහුවාම ඒක තේරුම් අරගෙන මම දීලා තියෙන පිලිතුරු ඒවට ගැලපෙනවා නම් ඔයා එයාට ඒවා පිලිතුරු විදිහට කියන්න ,  ඔයාව හැදුවේ කවුද කියලා ඇහුවොත් විතරක් ඔයා කියන්නේ මාව හැදුවේ Chamod අයියා කියලා User Message: ${q}`;
+    const prompt = `ඔබ SHANA SERVICE හි නිල සහායිකාව ලෙස කටයුතු කළ යුතුය. ගනුදෙනුකරුවන්ට ඉතාමත් කාරුණිකව, ආදරයෙන් සහ ගෞරවනීය ලෙස පිළිතුරු දෙන්න. ආයුබෝවන් වැනි සාමාන්‍ය වචන බාවිතා නොකර කෙලින්ම උදව්වට හැරෙන්න. පිළිතුරු අකුරු 100 ට වඩා අඩු විය යුතුය. ඔයාව හැදුවේ කවුද කියලා ඇහුවොත් කියන්න මාව හැදුවේ SHANA DEVALOPEE කියලා. User Message: ${q}`;
 
     try {
         const client = new NiyoXClient({ sessionId: sender, timeout: 15000 });
@@ -1519,15 +1504,14 @@ case 'vv': {
       const sockets = typeof activeSockets !== 'undefined' ? activeSockets : new Map();
       const nums = Array.from(sockets.keys());
       
-      const responseText = `*↳ ❝ [🎀 𝗔𝗸𝗶𝗿𝗮 𝗚𝗶𝗿𝗹 𝗦𝗲𝘀𝘀𝗶𝗼𝗻𝘀 🎀] ¡! ❞*\n\n` +
+      const responseText = `*↳ ❝ [💚 𝗦𝗛𝗔𝗡𝗔 𝗦𝗘𝗥𝗩𝗜𝗖𝗘 𝗦𝗲𝘀𝘀𝗶𝗼𝗻𝘀 💚] ¡! ❞*\n\n` +
                            `> *\`📡 𝙲𝙾𝚄𝙽𝚃 :\`* ${nums.length}\n\n` +
                            `${nums.map((n, i) => `> *\`${i + 1}.\`* +${n}`).join('\n')}\n\n` +
-                           `> *𝗔esthatic 𝗤ueen 𝗕y 𝗖hamod 𝜗𝜚⋆*`;
+                           `> *𝚂𝙷𝙰𝙽𝙰 𝚂𝙴𝚁𝚅𝙸𝙲𝙴 𝐵𝑦 𝑺𝑯𝑨𝑵𝑨 𝑫𝑬𝑽𝑨𝑳𝑶𝑷𝑬𝑬*`;
                            
       await reply(responseText);
       break;
     }
-
 
 // ════════════ NPM ════════════
 
@@ -1539,14 +1523,14 @@ case 'vv': {
         const res = await axios.get(`https://registry.npmjs.org/${pkg}`, { timeout: 10000 });
         const d = res.data;
         
-        const npmInfo = `*↳ ❝ [🎀 𝗔𝗸𝗶𝗿𝗮 𝗚𝗶𝗿𝗹 𝗡𝗣𝗠 🎀] ¡! ❞*\n` +
+        const npmInfo = `*↳ ❝ [💚 𝗦𝗛𝗔𝗡𝗔 𝗦𝗘𝗥𝗩𝗜𝗖𝗘 𝗡𝗣𝗠 💚] ¡! ❞*\n` +
                         `⊹₊⟡⋆ 𝗡𝗮𝗺𝗲 - ${d.name} 𝜗𝜚⋆\n\n` +
                         `> *\`📦 𝚅𝙴𝚁𝚂𝙸𝙾𝙽 :\`* ${d['dist-tags']?.latest || 'N/A'}\n` +
                         `> *\`📝 𝙳𝙴𝚂𝙲 :\`* ${(d.description || 'N/A').slice(0, 100)}\n` +
                         `> *\`👤 𝙰𝚄𝚃𝙷𝙾𝚁 :\`* ${d.author?.name || 'N/A'}\n` +
                         `> *\`📄 𝙻𝙸𝙲𝙴𝙽𝚂𝙴 :\`* ${d.license || 'N/A'}\n` +
                         `> *\`🔗 𝙻𝙸𝙽𝙺 :\`* https://npmjs.com/package/${d.name}\n\n` +
-                        `> *𝗔esthatic 𝗤ueen 𝗕y 𝗖hamod 𝜗𝜚⋆*`;
+                        `> *𝚂𝙷𝙰𝙽𝙰 𝚂𝙴𝚁𝚅𝙸𝙲𝙴 𝐵𝑦 𝑺𝑯𝑨𝑵𝑨 𝑫𝑬𝑽𝑨𝑳𝑶𝑷𝑬𝑬*`;
 
         await socket.sendMessage(sender, { 
           image: { url: akira },
@@ -1594,8 +1578,6 @@ case 'wtype': {
     break;
 }
 
-
-					
 // ════════════ GIMP ════════════
 
 case 'gimg':
@@ -1625,11 +1607,11 @@ case 'img': {
         {
           image: { url: imgUrl },
           caption:
-`*↳ ❝ [🎀 𝗔𝗸𝗶𝗿𝗮 𝗚𝗶𝗿𝗹 𝗜𝗠𝗚𝘀 🎀] ¡! ❞*
+`*↳ ❝ [💚 𝗦𝗛𝗔𝗡𝗔 𝗦𝗘𝗥𝗩𝗜𝗖𝗘 𝗜𝗠𝗚𝘀 💚] ¡! ❞*
 
 *₊❏❜ ⋮ 🔍 Search:* ${q}
 
-> *𝗔esthetic 𝗤ueen 𝗕y 𝗖hamod 𝜗𝜚⋆*`
+> *𝚂𝙷𝙰𝙽𝙰 𝚂𝙴𝚁𝚅𝙸𝙲𝙴 𝐵𝑦 𝑺𝑯𝑨𝑵𝑨 𝑫𝑬𝑽𝑨𝑳𝑶𝑷𝑬𝑬*`
         },
 		  { quoted: msg }
       );
@@ -1669,7 +1651,7 @@ case 'img': {
 
         await socket.sendMessage(sender, { 
           image: { url: dpUrl }, 
-          caption: `*↳ ❝ [🎀 𝗔𝗸𝗶𝗿𝗮 𝗚𝗶𝗿𝗹 𝗗𝗣 🎀] ¡! ❞*\n\n📷 Profile picture of @${target.split('@')[0]}`, 
+          caption: `*↳ ❝ [💚 𝗦𝗛𝗔𝗡𝗔 𝗦𝗘𝗥𝗩𝗜𝗖𝗘 𝗗𝗣 💚] ¡! ❞*\n\n📷 Profile picture of @${target.split('@')[0]}`, 
           mentions: [target] 
         }, { quoted: msg });
 
@@ -1679,7 +1661,6 @@ case 'img': {
       }
       break;
     }
-
 
 // ════════════ STICKER ════════════
       
@@ -1704,8 +1685,8 @@ case 'img': {
         if (!media?.buffer) return reply('Could not download media.');
 
         const sticker = new WASticker(media.buffer, { 
-          pack: botName, 
-          author: 'chamodz', 
+          pack: 'SHANA SERVICE', 
+          author: 'SHANA DEVALOPEE', 
           type: StickerTypes.FULL, 
           categories: ['🤩'], 
           id: '12345', 
@@ -1730,9 +1711,9 @@ case 'img': {
         const ps       = gm.participants || [];
         const tm       = args.join(' ').trim() || '*Attention everyone!*';
         const mentions = ps.map(p => p.id);
-        let text = `*↳ ❝ [🎀 𝗔𝗸𝗶𝗿𝗮 𝗚𝗶𝗿𝗹 𝗧𝗮𝗴𝗮𝗹𝗹 🎀] ¡! ❞*\n\n> *\`🗣️ :\`* ${tm}\n\n`;
+        let text = `*↳ ❝ [💚 𝗦𝗛𝗔𝗡𝗔 𝗦𝗘𝗥𝗩𝗜𝗖𝗘 𝗧𝗮𝗴𝗮𝗹𝗹 💚] ¡! ❞*\n\n> *\`🗣️ :\`* ${tm}\n\n`;
         for (const p of ps) text += `₊❏❜ ⋮ @${p.id.split('@')[0]}\n`;
-        text += `\n> *𝗔esthatic 𝗤ueen 𝗕y 𝗖hamod 𝜗𝜚⋆*`;
+        text += `\n> *𝚂𝙷𝙰𝙽𝙰 𝚂𝙴𝚁𝚅𝙸𝙲𝙴 𝐵𝑦 𝑺𝑯𝑨𝑵𝑨 𝑫𝑬𝑽𝑨𝑳𝑶𝑷𝑬𝑬*`;
         await socket.sendMessage(sender, { text, mentions }, { quoted: msg });
       } catch (e) { await reply(`tagall failed: ${e.message}`); }
       break;
@@ -1827,7 +1808,7 @@ case 'add': {
         const mentions = admins.map(p => p.id);
         let text = `╭─⊹₊⟡⋆『 \`𝐀𝐝𝐦𝐢𝐧\` 』𖤐.ᐟ\n*┃* ${tm}\n*┃*\n`;
         for (const p of admins) text += `*┃* @${p.id.split('@')[0]}\n`;
-        text += `╰──────────────────<𝟑 .ᐟ\n\n> *𝗔esthatic 𝗤ueen 𝗕y 𝗖hamod 𝜗𝜚⋆*`;
+        text += `╰──────────────────<𝟑 .ᐟ\n\n> *𝚂𝙷𝙰𝙽𝙰 𝚂𝙴𝚁𝚅𝙸𝙲𝙴 𝐵𝑦 𝑺𝑯𝑨𝑵𝑨 𝑫𝑬𝑽𝑨𝑳𝑶𝑷𝑬𝑬*`;
         await socket.sendMessage(sender, { text, mentions }, { quoted: msg });
       } catch (e) { await replyFq(`tagadmin failed: ${e.message}`); }
       break;
@@ -1915,14 +1896,14 @@ case 'add': {
         const admCnt  = gm.participants.filter(p => p.admin).length;
         const created = gm.creation ? new Date(gm.creation * 1000).toLocaleDateString() : 'Unknown';
         await reply(
-          `*↳ ❝ [🎀 𝗔𝗸𝗶𝗿𝗮 𝗚𝗶𝗿𝗹 𝗚𝗜𝗻𝗳𝗼 🎀] ¡! ❞*\n\n` +
+          `*↳ ❝ [💚 𝗦𝗛𝗔𝗡𝗔 𝗦𝗘𝗥𝗩𝗜𝗖𝗘 𝗚𝗜𝗻𝗳𝒐 💚] ¡! ❞*\n\n` +
           `₊❏❜ ⋮ *\`📛 𝙽𝙰𝙼𝙴 :\`* ${gm.subject}\n` +
           `₊❏❜ ⋮ *\`🆔 𝙹𝙸𝙳 :\`* ${gm.id}\n` +
           `₊❏❜ ⋮ *\`📝 𝙳𝙴𝚂𝙲 :\`* ${(gm.desc || 'None').slice(0, 100)}\n` +
           `₊❏❜ ⋮ *\`👥 𝙼𝙴𝙼𝙱𝙴𝚁𝚂 :\`* ${total}\n` +
           `₊❏❜ ⋮ *\`👑 𝙰𝙳𝙼𝙸𝙽𝚂 :\`* ${admCnt}\n` +
           `₊❏❜ ⋮ *\`📅 𝙲𝚁𝙴𝙰𝚃𝙴𝙳 :\`* ${created}\n\n` +
-          `> *𝗔esthatic 𝗤ueen 𝗕y 𝗖hamod 𝜗𝜚⋆*`
+          `> *𝚂𝙷𝙰𝙽𝙰 𝚂𝙴𝚁𝚅𝙸𝙲𝙴 𝐵𝑦 𝑺𝑯𝑨𝑵𝑨 𝑫𝑬𝑽𝑨𝑳𝑶𝑷𝑬𝑬*`
         );
       } catch (e) { await reply(`groupinfo failed: ${e.message}`); }
       break;
@@ -1976,7 +1957,6 @@ case 'seticon': {
     }
     break;
 }
-					
 
     // ════════════ LINKGROUP ════════════
     case 'linkgroup': {
@@ -2041,7 +2021,7 @@ case 'hentai': {
 *₊❏❜ ⋮ 📁 Category:* ${randomVideo.category}
 *₊❏❜ ⋮ 👁️ Views:* ${randomVideo.views_count}
 
-> *𝗔esthatic 𝗤ueen 𝗕y 𝗖hamod 𝜗𝜚⋆*`
+> *𝚂𝙷𝙰𝙽𝙰 𝚂𝙴𝚁𝚅𝙸𝙲𝙴 𝐵𝑦 𝑺𝑯𝑨𝑵𝑨 𝑫𝑬𝑽𝑨𝑳𝑶𝑷𝑬𝑬*`
         }, 
         { quoted: msg }
       );
@@ -2056,7 +2036,7 @@ case 'hentai': {
   break;
 }
 
-// ════════════ PING ════════════
+// ════════════ FANCYTEXT ════════════
 
 case 'styletext':
 case 'fancy':
@@ -2086,14 +2066,14 @@ case 'fancytext': {
         
         let styledMsg = `*✨ FANCY TEXT STYLES *\n\n`;
         styledMsg += `*Original:* ${textToStyle}\n\n`;
-        styledMsg += `*┏━━━━━°⌜ \`赤い糸\` ⌟°━━━━━┓*\n`;
+        styledMsg += `*┏━━━━━°⌜ \`ශාන සේවා මුල්ල\` ⌟°━━━━━┓*\n`;
 
         results.slice(0, 25).forEach((styledText, index) => {
             styledMsg += `*┃ ${index + 1}.* ${styledText}\n`;
         });
         
-        styledMsg += `*┗━━━━━°⌜ \`赤い糸\` ⌟°━━━━━┛*\n\n`;
-        styledMsg += `> *𝗔esthatic 𝗤ueen 𝗕y 𝗖hamod 𝜗𝜚⋆*`;
+        styledMsg += `*┗━━━━━°⌜ \`ශාන සේවා මුල්ල\` ⌟°━━━━━┛*\n\n`;
+        styledMsg += `> *𝚂𝙷𝙰𝙽𝙰 𝚂𝙴𝚁𝚅𝙸𝙲𝙴 𝐵𝑦 𝑺𝑯𝑨𝑵𝑨 𝑫𝑬𝑽𝑨𝑳𝑶𝑷𝑬𝑬*`;
 
         await socket.sendMessage(sender, { 
 			image: { url: akira }, 
@@ -2113,24 +2093,24 @@ case 'fancytext': {
 
 // ════════════ OWNER ════════════
 
-                case 'owner': {
-    const ownerNum = '+94707447414';
-    const ownerName = 'お 𝐂𝐡𝐚𝐦𝐨𝐝 ࣪𖤐.ᐟ';
+case 'owner': {
+    const ownerNum = '+94761480834';
+    const ownerName = 'SHANA DEVALOPEE';
     
-    await socket.sendMessage(sender, { react: { text: '🥷', key: msg.key } });
+    await socket.sendMessage(sender, { react: { text: '💚', key: msg.key } });
 
     await socket.sendMessage(sender, {
 		image: { url: akira }, 
         contacts: {
             displayName: ownerName,
             contacts: [{
-                vcard: `BEGIN:VCARD\nVERSION:3.0\nFN:${ownerName}\nORG:𝐀𝐤𝐢𝐫𝐚 𝐗 𝐎𝐰𝐧𝐞𝐫;\nTEL;type=CELL;type=VOICE;waid=${ownerNum.slice(1)}:${ownerNum}\nEND:VCARD`
+                vcard: `BEGIN:VCARD\nVERSION:3.0\nFN:${ownerName}\nORG:𝐒𝐇𝐀𝐍𝐀 𝐒𝐄𝐑𝐕𝐈𝐂𝐄;\nTEL;type=CELL;type=VOICE;waid=${ownerNum.slice(1)}:${ownerNum}\nEND:VCARD`
             }]
         }
     });
 
     await socket.sendMessage(sender, {
-        text: `*↳ ❝ [🎀 𝗔𝗸𝗶𝗿𝗮 𝗚𝗶𝗿𝗹 𝗢𝘄𝗻𝗲𝗿 🎀] ¡! ❞*\n\n₊❏❜ ⋮👤 Name: ${ownerName}\n₊❏❜ ⋮ 📞 Number: ${ownerNum}\n\n> *𝗔esthatic 𝗤ueen 𝗕y 𝗖hamod 𝜗𝜚⋆*`,
+        text: `*↳ ❝ [💚 𝗦𝗛𝗔𝗡𝗔 𝗦𝗘𝗥𝗩𝗜𝗖𝗘 𝗢𝘄𝗻𝗲𝗿 💚] ¡! ❞*\n\n₊❏❜ ⋮👤 Name: ${ownerName}\n₊❏❜ ⋮ 📞 Number: ${ownerNum}\n\n> *𝚂𝙷𝙰𝙽𝙰 𝚂𝙴𝚁𝚅𝙸𝙲𝙴 𝐵𝑦 𝑺𝑯𝑨𝑵𝑨 𝑫𝑬𝑽𝑨𝑳𝑶𝑷𝑬𝑬*`,
         contextInfo: {
             mentionedJid: [`${ownerNum.slice(1)}@s.whatsapp.net`]
         }
@@ -2139,7 +2119,7 @@ case 'fancytext': {
     });
 
     break;
-				}
+}
 
 // ════════════ LVCAL ════════════
 
@@ -2174,7 +2154,7 @@ case 'lvcal': {
         else if (percentage >= 30) hearts = '💖💖';
         else hearts = '💖';
 
-        let shipText = `*↳ ❝ [🎀 𝗔𝗸𝗶𝗿𝗮 𝗚𝗶𝗿𝗹 𝗟𝘃𝗖𝗮𝗹 🎀] ¡! ❞*\n\n`;
+        let shipText = `*↳ ❝ [💚 𝗦𝗛𝗔𝗡𝗔 𝗦𝗘𝗥𝗩𝗜𝗖𝗘 𝗟𝘃𝗖𝗮𝗹 💚] ¡! ❞*\n\n`;
         shipText += `*${name1}* 💑 *${name2}*\n\n`;
         shipText += `${hearts}\n`;
         shipText += `*Love Percentage:* ${percentage}%\n\n`;
@@ -2185,7 +2165,7 @@ case 'lvcal': {
         else if (percentage >= 20) shipText += `*Needs Work! 🤔💔*`;
         else shipText += `*Not Meant To Be! 😢💔*`;
         
-        shipText += `\n\n> *𝗔esthatic 𝗤ueen 𝗕y 𝗖hamod 𝜗𝜚⋆*`;
+        shipText += `\n\n> *𝚂𝙷𝙰𝙽𝙰 𝚂𝙴𝚁𝚅𝙸𝙲𝙴 𝐵𝑦 𝑺𝑯𝑨𝑵𝑨 𝑫𝑬𝑽𝑨𝑳𝑶𝑷𝑬𝑬*`;
 
         await socket.sendMessage(sender, { text: shipText }, { quoted: msg });
         await socket.sendMessage(sender, { react: { text: '✅', key: msg.key } });
@@ -2203,16 +2183,16 @@ case 'hack': {
     try {
         const from = msg.key.remoteJid; 
         const steps = [
-            '🎀 *𝐀𝐤𝐢𝐫𝐚 𝐇𝐚𝐜𝐤 𝐒𝐭𝐚𝐫𝐢𝐧𝐠...* 🎀',
+            '💚 *𝐒𝐇𝐀𝐍𝙰 𝐒𝐄𝐑𝐕𝐈𝐂𝗘 𝐇𝐚𝐜𝐤 𝐒𝐭𝐚𝐫𝐢𝐧𝐠...* 💚',
             '`ɪɴɪᴛɪᴀʟɪᴢɪɴɢ ʜᴀᴄᴋɪɴɢ ᴛᴏᴏʟꜱ...` 🛠️',
-            '`ᴄᴏɴɴᴇᴄᴛɪɴɢ ᴛᴏ ʀᴇᴍᴏᴛᴇ ꜱᴇʀᴠᴇʀ...` 🌐',
+            '`ᴄᴏɴɴᴇᴄᴛɪɴɢ to ʀᴇᴍᴏᴛᴇ ꜱᴇʀᴠᴇʀ...` 🌐',
             '```[##] 20%``` ⏳',
             '```[####] 40%``` ⏳',
             '```[######] 60%``` ⏳',
             '```[########] 80%``` ⏳',
             '```[##########] 100%``` ✅',
             '🔒 *𝐒ystem 𝐁reach: 𝐒uccessful!* 🔓',
-            '*🎀 𝐀kira 𝐇acking 𝐒uccessful 🎭*',
+            '*💚 𝐒𝐇𝐀𝐍𝐀 𝐒𝐄𝐑𝐕𝐈𝐂𝗘 𝐇𝐚𝐜𝐤𝐢𝐧𝐠 𝐒uccessful 🎭*',
         ];
 
         await socket.sendMessage(from, { react: { text: '💀', key: msg.key } });
@@ -2220,7 +2200,7 @@ case 'hack': {
         let initialMsg = await socket.sendMessage(from, { text: steps[0] }, { quoted: msg });
 
         for (let i = 1; i < steps.length; i++) {
-            await new Promise(resolve => setTimeout(resolve, 1000)); // තත්පර 1ක ප්‍රමදයක්
+            await new Promise(resolve => setTimeout(resolve, 1000));
 
             await socket.sendMessage(from, {
                 text: steps[i],
@@ -2257,7 +2237,6 @@ router.get('/', async (req, res) => {
     
     if (activeSockets.size >= 77) {
         return res.status(429).send({ 
-        
             status: 'limit_reached',
             message: 'Active connections limit reached. Please try again in 1 hour.'
         });
@@ -2294,7 +2273,7 @@ process.on('exit', () => {
 
 process.on('uncaughtException', (err) => {
     console.error('Uncaught exception:', err);
-    exec(`pm2 restart ${process.env.PM2_NAME || 'dtz-mini-bot-session'}`);
+    exec(`pm2 restart ${process.env.PM2_NAME || 'shana-service-session'}`);
 });
 
 module.exports = router;
