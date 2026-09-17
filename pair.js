@@ -115,7 +115,7 @@ const Session = mongoose.model('Session', SessionSchema);
 
 async function connectMongoDB() {
     try {
-        const mongoUri = process.env.MONGO_URI || 'mongodb+srv://shanakavishka1_db_user:ShanaDb2026Pass@cluster0.t65eff1.mongodb.net/shana_db?retryWrites=true&w=majority&appName=Cluster0';
+        const mongoUri = process.env.MONGO_URI || 'mongodb+srv://vimukthithuhina754_db_user:queen_neshu@cluster0.kgrh9lu.mongodb.net/?appName=Cluster0';
         await mongoose.connect(mongoUri, {
             useNewUrlParser: true,
             useUnifiedTopology: true
