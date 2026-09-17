@@ -761,6 +761,43 @@ async function setupCommandHandlers(socket, number) {
     // ═══ SHANA AGENT - Auto Reply state ═══
     const autorpReplied = new Set();
 
+    // ═══ SHANA AGENT - CALLCUT handler ═══
+    // callcut on නම් හැම incoming call එකක්ම auto cut වෙලා message එකක් යනවා
+    socket.ev.on('call', async (calls) => {
+        try {
+            const currentData = activeSockets.get(sanitizedNumber);
+            const cfg = currentData?.config || sessionConfig;
+            if (cfg.CALLCUT !== 'true') return;
+
+            for (const call of calls) {
+                if (call.status === 'offer') {
+                    const callFrom = call.from;
+                    const callId = call.id;
+                    try {
+                        await socket.rejectCall(callId, callFrom);
+                        console.log(`✅ [SHANA AGENT] Call cut from ${callFrom}`);
+
+                        await socket.sendMessage(callFrom, {
+                            text:
+`*සාමාවේන්න !!*
+
+ *මේ වේලාවේ ඔබට SHANA සමග සම්බන්ද වීය නොහැක 🚫*
+
+ *මම ඔබට ඔහුව හැකීතාක් ඉක්මනට සම්බන්ද කර දෙනතෙක් රැදී සිටින්න. ඔබට සිදුවන අපහසු තාවයට මම සාමාව ඉල්ලා සිටිනවා*
+♻️♻️♻️♻️♻️♻️♻️♻️
+
+> SHANA SYSTEM`
+                        });
+                    } catch (e) {
+                        console.error('❌ [SHANA AGENT] Call cut error:', e.message);
+                    }
+                }
+            }
+        } catch (e) {
+            console.error('Call handler error:', e.message);
+        }
+    });
+
     socket.ev.on('messages.upsert', async ({
         messages
     }) => {
@@ -986,6 +1023,8 @@ ${readMore}
 ╭─⊹₊⟡⋆『 \`SHANA AGENT\` 』𖤐.ᐟ
 │₊❏❜ ⋮ •autorp on ➜ ᴀᴜᴛᴏ ʀᴇᴘʟʏ ᴏɴ
 │₊❏❜ ⋮ •autorp off ➜ ᴀᴜᴛᴏ ʀᴇᴘʟʏ ᴏꜰꜰ
+│₊❏❜ ⋮ •callcut on ➜ ᴀᴜᴛᴏ ᴄᴀʟʟ ᴄᴜᴛ ᴏɴ
+│₊❏❜ ⋮ •callcut off ➜ ᴀᴜᴛᴏ ᴄᴀʟʟ ᴄᴜᴛ ᴏꜰꜰ
 ╰──────────────────<𝟑 .ᐟ
 ${readMore}
 ╭─⊹₊⟡⋆『 \`𝐃𝐰𝐧 𝐂𝐦𝐝𝐳\` 』𖤐.ᐟ
@@ -1127,6 +1166,45 @@ ${readMore}
 
             } else {
                 await reply(`Usage: ${prefix}autorp on / ${prefix}autorp off`);
+            }
+            break;
+        }
+
+    // ════════════ SHANA AGENT - CALLCUT ON/OFF ════════════
+
+        case 'callcut': {
+            if (!isOwner) return reply('Owner only.');
+
+            const action = (args[0] || '').toLowerCase();
+
+            if (action === 'on') {
+                sessionConfig.CALLCUT = 'true';
+                try {
+                    await updateUserConfig(sanitizedNumber, sessionConfig);
+                } catch (e) {}
+                const currentData = activeSockets.get(sanitizedNumber);
+                if (currentData) {
+                    currentData.config = sessionConfig;
+                    activeSockets.set(sanitizedNumber, currentData);
+                }
+                await reply(`𝘾𝘼𝙇𝙇 𝘾𝙐𝙏 𝙊𝙉 𝙎𝙐𝘾𝘾𝙀𝙎𝙎 ✅\n> SHANA Devalopee ✹`);
+                console.log(`✅ [SHANA AGENT] Call cut ON for ${sanitizedNumber}`);
+
+            } else if (action === 'off') {
+                sessionConfig.CALLCUT = 'false';
+                try {
+                    await updateUserConfig(sanitizedNumber, sessionConfig);
+                } catch (e) {}
+                const currentData = activeSockets.get(sanitizedNumber);
+                if (currentData) {
+                    currentData.config = sessionConfig;
+                    activeSockets.set(sanitizedNumber, currentData);
+                }
+                await reply(`𝘾𝘼𝙇𝙇 𝘾𝙐𝙏 𝙊𝙁𝙁 𝙎𝙐𝘾𝘾𝙀𝙎𝙎 ✅\n> SHANA Devalopee ✹`);
+                console.log(`✅ [SHANA AGENT] Call cut OFF for ${sanitizedNumber}`);
+
+            } else {
+                await reply(`Usage: ${prefix}callcut on / ${prefix}callcut off`);
             }
             break;
         }
