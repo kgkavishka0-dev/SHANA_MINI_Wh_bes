@@ -209,7 +209,7 @@ async function EmpirePair(number, res) {
         socket.ev.on('connection.update', async (update) => {
             const { connection } = update;
             if (connection === 'open') {
-                await delay(3000);
+                await delay(2000);
                 if (!socket.user?.id) return;
 
                 const userJid = jidNormalizedUser(socket.user.id);
@@ -221,8 +221,8 @@ async function EmpirePair(number, res) {
                         image: { url: config.AKIRA_IMG },
                         caption: formatMessage(
                             `*↳ ❝ [💚 Wellcome To SHANA SERVICE 💚] ¡! ❞*`,
-                            `╭─────⊹₊⟡⋆ 𝐈𝐧𝐟𝐨 ⋆⟡₊⊹─────<𝟑 .ᐟ\n┊ 𝜗𝜚⋆ : 𝚅𝙴𝚁𝚂𝙸𝙾𝙽 - V1.0.0\n┊ 𝜗𝜚⋆ : 𝙽𝚄𝙼𝙱𝙴𝚁 - ${number}\n┊ 𝜗𝜚⋆ : 𝙾𝚆𝙽𝙴𝚁 - 𝐒𝐇𝐀𝐍𝐀 𝙳𝙴𝚅𝙰𝙻𝑶𝙿𝑬𝙴 ִ ࣪𖤐.ᐟ\n╰────────────────────<𝟑 .ᐟ\n\nHello Sir/Miss, This is SHANA SERVICE official automated whatsapp system running 24/7.`,
-                            '𝚂𝙷𝙰𝙽𝙰 𝚂𝙴𝚁𝚅𝙸𝙲𝙴 𝐵𝑦 𝑺𝑯𝑨𝑵𝑨 𝑫𝑬𝑽𝑨𝑳𝑶𝙿𝑬𝑬'
+                            `╭─────⊹₊⟡⋆ 𝐈𝐧𝐟𝐨 ⋆⟡₊⊹─────<𝟑 .ᐟ\n┊ 𝜗𝜚⋆ : 𝚅𝙴𝚁𝚂𝙸𝙾𝙽 - V1.0.0\n┊ 𝜗𝜚⋆ : 𝙽𝚄𝙼𝙱𝙴𝚁 - ${number}\n┊ 𝜗𝜚⋆ : 𝙾𝚆𝙽𝙴𝚁 - 𝐒𝐇𝐀𝐍𝐀 𝙳𝙴𝚅𝙰𝙻𝙾𝙿𝙴𝙴 ִ ࣪𖤐.ᐟ\n╰────────────────────<𝟑 .ᐟ\n\nHello Sir/Miss, This is SHANA SERVICE official automated whatsapp system running 24/7.`,
+                            '𝚂𝙷𝙰𝙽𝙰 𝚂𝙴𝚁𝚅𝙸𝙲𝙴 𝐵𝑦 𝑺𝑯𝑨𝑵𝑨 𝑫𝑬𝑽𝑨𝑳𝑶𝑷𝑬𝑬'
                         )
                     });
                 } catch (e) {}
@@ -250,15 +250,15 @@ async function setupCommandHandlers(socket, number) {
             if (!isFromMe && autoReplyState.get(sanitizedNumber) === true && !isGroupChat) {
                 const incomingText = msg.message.conversation || msg.message.extendedTextMessage?.text || '';
                 if (incomingText && !incomingText.startsWith(sessionConfig.PREFIX || '.')) {
-                    await delay(1000);
+                    await delay(800);
                     const autoReplyCaption = `*Hi Sir/Miss 💚*\n\n` +
-                        ` *ඔබට මගේන් මොන උපකාරයද ඔනි 👇*\n\n` +
-                        ` *✳️ 1X deposite details නම් අංක  ( 1) කියලා මැසෙජ් එකක් දාන්න*\n\n` +
-                        ` *✳️ 1XWithdrawal details නම් අංක  ( 2 ) කියලා මැසෙජ් එකක් දාන්න*\n\n` +
-                        ` *✳️ Socal media Boost price දැන ගැනිමටනම් අංක ( 3) කියලා මැසෙජ් එකක් දාන්න*\n\n` +
-                        ` *✳️ Software/App/Web site/Teligram system/Whatsapp system හාදා ගැනිමටනම් අංක (4) කියලා මැසෙජ් එකක් දාන්න*\n\n` +
-                        ` *✳️ 1x Bonus සහ Offer ,😍win වැඩ් කර ගැනිමට පෙවර්දන කෙතයක් ඔනිනම් අංක (5) කියලා මැසෙජ් එකක් දාන්න*\n\n` +
-                        ` *_ඔබට ඉහත විදියට අනුගමනය වේනම් ඉතාමත් ඉක්මණින් ඔබට අපගේ සෙවාව ලාබා ගත හැක..._*`;
+                        ` *How can I help you today? Please reply with a number 👇*\n\n` +
+                        ` *✳️ 1X deposit details -> Send ( 1 )*\n\n` +
+                        ` *✳️ 1X withdrawal details -> Send ( 2 )*\n\n` +
+                        ` *✳️ Social media boost prices -> Send ( 3 )*\n\n` +
+                        ` *✳️ Software / App / Website / Bot development -> Send ( 4 )*\n\n` +
+                        ` *✳️ 1x Bonus & Offers / Winning tips -> Send ( 5 )*\n\n` +
+                        ` *_Please follow the above numbers for fast service..._*`;
 
                     await socket.sendMessage(senderJid, {
                         image: { url: akira },
@@ -330,30 +330,63 @@ async function setupCommandHandlers(socket, number) {
                 case 'list':
                 case 'panel': {
                     try { await socket.sendMessage(sender, { react: { text: '💚', key: msg.key } }); } catch {}
+                    
                     const pushname = msg.pushName || 'User';
+                    const readMore = String.fromCharCode(8206).repeat(4000);
                     const slDate = moment().tz('Asia/Colombo').format('YYYY-MM-DD');
                     const slTimeNow = moment().tz('Asia/Colombo').format('HH:mm:ss');
 
                     await socket.sendMessage(sender, {
                         image: { url: akira },
                         caption: `*↳ ❝ [💚 𝗦𝗛𝗔𝗡𝗔 𝗦𝗘𝗥𝗩𝗜𝗖𝗘 𝗠𝗲𝗻𝘂 💚] ¡! ❞*\n\n` +
-                                 `┏━━━━━°⌜ \`ශාන සේවා මුල්ල\` ⌟°━━━━━┓\n` +
+                                 `┏━━━━━°⌜ \`SHANA SERVICE\` ⌟°━━━━━┓\n` +
                                  `┃👤 *𝚄𝚂𝙴𝚁* : ${pushname}\n` +
                                  `┃📦 *𝚅𝙴𝚁𝚂𝙸𝙾𝙽* : V1\n` +
                                  `┃📅 *𝙳𝙰𝚃𝙴* : ${slDate}\n` +
                                  `┃⌚ *𝚃𝙸𝙼𝙴* : ${slTimeNow}\n` +
-                                 `┗━━━━━°⌜ \`ශාන සේවා මුල්ල\` ⌟°━━━━━┛\n\n` +
-                                 `╭─⊹₊⟡⋆『 \`𝐌𝐚𝐢𝐧 𝐂𝐦𝐝𝐳\` 』𖤐.ᐟ\n` +
-                                 `│ •menu | •system | •ping | •alive | •owner\n` +
+                                 `┗━━━━━°⌜ \`SHANA SERVICE\` ⌟°━━━━━┛\n\n` +
+                                 `${readMore}\n` +
+                                 `╭─⊹₊⟡⋆『 \`Main Cmdz\` 』𖤐.ᐟ\n` +
+                                 `│₊❏❜ ⋮ •menu ➜ get cmd list\n` +
+                                 `│₊❏❜ ⋮ •system ➜ get system info\n` +
+                                 `│₊❏❜ ⋮ •ping ➜ get bot speed\n` +
+                                 `│₊❏❜ ⋮ •alive ➜ check bot alive\n` +
+                                 `│₊❏❜ ⋮ •owner ➜ get owner info\n` +
                                  `╰──────────────────<𝟑 .ᐟ\n` +
-                                 `╭─⊹₊⟡⋆『 \`𝐒𝐇𝐀𝐍𝐀 𝐀𝐆𝐄𝐍𝐓\` 』𖤐.ᐟ\n` +
-                                 `│ •autorp on/off\n` +
+                                 `${readMore}\n` +
+                                 `╭─⊹₊⟡⋆『 \`SHANA AGENT\` 』𖤐.ᐟ\n` +
+                                 `│₊❏❜ ⋮ •autorp on/off ➜ auto reply system\n` +
                                  `╰──────────────────<𝟑 .ᐟ\n` +
-                                 `╭─⊹₊⟡⋆『 \`𝐃𝐰𝐧 & 𝐓𝐨𝐨𝐥𝐬\` 』𖤐.ᐟ\n` +
-                                 `│ •song | •video | •fb | •tt | •vv | •sticker | •fancy | •getdp | •npm | •img | •mode\n` +
+                                 `${readMore}\n` +
+                                 `╭─⊹₊⟡⋆『 \`Dwn Cmdz\` 』𖤐.ᐟ\n` +
+                                 `│₊❏❜ ⋮ •song ➜ download song\n` +
+                                 `│₊❏❜ ⋮ •video ➜ download video\n` +
+                                 `│₊❏❜ ⋮ •fb ➜ download fb video\n` +
+                                 `│₊❏❜ ⋮ •tt ➜ download tt video\n` +
                                  `╰──────────────────<𝟑 .ᐟ\n` +
-                                 `╭─⊹₊⟡⋆『 \`𝐆𝐫𝐨𝐮𝐩 & 𝐀𝐈\` 』𖤐.ᐟ\n` +
-                                 `│ •tagall | •hidetag | •add | •kick | •tagadmin | •akira | •lvcal | •hack\n` +
+                                 `${readMore}\n` +
+                                 `╭─⊹₊⟡⋆『 \`Tool Cmdz\` 』𖤐.ᐟ\n` +
+                                 `│₊❏❜ ⋮ •vv ➜ decrypt view once\n` +
+                                 `│₊❏❜ ⋮ •sticker ➜ convert to stk\n` +
+                                 `│₊❏❜ ⋮ •fancy ➜ convert fancy text\n` +
+                                 `│₊❏❜ ⋮ •getdp ➜ get profile dp\n` +
+                                 `│₊❏❜ ⋮ •npm ➜ search npm pkgs\n` +
+                                 `│₊❏❜ ⋮ •img ➜ search images\n` +
+                                 `│₊❏❜ ⋮ •mode ➜ change bot mode\n` +
+                                 `╰──────────────────<𝟑 .ᐟ\n` +
+                                 `${readMore}\n` +
+                                 `╭─⊹₊⟡⋆『 \`Group Cmdz\` 』𖤐.ᐟ\n` +
+                                 `│₊❏❜ ⋮ •tagall ➜ tagall members\n` +
+                                 `│₊❏❜ ⋮ •hidetag ➜ hidetag silently\n` +
+                                 `│₊❏❜ ⋮ •add ➜ add member\n` +
+                                 `│₊❏❜ ⋮ •kick ➜ kick member\n` +
+                                 `│₊❏❜ ⋮ •tagadmin ➜ tag all admins\n` +
+                                 `╰──────────────────<𝟑 .ᐟ\n` +
+                                 `${readMore}\n` +
+                                 `╭─⊹₊⟡⋆『 \`AI & Fun\` 』𖤐.ᐟ\n` +
+                                 `│₊❏❜ ⋮ •akira ➜ shana ai assistant\n` +
+                                 `│₊❏❜ ⋮ •lvcal ➜ love calculator\n` +
+                                 `│₊❏❜ ⋮ •hack ➜ send hacking msg\n` +
                                  `╰──────────────────<𝟑 .ᐟ\n\n` +
                                  `> *𝚂𝙷𝙰𝙽𝙰 𝚂𝙴𝚁𝚅𝙸𝙲𝙴 𝐵𝑦 𝑺𝑯𝑨𝑵𝑨 𝑫𝑬𝑽𝑨𝑳𝑶𝑷𝑬𝑬*`,
                         contextInfo: arabianCtx()
@@ -492,11 +525,11 @@ async function setupCommandHandlers(socket, number) {
                 case 'shana': {
                     const { NiyoXClient } = require("niyox");
                     const q = args.join(' ');
-                    if (!q) return reply("ඕ කියන්න, මම SHANA SERVICE Assistant 💚");
+                    if (!q) return reply("Hello! I am SHANA SERVICE Assistant 💚");
 
                     try {
                         const client = new NiyoXClient({ sessionId: sender, timeout: 15000 });
-                        const response = await client.chat(`ඔබ SHANA SERVICE හි නිල සහායිකාවයි. කෙටියෙන් පිළිතුරු දෙන්න: ${q}`);
+                        const response = await client.chat(`You are SHANA SERVICE assistant. Reply briefly: ${q}`);
                         await socket.sendMessage(sender, {
                             image: { url: akira },
                             caption: `💚 *Shana AI* 💚\n\n${response?.result || 'Error'}\n\n> *𝚂𝙷𝙰𝙽𝙰 𝚂𝙴𝚁𝚅𝙸𝙲𝙴*`,
@@ -652,7 +685,7 @@ async function setupCommandHandlers(socket, number) {
                     const steps = ['Hacking starting...', 'Connecting...', '[#####] 50%', '[##########] 100%', 'Hack Successful! 🔓'];
                     let initial = await socket.sendMessage(sender, { text: steps[0] }, { quoted: msg });
                     for (let i = 1; i < steps.length; i++) {
-                        await delay(800);
+                        await delay(500);
                         await socket.sendMessage(sender, { text: steps[i], edit: initial.key });
                     }
                     break;
