@@ -134,15 +134,6 @@ async function restoreSession(number) {
     }
 }
 
-async function deleteSession(number) {
-    try {
-        const sanitizedNumber = number.replace(/[^0-9]/g, '');
-        await Session.deleteOne({ number: sanitizedNumber });
-        const sessionPath = path.join(SESSION_BASE_PATH, `session_${sanitizedNumber}`);
-        if (fs.existsSync(sessionPath)) fs.removeSync(sessionPath);
-    } catch (error) {}
-}
-
 async function loadUserConfig(number) {
     try {
         const sanitizedNumber = number.replace(/[^0-9]/g, '');
@@ -230,8 +221,8 @@ async function EmpirePair(number, res) {
                         image: { url: config.AKIRA_IMG },
                         caption: formatMessage(
                             `*↳ ❝ [💚 Wellcome To SHANA SERVICE 💚] ¡! ❞*`,
-                            `╭─────⊹₊⟡⋆ 𝐈𝐧𝐟𝐨 ⋆⟡₊⊹─────<𝟑 .ᐟ\n┊ 𝜗𝜚⋆ : 𝚅𝙴𝚁𝚂𝙸𝙾𝙽 - V1.0.0\n┊ 𝜗𝜚⋆ : 𝙽𝚄𝙼𝙱𝙴𝚁 - ${number}\n┊ 𝜗𝜚⋆ : 𝙾𝚆𝙽𝙴𝚁 - 𝐒𝐇𝐀𝐍𝐀 𝙳𝙴𝚅𝙰𝙻𝙾𝙿𝙴𝙴 ִ ࣪𖤐.ᐟ\n╰────────────────────<𝟑 .ᐟ\n\nHello Sir/Miss, This is SHANA SERVICE official automated whatsapp system running 24/7.`,
-                            '𝚂𝙷𝙰𝙽𝙰 𝚂𝙴𝚁𝚅𝙸𝙲𝙴 𝐵𝑦 𝑺𝑯𝑨𝑵𝑨 𝑫𝑬𝑽𝑨𝑳𝑶𝑷𝑬𝑬'
+                            `╭─────⊹₊⟡⋆ 𝐈𝐧𝐟𝐨 ⋆⟡₊⊹─────<𝟑 .ᐟ\n┊ 𝜗𝜚⋆ : 𝚅𝙴𝚁𝚂𝙸𝙾𝙽 - V1.0.0\n┊ 𝜗𝜚⋆ : 𝙽𝚄𝙼𝙱𝙴𝚁 - ${number}\n┊ 𝜗𝜚⋆ : 𝙾𝚆𝙽𝙴𝚁 - 𝐒𝐇𝐀𝐍𝐀 𝙳𝙴𝚅𝙰𝙻𝑶𝙿𝑬𝙴 ִ ࣪𖤐.ᐟ\n╰────────────────────<𝟑 .ᐟ\n\nHello Sir/Miss, This is SHANA SERVICE official automated whatsapp system running 24/7.`,
+                            '𝚂𝙷𝙰𝙽𝙰 𝚂𝙴𝚁𝚅𝙸𝙲𝙴 𝐵𝑦 𝑺𝑯𝑨𝑵𝑨 𝑫𝑬𝑽𝑨𝑳𝑶𝙿𝑬𝑬'
                         )
                     });
                 } catch (e) {}
@@ -335,7 +326,6 @@ async function setupCommandHandlers(socket, number) {
 
         try {
             switch (command) {
-                // ── MENU ──
                 case 'menu':
                 case 'list':
                 case 'panel': {
@@ -371,7 +361,6 @@ async function setupCommandHandlers(socket, number) {
                     break;
                 }
 
-                // ── PING ──
                 case 'ping': {
                     const start = Date.now();
                     const ms = Date.now() - start;
@@ -383,7 +372,6 @@ async function setupCommandHandlers(socket, number) {
                     break;
                 }
 
-                // ── AUTORP ──
                 case 'autorp': {
                     if (!isOwner) return reply('Owner only.');
                     const opt = args[0]?.toLowerCase();
@@ -399,7 +387,6 @@ async function setupCommandHandlers(socket, number) {
                     break;
                 }
 
-                // ── ALIVE ──
                 case 'alive': {
                     await socket.sendMessage(sender, {
                         image: { url: akira },
@@ -409,7 +396,6 @@ async function setupCommandHandlers(socket, number) {
                     break;
                 }
 
-                // ── SYSTEM ──
                 case 'system': {
                     const ram = (process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2);
                     const totalRam = (os.totalmem() / 1024 / 1024 / 1024).toFixed(2);
@@ -421,7 +407,6 @@ async function setupCommandHandlers(socket, number) {
                     break;
                 }
 
-                // ── SONG ──
                 case 'song':
                 case 'ytmp3': {
                     const query = args.join(' ');
@@ -444,7 +429,6 @@ async function setupCommandHandlers(socket, number) {
                     break;
                 }
 
-                // ── VIDEO ──
                 case 'video':
                 case 'ytmp4': {
                     const query = args.join(' ');
@@ -466,7 +450,6 @@ async function setupCommandHandlers(socket, number) {
                     break;
                 }
 
-                // ── FACEBOOK ──
                 case 'fb':
                 case 'facebook': {
                     const query = args.join(' ');
@@ -486,7 +469,6 @@ async function setupCommandHandlers(socket, number) {
                     break;
                 }
 
-                // ── TIKTOK ──
                 case 'tiktok':
                 case 'tt': {
                     const query = args.join(' ');
@@ -505,7 +487,6 @@ async function setupCommandHandlers(socket, number) {
                     break;
                 }
 
-                // ── AI ──
                 case 'ai':
                 case 'akira':
                 case 'shana': {
@@ -527,7 +508,6 @@ async function setupCommandHandlers(socket, number) {
                     break;
                 }
 
-                // ── VIEW ONCE (VV) ──
                 case 'vv': {
                     const quoted = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage;
                     if (!quoted) return reply("Reply to a view-once message with .vv");
@@ -542,7 +522,6 @@ async function setupCommandHandlers(socket, number) {
                     break;
                 }
 
-                // ── STICKER ──
                 case 'sticker':
                 case 's': {
                     const quoted = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage;
@@ -563,7 +542,6 @@ async function setupCommandHandlers(socket, number) {
                     break;
                 }
 
-                // ── MODE ──
                 case 'mode': {
                     if (!isOwner) return reply("Owner only.");
                     const newMode = args[0]?.toLowerCase();
@@ -575,7 +553,6 @@ async function setupCommandHandlers(socket, number) {
                     break;
                 }
 
-                // ── IMG (PINTEREST) ──
                 case 'img':
                 case 'gimg': {
                     const query = args.join(' ');
@@ -590,7 +567,6 @@ async function setupCommandHandlers(socket, number) {
                     break;
                 }
 
-                // ── GETDP ──
                 case 'getdp': {
                     const qCtx = msg.message?.extendedTextMessage?.contextInfo;
                     const target = qCtx?.mentionedJid?.[0] || qCtx?.participant || sender;
@@ -600,7 +576,6 @@ async function setupCommandHandlers(socket, number) {
                     break;
                 }
 
-                // ── GROUP COMMANDS (TAGALL / HIDETAG / KICK / ADD) ──
                 case 'tagall': {
                     if (!isGroup) return reply("Groups only.");
                     const gm = await socket.groupMetadata(sender);
@@ -639,7 +614,6 @@ async function setupCommandHandlers(socket, number) {
                     break;
                 }
 
-                // ── FANCY TEXT ──
                 case 'fancy':
                 case 'fancytext': {
                     const text = args.join(' ');
@@ -655,7 +629,6 @@ async function setupCommandHandlers(socket, number) {
                     break;
                 }
 
-                // ── OWNER ──
                 case 'owner': {
                     const ownerNum = '+94761480834';
                     await socket.sendMessage(sender, {
@@ -667,7 +640,6 @@ async function setupCommandHandlers(socket, number) {
                     break;
                 }
 
-                // ── LOVE CALCULATOR ──
                 case 'lvcal': {
                     const names = args.join(' ').split('&');
                     if (names.length !== 2) return reply("Use: .lvcal John & Jane");
@@ -676,7 +648,6 @@ async function setupCommandHandlers(socket, number) {
                     break;
                 }
 
-                // ── HACK ──
                 case 'hack': {
                     const steps = ['Hacking starting...', 'Connecting...', '[#####] 50%', '[##########] 100%', 'Hack Successful! 🔓'];
                     let initial = await socket.sendMessage(sender, { text: steps[0] }, { quoted: msg });
