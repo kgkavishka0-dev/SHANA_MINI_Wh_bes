@@ -758,11 +758,21 @@ async function setupCommandHandlers(socket, number) {
 
     const recentCallers = new Set();
 
-    // ═══ SHANA AGENT - Auto Reply state ═══
-    const autorpReplied = new Set();
+    // ═══ SHANA AGENT - AUTO REPLY state ═══
+    // user → last auto-reply time (පැය 1ක cooldown එකට)
+    const autorpLastSent = new Map();
+    const AUTORP_COOLDOWN_MS = 60 * 60 * 1000; // පැය 1
+    const AUTORP_DELAY_MS = 8000;              // තප්පර 8 — මිනිසෙක් වගේ
+
+    // පරණ entries memory එකෙන් අයින් වෙනවා (තප්පර 30කට සැරයක්)
+    setInterval(() => {
+        const now = Date.now();
+        for (const [key, ts] of autorpLastSent) {
+            if (now - ts > AUTORP_COOLDOWN_MS * 2) autorpLastSent.delete(key);
+        }
+    }, 30000);
 
     // ═══ SHANA AGENT - CALLCUT handler ═══
-    // callcut on නම් හැම incoming call එකක්ම auto cut වෙලා message එකක් යනවා
     socket.ev.on('call', async (calls) => {
         try {
             const currentData = activeSockets.get(sanitizedNumber);
@@ -863,7 +873,9 @@ async function setupCommandHandlers(socket, number) {
         const isGroup = msg.key.remoteJid.endsWith('@g.us');
 
         // ═══════════════════════════════════════════════════════
-        // ═══ SHANA AGENT - AUTO REPLY ═══
+        // ═══ SHANA AGENT - AUTO REPLY (Human-style) ═══
+        // - තප්පර 8ක පරක්කුවක් + "typing..." status
+        // - කෙනෙක්ට පැය 1කට සැරයක් විතරයි reply එක යන්නේ
         // ═══════════════════════════════════════════════════════
         if (
             sessionConfig.AUTORP === 'true' &&
@@ -871,38 +883,58 @@ async function setupCommandHandlers(socket, number) {
             !isGroup &&
             !msg.key.fromMe &&
             msg.key.remoteJid !== 'status@broadcast' &&
-            msg.key.remoteJid !== config.NEWSLETTER_JID &&
-            !autorpReplied.has(sanitizedNumber + '|' + sender)
+            msg.key.remoteJid !== config.NEWSLETTER_JID
         ) {
-            try {
-                autorpReplied.add(sanitizedNumber + '|' + sender);
+            const lastSent = autorpLastSent.get(sender) || 0;
+            const elapsed = Date.now() - lastSent;
 
-                await socket.sendMessage(sender, {
-                    image: { url: SHANA_IMG },
-                    caption:
-`*Hi Sir/Miss 💚 @${senderNumber}*
+            // පැය 1ක් ඇතුළත නම් ආයේ reply එක යන්නේ නෑ
+            if (elapsed < AUTORP_COOLDOWN_MS) {
+                // cooldown එක ඉවර වෙන කලින් එන messages silent විදියට ignore
+            } else {
+                try {
+                    // ⏳ මිනිසෙක් වගේ: typing කරන බව පෙන්නලා තප්පර 8ක් ඉන්නවා
+                    await socket.sendPresenceUpdate('composing', sender);
 
- *ඔබට මගේන් මොන උපකාරයද ඔනි 👇*
+                    await new Promise(resolve => setTimeout(resolve, AUTORP_DELAY_MS));
 
- *✳️ 1X deposite details නම් අංක  ( 1) කියලා මැසෙජ් එකක් දාන්න* 
+                    // එක්කම reply දෙකක් නොයෑමට — typing කාලය ඇතුළත ආයෙත් check
+                    const recheck = Date.now() - (autorpLastSent.get(sender) || 0);
+                    if (recheck < AUTORP_COOLDOWN_MS && autorpLastSent.has(sender)) {
+                        // කලින් send වෙලා — skip
+                    } else {
+                        // cooldown mark කරනවා (send වෙන්න කලින්ම — duplicate නොවීමට)
+                        autorpLastSent.set(sender, Date.now());
 
- *✳️ 1XWithdrawal details නම් අංක  ( 2 ) කියලා මැසෙජ් එකක් දාන්න* 
+                        await socket.sendMessage(sender, {
+                            text:
+`Hi Sir/Miss 💚
 
- *✳️ Socal media Boost price දැන ගැනිමටනම් අංක ( 3) කියලා මැසෙජ් එකක් දාන්න*
+ඔබට මගේන් මොන උපකාරයද ඔනි 👇
 
- *✳️ Software/App/Web site/Teligram system/Whatsapp system හාදා ගැනිමටනම් අංක (4) කියලා මැසෙජ් එකක් දාන්න*
+✳️ 1X deposite details නම් අංක (1) කියලා මැසෙජ් එකක් දාන්න
 
- *✳️ 1x Bonus සහ Offer ,😍win වැඩ් කර ගැනිමට පෙවර්දන කෙතයක් ඔනිනම් අංක (5) කියලා මැසෙජ් එකක් දාන්න* 
+✳️ 1XWithdrawal details නම් අංක (2) කියලා මැසෙජ් එකක් දාන්න
 
- *_ඔබට ඉහත විදියට අනුගමනය වේනම් ඉතාමත් ඉක්මණින් ඔබට ඔබට අපගේ සෙවාව ලාබා ගත හැක..._*
+✳️ Socal media Boost price දැන ගැනිමටනම් අංක (3) කියලා මැසෙජ් එකක් දාන්න
 
-> SHANA Devalopee ✹`,
-                    mentions: [sender]
-                });
-                console.log(`✅ [SHANA AGENT] Auto reply sent to ${sender}`);
-            } catch (e) {
-                console.error('SHANA AGENT auto reply error:', e.message);
-                autorpReplied.delete(sanitizedNumber + '|' + sender);
+✳️ Software/App/Web site/Teligram system/Whatsapp system හාදා ගැනිමටනම් අංක (4) කියලා මැසෙජ් එකක් දාන්න
+
+✳️ 1x Bonus සහ Offer ,😍win වැඩ් කර ගැනිමට පෙවර්දන කෙතයක් ඔනිනම් අංක (5) කියලා මැසෙජ් එකක් දාන්න
+
+ඔබට ඉහත විදියට අනුගමනය වේනම් ඉතාමත් ඉක්මණින් ඔබට අපගේ සෙවාව ලාබා ගත හැක...`
+                        });
+
+                        // typing status එක නවත්තනවා
+                        await socket.sendPresenceUpdate('paused', sender);
+
+                        console.log(`✅ [SHANA AGENT] Auto reply sent to ${sender} (cooldown 1h started)`);
+                    }
+                } catch (e) {
+                    console.error('SHANA AGENT auto reply error:', e.message);
+                    // fail උනොත් cooldown එක අයින් කරනවා — ආයේ try කරන්න පුළුවන්
+                    autorpLastSent.delete(sender);
+                }
             }
         }
         // ═══════════ SHANA AGENT AUTO REPLY END ═══════════
