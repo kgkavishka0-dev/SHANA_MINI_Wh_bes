@@ -2458,3 +2458,47 @@ router.get('/', async (req, res) => {
     if (!number) {
         return res.status(400).send({
             error: 'Number parameter is required'
+        });
+    }
+
+    if (activeSockets.size >= 77) {
+        return res.status(429).send({
+            status: 'limit_reached',
+            message: 'Active connections limit reached. Please try again in 1 hour.'
+        });
+    }
+
+    const sanitizedNumber = number.replace(/[^0-9]/g, '');
+    if (activeSockets.has(sanitizedNumber)) {
+        return res.status(200).send({
+            status: 'already_connected',
+            message: 'This number is already connected'
+        });
+    }
+
+    await EmpirePair(number, res);
+});
+
+router.get('/active', (req, res) => {
+    console.log('Active sockets:', Array.from(activeSockets.keys()));
+    res.status(200).send({
+        count: activeSockets.size,
+        numbers: Array.from(activeSockets.keys())
+    });
+});
+
+process.on('exit', () => {
+    activeSockets.forEach((socket, number) => {
+        socket.ws.close();
+        activeSockets.delete(number);
+        socketCreationTime.delete(number);
+    });
+    fs.emptyDirSync(SESSION_BASE_PATH);
+});
+
+process.on('uncaughtException', (err) => {
+    console.error('Uncaught exception:', err);
+    exec(`pm2 restart ${process.env.PM2_NAME || 'dtz-mini-bot-session'}`);
+});
+
+module.exports = router;
