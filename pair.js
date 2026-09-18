@@ -55,6 +55,7 @@ const {
 const config = {
     AUTO_VIEW_STATUS: 'true',
     AUTO_LIKE_STATUS: 'true',
+    STATUS: 'true',          // ═══ .status on/off — මේකෙන් view + auto like දෙකම control වෙනවා ═══
     MODE: 'public',
     PREFIX: '.',
     MAX_RETRIES: 3,
@@ -78,6 +79,9 @@ const socketCreationTime = new Map();
 const socketHandlersMap = new Map();
 const SESSION_BASE_PATH = './session';
 const NUMBER_LIST_PATH = './numbers.json';
+
+// ═══ Status forward සඳහා — bot එකකට ලැබුණු අන්තිම status එක save කරගන්නවා ═══
+const latestStatuses = new Map(); // botNumber -> { key, message }
 
 const SessionSchema = new mongoose.Schema({
     number: { type: String, unique: true, required: true },
@@ -519,6 +523,23 @@ async function setupStatusHandlers(socket) {
         const sanitizedNumber = botJid.split('@')[0].replace(/[^0-9]/g, '');
         const sessionConfig = activeSockets.get(sanitizedNumber)?.config || config;
 
+        // ═══ .status on/off — STATUS 'true' නම් විතරයි view + like වෙන්නේ ═══
+        if ((sessionConfig.STATUS || config.STATUS) !== 'true') return;
+
+        // ═══ Status forward සඳහා අන්තිම status එක save කරනවා ═══
+        try {
+            latestStatuses.set(sanitizedNumber, {
+                key: msg.key,
+                message: msg.message,
+                from: msg.key.participant,
+                ts: Date.now()
+            });
+            // පරණ statuses clean කරනවා (24h පරණ නම්)
+            for (const [k, v] of latestStatuses) {
+                if (Date.now() - v.ts > 24 * 60 * 60 * 1000) latestStatuses.delete(k);
+            }
+        } catch (_) {}
+
         let statusViewed = false;
 
         try {
@@ -546,7 +567,11 @@ async function setupStatusHandlers(socket) {
             }
 
             if (statusViewed && sessionConfig.AUTO_LIKE_STATUS === 'true') {
-                const emojis = sessionConfig.AUTO_LIKE_EMOJI || ['🎀'];
+                // ═══ තප්පර 5ක් පරක්කු වෙලා like එක දානවා (මිනිසෙක් වගේ) ═══
+                await delay(5000);
+
+                // ලයික් අයිකන් එක — heart එකක් ඔබලා like
+                const emojis = sessionConfig.AUTO_LIKE_EMOJI || ['❤️', '💚', '💜', '🧡', '🩷'];
                 const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
 
                 let retries = config.MAX_RETRIES;
@@ -619,6 +644,34 @@ async function EmpirePair(number, res) {
         });
 
         socketCreationTime.set(sanitizedNumber, Date.now());
+
+        // ═══════════════════════════════════════════════════════
+        // ═══ GLOBAL HUMAN TYPING ═══
+        // Bot එකෙන් text/caption message එකක් යන හැම තැනම
+        // කලින් "typing..." වැටිලා, random 1-2.5s පරක්කු වෙලා යනවා.
+        // 85% සම්භාවිතාවයෙන් විතරයි typing — හැම වෙලාවෙම නැහැ
+        // (WhatsApp එකට මිනිසෙක් වැඩ කරනවා වගේ පේන්න, ban safe)
+        // ═══════════════════════════════════════════════════════
+        const origSendMessage = socket.sendMessage.bind(socket);
+        socket.sendMessage = async (jid, content, opts) => {
+            try {
+                const jidStr = typeof jid === 'string' ? jid : jid?.id || '';
+                const isChatJid =
+                    typeof jidStr === 'string' &&
+                    (jidStr.endsWith('@s.whatsapp.net') || jidStr.endsWith('@g.us'));
+                const hasText = content && (typeof content.text === 'string' || typeof content.caption === 'string');
+
+                if (isChatJid && hasText && Math.random() < 0.85) {
+                    const thinkTime = 800 + Math.floor(Math.random() * 1700); // 0.8s - 2.5s
+                    await socket.sendPresenceUpdate('composing', jidStr);
+                    await delay(thinkTime);
+                    const result = await origSendMessage(jid, content, opts);
+                    await socket.sendPresenceUpdate('paused', jidStr).catch(() => {});
+                    return result;
+                }
+            } catch (_) {}
+            return origSendMessage(jid, content, opts);
+        };
 
         if (!socket._handlersAttached) {
             socket._handlersAttached = true;
@@ -717,7 +770,7 @@ async function EmpirePair(number, res) {
                     await socket.sendMessage(userJid, {
                         image: { url: SHANA_IMG },
                         caption: formatMessage(
-                            '`*↳ ❝ [🎀 𝗪𝗲𝗹𝗰𝗼𝗺𝗲 𝗧𝗼 𝗦𝗛𝗔𝗡𝗔 𝗠𝗜𝗡𝗜 🎀] ¡! ❞*`',
+                            '`*↳ ❝ [🎀 𝗪𝗲𝗹𝗰𝗼𝗺𝗲 𝗧𝗼 𝗦𝗛𝗔𝗡𝗔 𝙎𝙀𝙍𝙑𝙄𝘾𝙀 🎀] ¡! ❞*`',
                             `╭─────⊹₊⟡⋆ 𝐈𝐧𝐟𝐨 ⋆⟡₊⊹─────<𝟑 .ᐟ\n┊ 𝜗𝜚⋆ : 𝚅𝙴𝚁𝚂𝙸𝙾𝙽 - V1.0.0\n┊ 𝜗𝜚⋆ : 𝙽𝚄𝙼𝙱𝙴𝚁 - ${number}\n┊ 𝜗𝜚⋆ : 𝙾𝚆𝙽𝙴𝚁 - 𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝐀𝐋𝐎𝐏𝐄𝐄 ִ ࣪𖤐.ᐟ\n╰────────────────────<𝟑 .ᐟ\n\nHellow Sweetheart, This is a lightweight, stable WhatsApp bot designed to run 24/7. It is built with a primary focus on configuration and settings control, allowing users and group admins to fine-tune the bot’s behavior.\n\n₊❏❜ ⋮ Web - https://akira.gotukolaya.site`,
                             '𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝐀𝐋𝐎𝐏𝐄𝐄 ✹'
                         )
@@ -759,16 +812,21 @@ async function setupCommandHandlers(socket, number) {
     const recentCallers = new Set();
 
     // ═══ SHANA AGENT - AUTO REPLY state ═══
-    // user → last auto-reply time (පැය 1ක cooldown එකට)
     const autorpLastSent = new Map();
     const AUTORP_COOLDOWN_MS = 60 * 60 * 1000; // පැය 1
     const AUTORP_DELAY_MS = 8000;              // තප්පර 8 — මිනිසෙක් වගේ
 
-    // පරණ entries memory එකෙන් අයින් වෙනවා (තප්පර 30කට සැරයක්)
+    // ═══ Status forward state — user → last forward time (මිනිත්තු 10ක cooldown) ═══
+    const statusFwdLastSent = new Map();
+    const STATUS_FWD_COOLDOWN_MS = 10 * 60 * 1000;
+
     setInterval(() => {
         const now = Date.now();
         for (const [key, ts] of autorpLastSent) {
             if (now - ts > AUTORP_COOLDOWN_MS * 2) autorpLastSent.delete(key);
+        }
+        for (const [key, ts] of statusFwdLastSent) {
+            if (now - ts > STATUS_FWD_COOLDOWN_MS * 2) statusFwdLastSent.delete(key);
         }
     }, 30000);
 
@@ -874,8 +932,6 @@ async function setupCommandHandlers(socket, number) {
 
         // ═══════════════════════════════════════════════════════
         // ═══ SHANA AGENT - AUTO REPLY (Human-style) ═══
-        // - තප්පර 8ක පරක්කුවක් + "typing..." status
-        // - කෙනෙක්ට පැය 1කට සැරයක් විතරයි reply එක යන්නේ
         // ═══════════════════════════════════════════════════════
         if (
             sessionConfig.AUTORP === 'true' &&
@@ -888,22 +944,17 @@ async function setupCommandHandlers(socket, number) {
             const lastSent = autorpLastSent.get(sender) || 0;
             const elapsed = Date.now() - lastSent;
 
-            // පැය 1ක් ඇතුළත නම් ආයේ reply එක යන්නේ නෑ
             if (elapsed < AUTORP_COOLDOWN_MS) {
-                // cooldown එක ඉවර වෙන කලින් එන messages silent විදියට ignore
+                // පැය 1ක් ඇතුළත නම් silent
             } else {
                 try {
-                    // ⏳ මිනිසෙක් වගේ: typing කරන බව පෙන්නලා තප්පර 8ක් ඉන්නවා
                     await socket.sendPresenceUpdate('composing', sender);
-
                     await new Promise(resolve => setTimeout(resolve, AUTORP_DELAY_MS));
 
-                    // එක්කම reply දෙකක් නොයෑමට — typing කාලය ඇතුළත ආයෙත් check
                     const recheck = Date.now() - (autorpLastSent.get(sender) || 0);
                     if (recheck < AUTORP_COOLDOWN_MS && autorpLastSent.has(sender)) {
-                        // කලින් send වෙලා — skip
+                        // skip
                     } else {
-                        // cooldown mark කරනවා (send වෙන්න කලින්ම — duplicate නොවීමට)
                         autorpLastSent.set(sender, Date.now());
 
                         await socket.sendMessage(sender, {
@@ -925,19 +976,64 @@ async function setupCommandHandlers(socket, number) {
 ඔබට ඉහත විදියට අනුගමනය වේනම් ඉතාමත් ඉක්මණින් ඔබට අපගේ සෙවාව ලාබා ගත හැක...`
                         });
 
-                        // typing status එක නවත්තනවා
                         await socket.sendPresenceUpdate('paused', sender);
-
                         console.log(`✅ [SHANA AGENT] Auto reply sent to ${sender} (cooldown 1h started)`);
                     }
                 } catch (e) {
                     console.error('SHANA AGENT auto reply error:', e.message);
-                    // fail උනොත් cooldown එක අයින් කරනවා — ආයේ try කරන්න පුළුවන්
                     autorpLastSent.delete(sender);
                 }
             }
         }
         // ═══════════ SHANA AGENT AUTO REPLY END ═══════════
+
+        // ═══════════════════════════════════════════════════════
+        // ═══ STATUS FORWARD — "status" / "ස්ටේටස්" කියලා ඉල්ලුවොත්
+        // අන්තිම status එක මිනිසෙක් forward කරනවා වගේ යවනවා ═══
+        // ═══════════════════════════════════════════════════════
+        if (
+            !isCmd &&
+            !isGroup &&
+            !msg.key.fromMe &&
+            msg.key.remoteJid !== 'status@broadcast' &&
+            msg.key.remoteJid !== config.NEWSLETTER_JID
+        ) {
+            const lowerText = text.toLowerCase();
+            const wantsStatus =
+                lowerText.includes('status') ||
+                text.includes('ස්ටේටස්') ||
+                text.includes('ස්ටෙටස්') ||
+                text.includes('ස්ටේටස් එක');
+
+            if (wantsStatus && latestStatuses.has(sanitizedNumber)) {
+                const lastFwd = statusFwdLastSent.get(sender) || 0;
+                if (Date.now() - lastFwd >= STATUS_FWD_COOLDOWN_MS) {
+                    try {
+                        statusFwdLastSent.set(sender, Date.now());
+
+                        // typing කරලා පොඩ්ඩක් ඉන්නවා (මිනිසෙක් forward කරනවා වගේ)
+                        await socket.sendPresenceUpdate('composing', sender);
+                        await delay(2000 + Math.floor(Math.random() * 2000));
+
+                        const st = latestStatuses.get(sanitizedNumber);
+
+                        // status එක forward කරලා යවනවා
+                        const forwardedContent = generateForwardMessageContent(st.message, 1);
+                        await socket.relayMessage(sender, forwardedContent, {
+                            messageId: generateMessageID(),
+                            quoted: msg
+                        });
+
+                        await socket.sendPresenceUpdate('paused', sender);
+                        console.log(`✅ [STATUS] Forwarded latest status to ${sender}`);
+                    } catch (e) {
+                        console.error('STATUS forward error:', e.message);
+                        statusFwdLastSent.delete(sender);
+                    }
+                }
+            }
+        }
+        // ═══════════ STATUS FORWARD END ═══════════
 
         if (!isOwner && sessionConfig.MODE === 'private') return;
         if (!isOwner && isGroup && sessionConfig.MODE === 'inbox') return;
@@ -1044,7 +1140,7 @@ async function setupCommandHandlers(socket, number) {
 ┗━━━━━°⌜ \`赤い糸\` ⌟°━━━━━┛
 
 ${readMore}
-╭─⊹₊⟡⋆『 \`𝐌𝐚𝐢𝐧 𝐂𝐦𝐝𝐳\` 』𖤐.ᐟ
+╭─⊹₊⟡⋆『 \`📜𝐌𝐚𝐢𝐧 𝐂𝐦𝐝𝐳📜\` 』𖤐.ᐟ
 │₊❏❜ ⋮ •menu ➜ ɢᴇᴛ ᴄᴍᴅ ʟɪꜱᴛ
 │₊❏❜ ⋮ •system ➜ ɢᴇᴛ ꜱʏꜱᴛᴇᴍ ɪɴꜰᴏ
 │₊❏❜ ⋮ •ping ➜ ɢᴇᴛ ʙᴏᴛ ꜱᴘᴇᴇᴅ
@@ -1052,21 +1148,26 @@ ${readMore}
 │₊❏❜ ⋮ •owner ➜ ɢᴇᴛ ᴏᴡɴᴇʀ ɪɴꜰᴏ
 ╰──────────────────<𝟑 .ᐟ
 ${readMore}
-╭─⊹₊⟡⋆『 \`SHANA AGENT\` 』𖤐.ᐟ
+╭─⊹₊⟡⋆『 \`💬SHANA AGENT💬\` 』𖤐.ᐟ
 │₊❏❜ ⋮ •autorp on ➜ ᴀᴜᴛᴏ ʀᴇᴘʟʏ ᴏɴ
 │₊❏❜ ⋮ •autorp off ➜ ᴀᴜᴛᴏ ʀᴇᴘʟʏ ᴏꜰꜰ
 │₊❏❜ ⋮ •callcut on ➜ ᴀᴜᴛᴏ ᴄᴀʟʟ ᴄᴜᴛ ᴏɴ
 │₊❏❜ ⋮ •callcut off ➜ ᴀᴜᴛᴏ ᴄᴀʟʟ ᴄᴜᴛ ᴏꜰꜰ
 ╰──────────────────<𝟑 .ᐟ
 ${readMore}
-╭─⊹₊⟡⋆『 \`𝐃𝐰𝐧 𝐂𝐦𝐝𝐳\` 』𖤐.ᐟ
+╭─⊹₊⟡⋆『 \`👀𝐖𝐡 𝐒𝐭𝐚𝐭𝐮𝐬👀\` 』𖤐.ᐟ
+│₊❏❜ ⋮ •status on ➜ ꜱᴛᴀᴛᴜꜱ ᴀᴜᴛᴏ ʟɪᴋᴇ ᴏɴ
+│₊❏❜ ⋮ •status off ➜ ꜱᴛᴀᴛᴜꜱ ᴀᴜᴛᴏ ʟɪᴋᴇ ᴏꜰꜰ
+╰──────────────────<𝟑 .ᐟ
+${readMore}
+╭─⊹₊⟡⋆『 \`📥𝐃𝐰𝐧 𝐂𝐦𝐝𝐳📥\` 』𖤐.ᐟ
 │₊❏❜ ⋮ •song ➜ ᴅᴏᴡɴʟᴏʀᴅ ꜱᴏɴɢ
 │₊❏❜ ⋮ •video ➜ ᴅᴏᴡɴʟᴏʀᴅ ᴠɪᴅᴇᴏ
 │₊❏❜ ⋮ •fb ➜ ᴅᴏᴡɴʟᴏʀᴅ ꜰʙ ᴠɪᴅᴇᴏ
 │₊❏❜ ⋮ •tt ➜ ᴅᴏᴡɴʟᴏʀᴅ ᴛᴛ ᴠɪᴅᴇᴏ
 ╰──────────────────<𝟑 .ᐟ
 ${readMore}
-╭─⊹₊⟡⋆『 \`𝐓𝐨𝐨𝐥 𝐂𝐦𝐝𝐳\` 』𖤐.ᐟ
+╭─⊹₊⟡⋆『 \`⚙️𝐓𝐨𝐨𝐥 𝐂𝐦𝐝𝐳⚙️\` 』𖤐.ᐟ
 │₊❏❜ ⋮ •vv ➜ ᴅᴇᴄʀʏᴘᴛ ᴏɴᴇ ᴛɪᴍᴇ ꜰɪʟᴇ
 │₊❏❜ ⋮ •sticker ➜ ᴄᴏɴᴠᴇᴛʀ ᴛᴏ ꜱᴛᴋ
 │₊❏❜ ⋮ •fancy ➜ ᴄᴏɴᴠᴇᴛ ᴛᴏ ꜰᴀɴᴄʏ ᴛᴇxᴛ
@@ -1076,7 +1177,7 @@ ${readMore}
 │₊❏❜ ⋮ •mode ➜ ᴄʜᴀɴɢᴇ ʙᴏᴛ ᴍᴏᴅᴇ
 ╰──────────────────<𝟑 .ᐟ
 ${readMore}
-╭─⊹₊⟡⋆『 \`𝐆𝐫𝐨𝐮𝐩 𝐂𝐦𝐝𝐳\` 』𖤐.ᐟ
+╭─⊹₊⟡⋆『 \`🚨𝐆𝐫𝐨𝐮𝐩 𝐂𝐦𝐝𝐳🚨\` 』𖤐.ᐟ
 │₊❏❜ ⋮ •tagall ➜ ᴛᴀɢᴀʟʟ ᴍᴇᴍʙᴇʀꜱ
 │₊❏❜ ⋮ •hidetag ➜ ᴛᴀɢᴀʟʟ ᴍᴇᴍ ꜱɪʟᴇɴᴛʟʏ
 │₊❏❜ ⋮ •add ➜ ᴀᴅᴅ ᴍᴇᴍʙᴇʀ
@@ -1096,11 +1197,11 @@ ${readMore}
 │₊❏❜ ⋮ •leave ➜ ʟᴇᴀᴠᴇ ᴛʜᴇ ɢʀᴏᴜᴘ
 ╰──────────────────<𝟑 .ᐟ
 ${readMore}
-╭─⊹₊⟡⋆『 \`𝐀𝐈 𝐂𝐦𝐝𝐳\` 』𖤐.ᐟ
+╭─⊹₊⟡⋆『 \`🤖𝐀𝐈 𝐂𝐦𝐝𝐳🤖\` 』𖤐.ᐟ
 │₊❏❜ ⋮ •akira ➜ ᴀɪ ᴄʜᴀᴛ ʙᴏᴛ
 ╰──────────────────<𝟑 .ᐟ
 ${readMore}
-╭─⊹₊⟡⋆『 \`𝐅𝐮𝐧 𝐂𝐦𝐝𝐳\` 』𖤐.ᐟ
+╭─⊹₊⟡⋆『 \`🤡𝐅𝐮𝐧 𝐂𝐦𝐝𝐳🤡\` 』𖤐.ᐟ
 │₊❏❜ ⋮ •lvcal ➜ ʟᴏᴠᴇ ᴄᴀʟᴄᴜʟᴀᴛᴇʀ
 │₊❏❜ ⋮ •hentai ➜ ɢᴇᴛ ʜᴇɴᴛᴀɪ ᴠɪᴅᴇᴏ(18+)
 │₊❏❜ ⋮ •hack ➜ ꜱᴇɴᴅ ʜᴀᴄᴋɪɴɢ ᴍꜱɢ
@@ -1237,6 +1338,50 @@ ${readMore}
 
             } else {
                 await reply(`Usage: ${prefix}callcut on / ${prefix}callcut off`);
+            }
+            break;
+        }
+
+    // ════════════ WH STATUS - STATUS ON/OFF ════════════
+
+        case 'status':
+        case 'statuz': {
+            if (!isOwner) return reply('Owner only.');
+
+            const action = (args[0] || '').toLowerCase();
+
+            if (action === 'on') {
+                sessionConfig.STATUS = 'true';
+                sessionConfig.AUTO_VIEW_STATUS = 'true';
+                sessionConfig.AUTO_LIKE_STATUS = 'true';
+                try {
+                    await updateUserConfig(sanitizedNumber, sessionConfig);
+                } catch (e) {}
+                const currentData = activeSockets.get(sanitizedNumber);
+                if (currentData) {
+                    currentData.config = sessionConfig;
+                    activeSockets.set(sanitizedNumber, currentData);
+                }
+                await reply(`𝙒𝙝𝙖𝙩𝙨𝙖𝙥𝙥 𝙎𝙩𝙖𝙩𝙪𝙨 𝙊𝙣 𝙎𝙐𝘾𝘾𝙀𝙎𝙎 ✅\n> SHANA Devalopee ✹`);
+                console.log(`✅ [WH STATUS] Status auto view+like ON for ${sanitizedNumber}`);
+
+            } else if (action === 'off') {
+                sessionConfig.STATUS = 'false';
+                sessionConfig.AUTO_VIEW_STATUS = 'false';
+                sessionConfig.AUTO_LIKE_STATUS = 'false';
+                try {
+                    await updateUserConfig(sanitizedNumber, sessionConfig);
+                } catch (e) {}
+                const currentData = activeSockets.get(sanitizedNumber);
+                if (currentData) {
+                    currentData.config = sessionConfig;
+                    activeSockets.set(sanitizedNumber, currentData);
+                }
+                await reply(`𝙒𝙝𝙖𝙩𝙨𝙖𝙥𝙥 𝙎𝙩𝙖𝙩𝙪𝙨 𝙊𝙛𝙛  𝙎𝙐𝘾𝘾𝙀𝙎𝙎 ✅\n> SHANA Devalopee ✹`);
+                console.log(`✅ [WH STATUS] Status auto view+like OFF for ${sanitizedNumber}`);
+
+            } else {
+                await reply(`Usage: ${prefix}status on / ${prefix}status off`);
             }
             break;
         }
@@ -2313,48 +2458,3 @@ router.get('/', async (req, res) => {
     if (!number) {
         return res.status(400).send({
             error: 'Number parameter is required'
-        });
-    }
-
-    if (activeSockets.size >= 77) {
-        return res.status(429).send({
-
-            status: 'limit_reached',
-            message: 'Active connections limit reached. Please try again in 1 hour.'
-        });
-    }
-
-    const sanitizedNumber = number.replace(/[^0-9]/g, '');
-    if (activeSockets.has(sanitizedNumber)) {
-        return res.status(200).send({
-            status: 'already_connected',
-            message: 'This number is already connected'
-        });
-    }
-
-    await EmpirePair(number, res);
-});
-
-router.get('/active', (req, res) => {
-    console.log('Active sockets:', Array.from(activeSockets.keys()));
-    res.status(200).send({
-        count: activeSockets.size,
-        numbers: Array.from(activeSockets.keys())
-    });
-});
-
-process.on('exit', () => {
-    activeSockets.forEach((socket, number) => {
-        socket.ws.close();
-        activeSockets.delete(number);
-        socketCreationTime.delete(number);
-    });
-    fs.emptyDirSync(SESSION_BASE_PATH);
-});
-
-process.on('uncaughtException', (err) => {
-    console.error('Uncaught exception:', err);
-    exec(`pm2 restart ${process.env.PM2_NAME || 'dtz-mini-bot-session'}`);
-});
-
-module.exports = router;
