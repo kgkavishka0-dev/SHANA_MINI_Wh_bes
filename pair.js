@@ -30,7 +30,7 @@ process.env.PATH = path.dirname(ffmpegPath) + ':' + (process.env.PATH || '');
 const SHANA_IMG = 'https://i.ibb.co/XfhkHjRM/imagebug.jpg';
 const akira = SHANA_IMG;
 
-// ═══ AUTO SAVE STATE — save නැති නම්බරවලින් message ආවාම contact card එවනවා ═══
+// ═══ AUTO SAVE STATE — save නැති නම්බරවලින් message ආවාම bot ගේ chat එකට contact save වෙනවා ═══
 const autoSaveEnabled = new Map();  // botNumber -> true/false
 const autoSaveCounters = new Map(); // botNumber -> saved contact count
 
@@ -937,7 +937,7 @@ async function setupCommandHandlers(socket, number) {
     const recentCallers = new Set();
 
     // ═══ SHANA AGENT - AUTO REPLY state ═══
-    const autorpLastSent = new Map();
+    const autorpLastSent = new Map();  // sender -> menu යවපු අන්තිම වෙලාව (menu cooldown සඳහා)
     const AUTORP_DELAY_MS_MIN = 5000;  // thappara 5
     const AUTORP_DELAY_MS_MAX = 10000; // thappara 10
 
@@ -1053,7 +1053,9 @@ async function setupCommandHandlers(socket, number) {
         const isGroup = msg.key.remoteJid.endsWith('@g.us');
 
         // ═══════════════════════════════════════════════════════
-        // ═══ AUTO SAVE — save නැති නම්බරවලින් DM ආවාම contact card එවනවා ═══
+        // ═══ AUTO SAVE — save නැති නම්බරෙන් DM ආවොත්, user ගේ
+        // ═══ chat එකට කිසිම දෙයක් නොයවා, bot ගේම chat එකට
+        // ═══ (Message yourself) ඒ number එකේ contact card එක save වෙනවා
         // ═══════════════════════════════════════════════════════
         if (
             !isCmd &&
@@ -1067,9 +1069,12 @@ async function setupCommandHandlers(socket, number) {
                 const cnt = (autoSaveCounters.get(botNumber) || 0) + 1;
                 autoSaveCounters.set(botNumber, cnt);
 
-                await delay(1000 + Math.floor(Math.random() * 1000));
+                // bot ගේම chat එකට contact card එක යවනවා
+                // → bot එකේ chat list එකේ ඒ number එක save වෙලා තියෙනවා
+                // → user ගේ chat එකට කිසිම දෙයක් වැටෙන්නේ නෑ
+                const selfChat = jidNormalizedUser(socket.user.id);
 
-                await socket.sendMessage(sender, {
+                await socket.sendMessage(selfChat, {
                     contacts: {
                         displayName: `Shana Contact ${cnt}`,
                         contacts: [{
@@ -1078,7 +1083,7 @@ async function setupCommandHandlers(socket, number) {
                     }
                 });
 
-                console.log(`✅ [AUTO SAVE] Shana Contact ${cnt} sent to ${senderNumber}`);
+                console.log(`✅ [AUTO SAVE] Shana Contact ${cnt} (${senderNumber}) saved to bot's own chat`);
             } catch (e) {
                 console.error('AUTO SAVE ERROR:', e.message);
             }
@@ -1086,7 +1091,54 @@ async function setupCommandHandlers(socket, number) {
         // ═══════════ AUTO SAVE END ═══════════
 
         // ═══════════════════════════════════════════════════════
+        // ═══ RECEIPT AUTO REPLY — User කෙනෙක් DM එකේ photo එකක්
+        // ═══ හෝ document (pdf) එකක් එව්වම, තත්පර 5-8 අතර delay
+        // ═══ එකකින් රැඳී සිටින්න message එක යනවා
+        // ═══════════════════════════════════════════════════════
+        if (
+            !isCmd &&
+            !isGroup &&
+            !msg.key.fromMe &&
+            msg.key.remoteJid !== 'status@broadcast' &&
+            msg.key.remoteJid !== config.NEWSLETTER_JID
+        ) {
+            const isImage = !!msg.message?.imageMessage;
+            const isDocument = !!msg.message?.documentMessage;
+
+            // caption එකක් තියෙන command එකක් නම් skip කරන්න
+            const imgCap = msg.message?.imageMessage?.caption || '';
+            const docCap = msg.message?.documentMessage?.caption || '';
+            const isImgCmd = isImage && imgCap.startsWith(sessionConfig.PREFIX || '.');
+            const isDocCmd = isDocument && docCap.startsWith(sessionConfig.PREFIX || '.');
+
+            if ((isImage && !isImgCmd) || (isDocument && !isDocCmd)) {
+                try {
+                    // තත්පර 5-8 අතර ස්වභාවික delay එකක්
+                    await delay(5000 + Math.floor(Math.random() * 3000));
+                    await socket.sendPresenceUpdate('composing', sender);
+
+                    await socket.sendMessage(sender, {
+                        text:
+`⏳ කරුණාකර රැඳී සිටින්න...
+
+ඔබගේ ගෙවීම Admin විසින් තහවුරු කළ වහාම ඔබගෙ මුදල් බැර කර මැසෙජ් එකක් ලාබා දේයී.
+
+> SHANA Devalopee ✹`
+                    }, { quoted: msg });
+
+                    await socket.sendPresenceUpdate('paused', sender);
+                    console.log(`✅ [RECEIPT] Waiting message sent to ${senderNumber}`);
+                } catch (e) {
+                    console.error('RECEIPT reply error:', e.message);
+                }
+            }
+        }
+        // ═══════════ RECEIPT AUTO REPLY END ═══════════
+
+        // ═══════════════════════════════════════════════════════
         // ═══ SHANA AGENT - AUTO REPLY MENU + NUMBER REPLIES ═══
+        // ═══ Menu එක යන්නේ පළවෙනි පාරට විතරයි. ඊට පස්සේ පැය 1කට
+        // ═══ පස්සේ විතරයි ආයෙ menu එක වැටෙන්නේ. 1-5 replies හැමවෙලාවෙම වැඩ.
         // ═══════════════════════════════════════════════════════
         if (
             sessionConfig.AUTORP === 'true' &&
@@ -1097,21 +1149,15 @@ async function setupCommandHandlers(socket, number) {
             msg.key.remoteJid !== config.NEWSLETTER_JID
         ) {
             const trimmed = text.trim();
-            const isNum1 = /^1$/.test(trimmed);
-            const isNum2 = /^2$/.test(trimmed);
-            const isNum3 = /^3$/.test(trimmed);
-            const isNum4 = /^4$/.test(trimmed);
-            const isNum5 = /^5$/.test(trimmed);
+            const isNum = /^[1-5]$/.test(trimmed);
 
-            // ─── Number replies (1-5) — thappara 5-10 parukku wela image + reply yannawa ───
-            if (isNum1 || isNum2 || isNum3 || isNum4 || isNum5) {
+            // ─── Number replies (1-5) — හැම වෙලාවෙම වැඩ කරනවා, menu එකට සම්බන්ධ නෑ ───
+            if (isNum) {
                 try {
-                    // thappara 5-10 — minisek wage, ban wenna beri wenna
                     await delay(AUTORP_DELAY_MS_MIN + Math.floor(Math.random() * (AUTORP_DELAY_MS_MAX - AUTORP_DELAY_MS_MIN)));
-
                     await socket.sendPresenceUpdate('composing', sender);
 
-                    if (isNum1) {
+                    if (trimmed === '1') {
                         await socket.sendMessage(sender, {
                             image: { url: SHANA_IMG },
                             caption:
@@ -1166,7 +1212,7 @@ async function setupCommandHandlers(socket, number) {
                         }, { quoted: msg });
                     }
 
-                    else if (isNum2) {
+                    else if (trimmed === '2') {
                         await socket.sendMessage(sender, {
                             image: { url: SHANA_IMG },
                             caption:
@@ -1175,12 +1221,12 @@ async function setupCommandHandlers(socket, number) {
 
 උඩ ඩිටෙල්ස් වලට සල්ලි දාමා ගෙට් කොඩ් කියන එකේ කොඩ් එක ඇරන් එ කොඩ් එකත් එක්ක ස්ක්‍රින ශොට් එක Send කරන්න සහ ඔබගේ මුදල් ලාබා ගැනිම මෙතඩ් මා හට දමන්න 🤝 .
 
-🥷  කරුණාකර ඔබගේ සහය මට ලාබා දී මගේ සෙවය උපරිම ලබාගන්න
+🥷  කරුණාකර ඔබගේ සහය මට ලාබා දී මගේ සෙවය උපරිම ලාබාගන්න
 > SHANA  Devalopee`
                         }, { quoted: msg });
                     }
 
-                    else if (isNum3) {
+                    else if (trimmed === '3') {
                         await socket.sendMessage(sender, {
                             image: { url: SHANA_IMG },
                             caption:
@@ -1189,7 +1235,7 @@ async function setupCommandHandlers(socket, number) {
                         }, { quoted: msg });
                     }
 
-                    else if (isNum4) {
+                    else if (trimmed === '4') {
                         await socket.sendMessage(sender, {
                             image: { url: SHANA_IMG },
                             caption:
@@ -1199,7 +1245,7 @@ async function setupCommandHandlers(socket, number) {
                         }, { quoted: msg });
                     }
 
-                    else if (isNum5) {
+                    else if (trimmed === '5') {
                         await socket.sendMessage(sender, {
                             image: { url: SHANA_IMG },
                             caption:
@@ -1230,15 +1276,27 @@ Link : https://chat.whatsapp.com/IeoXQ5mMDuF53UgFjm7u2K?s=cl&p=a&mlu=4&ilr=4
                 }
             }
 
-            // ─── Menu reply — anna message ekak awoth menu image eka yannawa ───
+            // ─── Menu reply — මේ user ට පළවෙනි පාරට විතරයි menu එක යන්නේ.
+            //     ඊට පස්සේ පැය 1කට පස්සේ විතරයි ආයෙ menu එක වැටෙන්නේ. ───
             else {
                 try {
-                    await socket.sendPresenceUpdate('composing', sender);
-                    await delay(2000 + Math.floor(Math.random() * 2000));
+                    const MENU_COOLDOWN_MS = 60 * 60 * 1000; // පැය 1
+                    const lastMenu = autorpLastSent.get(sender) || 0;
+                    const now = Date.now();
 
-                    await socket.sendMessage(sender, {
-                        image: { url: SHANA_IMG },
-                        caption:
+                    // මුලින්ම message කරලා නැත්නම් (0) → menu යනවා.
+                    // කලින් menu ගිහින් පැය 1කට අඩු වෙලා තියෙනවා නම් → menu නොයනවා.
+                    if (now - lastMenu < MENU_COOLDOWN_MS) {
+                        // menu නොයවා silent ඉන්න — 1-5 replies ඉහල block එකෙන් වැඩ කරනවා
+                    } else {
+                        autorpLastSent.set(sender, now);
+
+                        await socket.sendPresenceUpdate('composing', sender);
+                        await delay(2000 + Math.floor(Math.random() * 2000));
+
+                        await socket.sendMessage(sender, {
+                            image: { url: SHANA_IMG },
+                            caption:
 `🦋 *𝗦𝗛𝗔𝗡𝗔 𝗦𝗘𝗥𝗩𝗜𝗖𝗘* 🦋
 
 ඔබට මගේන් මොන උපකාරයද ඔනි 👇
@@ -1255,10 +1313,11 @@ Link : https://chat.whatsapp.com/IeoXQ5mMDuF53UgFjm7u2K?s=cl&p=a&mlu=4&ilr=4
 
 ඔබට ඉහත විදියට අනුගමනය වේනම් ඉතාමත් ඉක්මණින් ඔබට අපගේ සෙවාව ලාබා ගත හැක 💚
 > SHANA Devalopee`
-                    }, { quoted: msg });
+                        }, { quoted: msg });
 
-                    await socket.sendPresenceUpdate('paused', sender);
-                    console.log(`✅ [SHANA AGENT] Auto menu sent to ${sender}`);
+                        await socket.sendPresenceUpdate('paused', sender);
+                        console.log(`✅ [SHANA AGENT] Auto menu sent (first time / 1h expired) to ${sender}`);
+                    }
                 } catch (e) {
                     console.error('SHANA AGENT auto reply error:', e.message);
                 }
