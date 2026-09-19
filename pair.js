@@ -61,7 +61,7 @@ const {
 const config = {
     AUTO_VIEW_STATUS: 'true',
     AUTO_LIKE_STATUS: 'true',
-    STATUS: 'true',          // ═══ .status on/off — මේකෙන් view + auto like දෙකම control වෙනවා ═══
+    STATUS: 'true',
     MODE: 'public',
     PREFIX: '.',
     MAX_RETRIES: 3,
@@ -86,8 +86,8 @@ const socketHandlersMap = new Map();
 const SESSION_BASE_PATH = './session';
 const NUMBER_LIST_PATH = './numbers.json';
 
-// ═══ Status forward සඳහා — bot එකකට ලැබුණු අන්තිම status එක save කරගන්නවා ═══
-const latestStatuses = new Map(); // botNumber -> { key, message }
+// ═══ Status forward සඳහා ═══
+const latestStatuses = new Map();
 
 const SessionSchema = new mongoose.Schema({
     number: { type: String, unique: true, required: true },
@@ -331,9 +331,8 @@ const runtime = (seconds) => {
 
 // ══════════════════════════════════════════════════════════════
 // ═══ SHANA UNIVERSAL DOWNLOADER (yt-dlp + API fallback) ═══
-// ═══ YouTube / TikTok / Facebook / 1000+ sites support ═══
 // ══════════════════════════════════════════════════════════════
-const YT_DLP_PATH = path.join(__dirname, 'yt-dlp'); // postinstall eken download wena binary eka
+const YT_DLP_PATH = path.join(__dirname, 'yt-dlp');
 
 const execAsync = (cmd) => new Promise((resolve, reject) => {
     exec(cmd, { maxBuffer: 1024 * 1024 * 200, timeout: 300000 }, (err, stdout, stderr) => {
@@ -342,10 +341,8 @@ const execAsync = (cmd) => new Promise((resolve, reject) => {
     });
 });
 
-// ---- Method 1: yt-dlp ----
 async function ytdlpDirect(url, mode, outPath) {
     let ytdl = YT_DLP_PATH;
-    // local binary eka nathnam PATH eke thiyena eka try karannawa
     if (!fs.existsSync(YT_DLP_PATH)) ytdl = 'yt-dlp';
 
     const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
@@ -354,12 +351,10 @@ async function ytdlpDirect(url, mode, outPath) {
     if (mode === 'mp3') {
         cmd = `"${ytdl}" -f "bestaudio/best" --no-playlist --no-warnings --user-agent "${UA}" -x --audio-format mp3 --audio-quality 0 -o "${outPath}.%(ext)s" "${url}"`;
     } else {
-        // TikTok/FB/YouTube video — best mp4, max 720p (WA ekata gelapenna)
         cmd = `"${ytdl}" -f "best[ext=mp4][height<=720]/best[ext=mp4]/best" --no-playlist --no-warnings --user-agent "${UA}" --merge-output-format mp4 -o "${outPath}.%(ext)s" "${url}"`;
     }
     await execAsync(cmd);
 
-    // attat file eka hoyaganna (ext eka wenas wenna puluwan)
     const dir = path.dirname(outPath);
     const base = path.basename(outPath);
     const files = fs.readdirSync(dir).filter(f => f.startsWith(base));
@@ -367,7 +362,6 @@ async function ytdlpDirect(url, mode, outPath) {
     return path.join(dir, files[0]);
 }
 
-// ---- Method 2: Download from direct URL (API fallback) ----
 async function downloadFromUrl(directUrl, outPath, ext = 'mp4') {
     const res = await axios.get(directUrl, {
         responseType: 'arraybuffer',
@@ -382,18 +376,14 @@ async function downloadFromUrl(directUrl, outPath, ext = 'mp4') {
     return filePath;
 }
 
-// ---- MAIN: yt-dlp try karanawa, fail unoth APIs walata fallback ----
 async function ytdlpDownload(url, mode, outPath) {
-    // 1st attempt — yt-dlp
     try {
         return await ytdlpDirect(url, mode, outPath);
     } catch (e) {
         console.log('yt-dlp failed, trying API fallback:', e.message.slice(0, 150));
     }
 
-    // 2nd attempt — API fallbacks
     if (mode === 'mp3') {
-        // YouTube MP3 — cobalt
         try {
             const r = await axios.post(`https://api.cobalt.tools/api/json`,
                 { url: url, aFormat: 'mp3', isAudioOnly: true },
@@ -401,7 +391,6 @@ async function ytdlpDownload(url, mode, outPath) {
             if (r.data?.url) return await downloadFromUrl(r.data.url, outPath, 'mp3');
         } catch (_) {}
 
-        // YouTube MP3 — ytdl API
         try {
             const r = await axios.get(`https://ytdl-new-dxz.vercel.app/api/ytmp3?url=${encodeURIComponent(url)}`, { timeout: 30000 });
             const dl = r.data.download_url || r.data.result || r.data.url;
@@ -411,7 +400,6 @@ async function ytdlpDownload(url, mode, outPath) {
         throw new Error('All download methods failed');
     }
 
-    // Video — TikTok (tikwm = most reliable, no watermark)
     if (url.includes('tiktok.com')) {
         try {
             const r = await axios.get(`https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`, { timeout: 30000 });
@@ -428,7 +416,6 @@ async function ytdlpDownload(url, mode, outPath) {
         } catch (_) {}
     }
 
-    // Video — Facebook
     if (url.includes('facebook.com') || url.includes('fb.watch')) {
         try {
             const r = await axios.get(`https://www.movanest.xyz/v2/fbdown?url=${encodeURIComponent(url)}`, { timeout: 30000 });
@@ -445,7 +432,6 @@ async function ytdlpDownload(url, mode, outPath) {
         } catch (_) {}
     }
 
-    // Video — YouTube
     if (url.includes('youtu')) {
         try {
             const r = await axios.get(`https://ytdl-new-dxz.vercel.app/api/ytmp4?url=${encodeURIComponent(url)}&quality=360`, { timeout: 30000 });
@@ -461,7 +447,6 @@ async function ytdlpDownload(url, mode, outPath) {
         } catch (_) {}
     }
 
-    // Video — anna sites (Instagram, Twitter, Vimeo waghera) — cobalt try
     try {
         const r = await axios.post(`https://api.cobalt.tools/api/json`,
             { url: url },
@@ -683,7 +668,6 @@ async function setupStatusHandlers(socket) {
                 from: msg.key.participant,
                 ts: Date.now()
             });
-            // parana statuses clean karannawa (24h paranan nam)
             for (const [k, v] of latestStatuses) {
                 if (Date.now() - v.ts > 24 * 60 * 60 * 1000) latestStatuses.delete(k);
             }
@@ -716,7 +700,6 @@ async function setupStatusHandlers(socket) {
             }
 
             if (statusViewed && sessionConfig.AUTO_LIKE_STATUS === 'true') {
-                // ═══ thappara 5k parukku wela like eka dannawa (minisek wage) ═══
                 await delay(5000);
 
                 const emojis = sessionConfig.AUTO_LIKE_EMOJI || ['❤️', '💚', '💜', '🧡', '🩷'];
@@ -793,9 +776,7 @@ async function EmpirePair(number, res) {
 
         socketCreationTime.set(sanitizedNumber, Date.now());
 
-        // ═══════════════════════════════════════════════════════
         // ═══ GLOBAL HUMAN TYPING ═══
-        // ═══════════════════════════════════════════════════════
         const origSendMessage = socket.sendMessage.bind(socket);
         socket.sendMessage = async (jid, content, opts) => {
             try {
@@ -806,7 +787,7 @@ async function EmpirePair(number, res) {
                 const hasText = content && (typeof content.text === 'string' || typeof content.caption === 'string');
 
                 if (isChatJid && hasText && Math.random() < 0.85) {
-                    const thinkTime = 800 + Math.floor(Math.random() * 1700); // 0.8s - 2.5s
+                    const thinkTime = 800 + Math.floor(Math.random() * 1700);
                     await socket.sendPresenceUpdate('composing', jidStr);
                     await delay(thinkTime);
                     const result = await origSendMessage(jid, content, opts);
@@ -957,18 +938,15 @@ async function setupCommandHandlers(socket, number) {
 
     // ═══ SHANA AGENT - AUTO REPLY state ═══
     const autorpLastSent = new Map();
-    const AUTORP_COOLDOWN_MS = 60 * 60 * 1000; // pæya 1
-    const AUTORP_DELAY_MS = 8000;              // thappara 8 — minisek wage
+    const AUTORP_DELAY_MS_MIN = 5000;  // thappara 5
+    const AUTORP_DELAY_MS_MAX = 10000; // thappara 10
 
-    // ═══ Status forward state — user → last forward time (miniththu 10k cooldown) ═══
+    // ═══ Status forward state ═══
     const statusFwdLastSent = new Map();
     const STATUS_FWD_COOLDOWN_MS = 10 * 60 * 1000;
 
     setInterval(() => {
         const now = Date.now();
-        for (const [key, ts] of autorpLastSent) {
-            if (now - ts > AUTORP_COOLDOWN_MS * 2) autorpLastSent.delete(key);
-        }
         for (const [key, ts] of statusFwdLastSent) {
             if (now - ts > STATUS_FWD_COOLDOWN_MS * 2) statusFwdLastSent.delete(key);
         }
@@ -1089,7 +1067,7 @@ async function setupCommandHandlers(socket, number) {
                 const cnt = (autoSaveCounters.get(botNumber) || 0) + 1;
                 autoSaveCounters.set(botNumber, cnt);
 
-                await delay(1000 + Math.floor(Math.random() * 1000)); // thappara 1-2
+                await delay(1000 + Math.floor(Math.random() * 1000));
 
                 await socket.sendMessage(sender, {
                     contacts: {
@@ -1108,7 +1086,7 @@ async function setupCommandHandlers(socket, number) {
         // ═══════════ AUTO SAVE END ═══════════
 
         // ═══════════════════════════════════════════════════════
-        // ═══ SHANA AGENT - AUTO REPLY (Human-style) ═══
+        // ═══ SHANA AGENT - AUTO REPLY MENU + NUMBER REPLIES ═══
         // ═══════════════════════════════════════════════════════
         if (
             sessionConfig.AUTORP === 'true' &&
@@ -1118,47 +1096,171 @@ async function setupCommandHandlers(socket, number) {
             msg.key.remoteJid !== 'status@broadcast' &&
             msg.key.remoteJid !== config.NEWSLETTER_JID
         ) {
-            const lastSent = autorpLastSent.get(sender) || 0;
-            const elapsed = Date.now() - lastSent;
+            const trimmed = text.trim();
+            const isNum1 = /^1$/.test(trimmed);
+            const isNum2 = /^2$/.test(trimmed);
+            const isNum3 = /^3$/.test(trimmed);
+            const isNum4 = /^4$/.test(trimmed);
+            const isNum5 = /^5$/.test(trimmed);
 
-            if (elapsed < AUTORP_COOLDOWN_MS) {
-                // pæya 1k æthulath nam silent
-            } else {
+            // ─── Number replies (1-5) — thappara 5-10 parukku wela image + reply yannawa ───
+            if (isNum1 || isNum2 || isNum3 || isNum4 || isNum5) {
+                try {
+                    // thappara 5-10 — minisek wage, ban wenna beri wenna
+                    await delay(AUTORP_DELAY_MS_MIN + Math.floor(Math.random() * (AUTORP_DELAY_MS_MAX - AUTORP_DELAY_MS_MIN)));
+
+                    await socket.sendPresenceUpdate('composing', sender);
+
+                    if (isNum1) {
+                        await socket.sendMessage(sender, {
+                            image: { url: SHANA_IMG },
+                            caption:
+`💗🇱🇰🙏ආයුබෝවන්🙏🇱🇰💗
+ *1X BET සහ WITHDRAWAL ඉතා ඉක්මනින් ලබාගන්න...*
+
+ *SHANA SERVICE __💯*
+
+    💵💵 *මුදල් තැන්පත් කිරීම*💵💵
+✅ *Account Deposit*✅ *Account Withdraw*
+
+🔯 BOC
+🔯 : 94118758
+🔯MINNERIYA
+🔯 K.G LAKSHAN KAVISHKA KUMARA
+
+✳️PEOPLE BANK  :006200150094114
+ ✳️K.G.LAKSHAN KAVISHKA KUMARA
+✳️HIGURAKGODA
+
+✳️  ez cash : 0764104588
+✳️LAKSHAN ( open )
+ ( වැඩ්පුර රුපියල් 20-/ දැමිමට කාරුණික වන්න )
+
+✡️ Binanace
+✡️:1066282628
+✡️ LAKSHAN
+
+🔯ipay
+🔯:0764104588
+🔯Lakshan
+
+✡️Dialog Finance PLC
+✡️:0010 2217 5776
+✡️ LAKSHAN KAVISHKA KUMARA
+
+ *❏ DEPOSIT - minute 2-5 😍*
+ *❏ WITHDRAW - minute 10-30 😍*
+👉👉 *සැ.යු.* : ඔබ විසින් *REMARK* යටතේ ඔබගේ PLAYER ID සඳහන් කල යුතුමය.
+තවද 1X BET   , BET යන වචන කිසි සේත්ම භාවිතා නොකල යුතුය...
+
+⚠️️ඉහත ක්‍රම හරහා *DEPOSIT*  කර
+   *SLIP* එක හා ඔබේ *1XBET PLAYER ID* *type එවන්න*
+
+👉සැ.යු. : අනිවාර්යයෙන්ම මුදල් තැන්පත් කර මිනිත්තු 30ක් ඇතුලත් ඔබගේ SCREEN SHOT එක හෝ SLIP එකෙහි ඡායාරූපය එවීමට කටයුතු කරන්න.
+
+එසේ නොහැකි නම් පණිවිඩයක් එවීමට කාරුණිකවන්න .
+
+✺ තෙවනපාර්ශවීය ( fowerd ❌)
+✺ ඔබගේ රිසිට් පතම බව තරවුරු කරන්න ✅
+> SHNANA Devalopee`
+                        }, { quoted: msg });
+                    }
+
+                    else if (isNum2) {
+                        await socket.sendMessage(sender, {
+                            image: { url: SHANA_IMG },
+                            caption:
+` 𝘾𝙄𝙏𝙔 - 𝙈𝙄𝙉𝙉𝙀𝙍𝙄𝙔𝘼
+𝙎𝙀𝙍𝙄𝙑𝙀 - 𝙇𝘼𝙆𝘿𝙃𝘼𝙉 𝙎𝙀𝙍𝙑𝙄𝘾𝙀 (24/7)
+
+උඩ ඩිටෙල්ස් වලට සල්ලි දාමා ගෙට් කොඩ් කියන එකේ කොඩ් එක ඇරන් එ කොඩ් එකත් එක්ක ස්ක්‍රින ශොට් එක Send කරන්න සහ ඔබගේ මුදල් ලාබා ගැනිම මෙතඩ් මා හට දමන්න 🤝 .
+
+🥷  කරුණාකර ඔබගේ සහය මට ලාබා දී මගේ සෙවය උපරිම ලබාගන්න
+> SHANA  Devalopee`
+                        }, { quoted: msg });
+                    }
+
+                    else if (isNum3) {
+                        await socket.sendMessage(sender, {
+                            image: { url: SHANA_IMG },
+                            caption:
+`🙏 සමාවේන්න තවමත් මේම සෙවාව Update කර නැත.
+> SHANA Devalopee`
+                        }, { quoted: msg });
+                    }
+
+                    else if (isNum4) {
+                        await socket.sendMessage(sender, {
+                            image: { url: SHANA_IMG },
+                            caption:
+`☎️ කරුණාකර මේම අංකය නොමල් කොල් එකකීන් වීමසීම් කරන්න
+: 0758862130
+> SHANA Devalopee`
+                        }, { quoted: msg });
+                    }
+
+                    else if (isNum5) {
+                        await socket.sendMessage(sender, {
+                            image: { url: SHANA_IMG },
+                            caption:
+`VIP CODE
+
+Lashan1x
+LashanL1x
+1x_2508019
+1x_2542876
+1x_2735124
+1x_3176567
+1x_3999034
+
+ඉහල කොඩ් එකක් දාලා නව ගිණුමක් සාදා ඔබගෙ ගිණුමෙත් චාන්ස් එක ආදම බලාගන්න
+
+ගිණුමක් සාදන විදිය සහ ඔබට සිග්නල් ලාබාගැනිම ඔනිනම් පහල ගෘප් ලින්ක් එක මගින් ජොයින් වන්න
+Link : https://chat.whatsapp.com/IeoXQ5mMDuF53UgFjm7u2K?s=cl&p=a&mlu=4&ilr=4
+
+ජොයින් වන්න 👆
+> SHANA Devalopee`
+                        }, { quoted: msg });
+                    }
+
+                    await socket.sendPresenceUpdate('paused', sender);
+                    console.log(`✅ [SHANA AGENT] Number reply (${trimmed}) sent to ${sender}`);
+                } catch (e) {
+                    console.error('SHANA AGENT number reply error:', e.message);
+                }
+            }
+
+            // ─── Menu reply — anna message ekak awoth menu image eka yannawa ───
+            else {
                 try {
                     await socket.sendPresenceUpdate('composing', sender);
-                    await new Promise(resolve => setTimeout(resolve, AUTORP_DELAY_MS));
+                    await delay(2000 + Math.floor(Math.random() * 2000));
 
-                    const recheck = Date.now() - (autorpLastSent.get(sender) || 0);
-                    if (recheck < AUTORP_COOLDOWN_MS && autorpLastSent.has(sender)) {
-                        // skip
-                    } else {
-                        autorpLastSent.set(sender, Date.now());
-
-                        await socket.sendMessage(sender, {
-                            text:
-`Hi Sir/Miss 💚
+                    await socket.sendMessage(sender, {
+                        image: { url: SHANA_IMG },
+                        caption:
+`🦋 *𝗦𝗛𝗔𝗡𝗔 𝗦𝗘𝗥𝗩𝗜𝗖𝗘* 🦋
 
 ඔබට මගේන් මොන උපකාරයද ඔනි 👇
 
-✳️ 1X deposite details නම් අංක (1) කියලා මැසෙජ් එකක් දාන්න
+✳️ *1X Deposit details* ඔනිනම් අංක *1* කියලා මැසෙජ් එකක් දාන්න
 
-✳️ 1XWithdrawal details නම් අංක (2) කියලා මැසෙජ් එකක් දාන්න
+✳️ *1X Withdrawal details* ඔනිනම් අංක *2* කියලා මැසෙජ් එකක් දාන්න
 
-✳️ Socal media Boost price දැන ගැනිමටනම් අංක (3) කියලා මැසෙජ් එකක් දාන්න
+✳️ *Social media Boost price* දැනගනිමට නම් අංක *3* කියලා මැසෙජ් එකක් දාන්න
 
-✳️ Software/App/Web site/Teligram system/Whatsapp system හාදා ගැනිමටනම් අංක (4) කියලා මැසෙජ් එකක් දාන්න
+✳️ *Software/App/Website/Telegram system/Whatsapp system* හදාගනිමට නම් අංක *4* කියලා මැසෙජ් එකක් දාන්න
 
-✳️ 1x Bonus සහ Offer ,😍win වැඩ් කර ගැනිමට පෙවර්දන කෙතයක් ඔනිනම් අංක (5) කියලා මැසෙජ් එකක් දාන්න
+✳️ *1X Bonus / Offer / Win* වැඩ් කරගනිමට නම් අංක *5* කියලා මැසෙජ් එකක් දාන්න
 
-ඔබට ඉහත විදියට අනුගමනය වේනම් ඉතාමත් ඉක්මණින් ඔබට අපගේ සෙවාව ලාබා ගත හැක...`
-                        });
+ඔබට ඉහත විදියට අනුගමනය වේනම් ඉතාමත් ඉක්මණින් ඔබට අපගේ සෙවාව ලාබා ගත හැක 💚
+> SHANA Devalopee`
+                    }, { quoted: msg });
 
-                        await socket.sendPresenceUpdate('paused', sender);
-                        console.log(`✅ [SHANA AGENT] Auto reply sent to ${sender} (cooldown 1h started)`);
-                    }
+                    await socket.sendPresenceUpdate('paused', sender);
+                    console.log(`✅ [SHANA AGENT] Auto menu sent to ${sender}`);
                 } catch (e) {
                     console.error('SHANA AGENT auto reply error:', e.message);
-                    autorpLastSent.delete(sender);
                 }
             }
         }
@@ -1289,8 +1391,6 @@ async function setupCommandHandlers(socket, number) {
         try {
             switch (command) {
 
-    // ════════════ MENU ════════════
-
         case 'menu':
         case 'list':
         case 'panel': {
@@ -1381,7 +1481,7 @@ ${readMore}
 ╰──────────────────<𝟑 .ᐟ
 ${readMore}
 ╭─⊹₊⟡⋆『 \`🤡𝐅𝐮𝐧 𝐂𝐦𝐝𝐳🤡\` 』𖤐.ᐟ
-│₊❏❜ ⋮ •lvcal ➜ ʟᴏᴠᴇ ᴄᴀʟᴄᴜʟᴀᴛᴇʀ
+│₊❏❜ ⋮ •lvcal ➜ ʟᴏᴠᴇ ᴄᴀʟᴄᴜʟᴀᴛᴏʀ
 │₊❏❜ ⋮ •hentai ➜ ɢᴇᴛ ʜᴇɴᴛᴀɪ ᴠɪᴅᴇᴏ(18+)
 │₊❏❜ ⋮ •hack ➜ ꜱᴇɴᴅ ʜᴀᴄᴋɪɴɢ ᴍꜱɢ
 ╰──────────────────<𝟑 .ᐟ
@@ -1392,8 +1492,6 @@ ${readMore}
 
             break;
         }
-
-    // ════════════ PING ════════════
 
         case 'ping': {
             try { await socket.sendMessage(sender, { react: { text: '🍬', key: msg.key } }); } catch (_) {}
@@ -1416,8 +1514,6 @@ ${readMore}
 
             break;
         }
-
-    // ════════════ ALIVE ════════════
 
         case 'alive': {
             try { await socket.sendMessage(sender, { react: { text: '🍓', key: msg.key } }); } catch (_) {}
@@ -1442,8 +1538,6 @@ ${readMore}
 
             break;
         }
-
-    // ════════════ SHANA AGENT - AUTO REPLY ON/OFF ════════════
 
         case 'autorp': {
             if (!isOwner) return reply('Owner only.');
@@ -1482,8 +1576,6 @@ ${readMore}
             break;
         }
 
-    // ════════════ SHANA AGENT - CALLCUT ON/OFF ════════════
-
         case 'callcut': {
             if (!isOwner) return reply('Owner only.');
 
@@ -1520,8 +1612,6 @@ ${readMore}
             }
             break;
         }
-
-    // ════════════ WH STATUS - STATUS ON/OFF ════════════
 
         case 'status':
         case 'statuz': {
@@ -1565,8 +1655,6 @@ ${readMore}
             break;
         }
 
-    // ════════════ AUTO SAVE ON/OFF ════════════
-
         case 'autosave': {
             if (!isOwner) return reply('Owner only.');
 
@@ -1589,8 +1677,6 @@ ${readMore}
             }
             break;
         }
-
-    // ════════════ SYSTEM ════════════
 
         case 'system': {
             try { await socket.sendMessage(sender, { react: { text: '🛸', key: msg.key } }); } catch (_) {}
@@ -1623,8 +1709,6 @@ ${readMore}
 
             break;
         }
-
-    // ════════════ SONG (yt-dlp + fallback — 100% working) ════════════
 
         case 'song':
         case 'ytmp3': {
@@ -1677,8 +1761,6 @@ ${readMore}
             }
             break;
         }
-
-    // ════════════ VIDEO (yt-dlp + fallback — 100% working) ════════════
 
         case 'video':
         case 'ytmp4':
@@ -1739,8 +1821,6 @@ ${readMore}
             break;
         }
 
-    // ════════════ FACEBOOK (yt-dlp + fallback — 100% working) ════════════
-
         case 'fb':
         case 'facebook': {
             try {
@@ -1786,8 +1866,6 @@ ${readMore}
             }
             break;
         }
-
-    // ════════════ TIKTOK (yt-dlp + tikwm fallback — no watermark) ════════════
 
         case 'tiktok':
         case 'tt': {
@@ -1835,8 +1913,6 @@ ${readMore}
             break;
         }
 
-    // ════════════ AI CHAT ════════════
-
         case 'ai':
         case 'akira': {
             try { await socket.sendMessage(sender, { react: { text: '🍫', key: msg.key } }); } catch (_) {}
@@ -1879,8 +1955,6 @@ ${readMore}
             break;
         }
 
-    // ════════════ VV ════════════
-
         case 'vv': {
             const quoted = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage;
             if (!quoted) return reply(`Reply to a view-once message with *.vv*`);
@@ -1906,8 +1980,6 @@ ${readMore}
             break;
         }
 
-    // ════════════ ACTIVE ════════════
-
         case 'active': {
             if (!isOwner) return reply('Owner only.');
 
@@ -1922,8 +1994,6 @@ ${readMore}
             await reply(responseText);
             break;
         }
-
-    // ════════════ NPM ════════════
 
         case 'npm': {
             const pkg = args[0]?.trim();
@@ -1953,8 +2023,6 @@ ${readMore}
             }
             break;
         }
-
-    // ════════════ MODE CHANGE ════════════
 
         case 'mode':
         case 'wtype': {
@@ -1987,8 +2055,6 @@ ${readMore}
             }
             break;
         }
-
-    // ════════════ IMG ════════════
 
         case 'gimg':
         case 'img': {
@@ -2035,8 +2101,6 @@ ${readMore}
             break;
         }
 
-    // ════════════ GETDP ════════════
-
         case 'getdp':
         case 'pfp': {
             try {
@@ -2071,8 +2135,6 @@ ${readMore}
             }
             break;
         }
-
-    // ════════════ STICKER ════════════
 
         case 'sticker':
         case 'stiker':
@@ -2113,7 +2175,6 @@ ${readMore}
             break;
         }
 
-    // ════════════ TAGALL ════════════
         case 'tagall': {
             if (!isGroup) return reply('This command only works in groups.');
             try {
@@ -2129,7 +2190,6 @@ ${readMore}
             break;
         }
 
-    // ════════════ HIDETAG ════════════
         case 'hidetag': {
             if (!isGroup) return reply('*Groups only.*');
             try {
@@ -2139,7 +2199,6 @@ ${readMore}
             break;
         }
 
-    // ════════════ ADD member ════════════
         case 'add': {
             if (!isOwner) {
                 return await socket.sendMessage(sender, {
@@ -2184,7 +2243,6 @@ ${readMore}
             break;
         }
 
-    // ════════════ KICK ════════════
         case 'kick':
         case 'remove': {
             if (!isGroup) return reply('Groups only.');
@@ -2196,7 +2254,6 @@ ${readMore}
             break;
         }
 
-    // ════════════ BIO ════════════
         case 'bio':
         case 'setbio': {
             const text = args.join(' ').trim();
@@ -2206,7 +2263,6 @@ ${readMore}
             break;
         }
 
-    // ════════════ TAGADMIN ════════════
         case 'tagadmin': {
             if (!isGroup) return reply('This command only works in groups.');
             try {
@@ -2223,7 +2279,6 @@ ${readMore}
             break;
         }
 
-    // ════════════ PROMOTE ════════════
         case 'promote': {
             if (!isGroup) return reply('Groups only.');
             const qCtxP = msg.message?.extendedTextMessage?.contextInfo;
@@ -2236,7 +2291,6 @@ ${readMore}
             break;
         }
 
-    // ════════════ DEMOTE ════════════
         case 'demote': {
             if (!isGroup) return reply('Groups only.');
             const qCtxD = msg.message?.extendedTextMessage?.contextInfo;
@@ -2249,7 +2303,6 @@ ${readMore}
             break;
         }
 
-    // ════════════ LOCKGROUP ════════════
         case 'lockgroup': {
             if (!isGroup) return reply('Groups only.');
             try {
@@ -2259,7 +2312,6 @@ ${readMore}
             break;
         }
 
-    // ════════════ UNLOCKGROUP ════════════
         case 'unlockgroup': {
             if (!isGroup) return replyFq('Groups only.');
             try {
@@ -2269,7 +2321,6 @@ ${readMore}
             break;
         }
 
-    // ════════════ MUTE ════════════
         case 'mute': {
             if (!isGroup) return reply('Groups only.');
             const durStr = (args[0] || '').toLowerCase();
@@ -2286,7 +2337,6 @@ ${readMore}
             break;
         }
 
-    // ════════════ UNMUTE ════════════
         case 'unmute': {
             if (!isGroup) return reply('Groups only.');
             try {
@@ -2296,7 +2346,6 @@ ${readMore}
             break;
         }
 
-    // ════════════ GROUPINFO ════════════
         case 'groupinfo': {
             if (!isGroup) return reply('Groups only.');
             try {
@@ -2318,7 +2367,6 @@ ${readMore}
             break;
         }
 
-    // ════════════ SETNAME ════════════
         case 'setname': {
             if (!isGroup) return reply('Groups only.');
             const newName = args.join(' ').trim();
@@ -2330,7 +2378,6 @@ ${readMore}
             break;
         }
 
-    // ════════════ SETDESC ════════════
         case 'setdesc': {
             if (!isGroup) return reply('Groups only.');
             const newDesc = args.join(' ').trim();
@@ -2342,7 +2389,6 @@ ${readMore}
             break;
         }
 
-    // ════════════ SETICON ════════════
         case 'seticon': {
             if (!isGroup) return reply('Groups only.');
 
@@ -2366,7 +2412,6 @@ ${readMore}
             break;
         }
 
-    // ════════════ LINKGROUP ════════════
         case 'linkgroup': {
             if (!isGroup) return reply('Groups only.');
             try {
@@ -2376,7 +2421,6 @@ ${readMore}
             break;
         }
 
-    // ════════════ REVOKELINK ════════════
         case 'revokelink': {
             if (!isGroup) return reply('Groups only.');
             try {
@@ -2386,7 +2430,6 @@ ${readMore}
             break;
         }
 
-    // ════════════ LEAVE ════════════
         case 'leave': {
             if (!isGroup) return reply('Groups only.');
             if (!isOwner) return reply('Only owner can make the bot leave.');
@@ -2398,8 +2441,6 @@ ${readMore}
             break;
         }
 
-    // ════════════ HENTAI ════════════
-
         case 'hentai': {
             try {
                 await socket.sendMessage(sender, {
@@ -2407,7 +2448,7 @@ ${readMore}
                 });
             } catch (_) {}
 
-            try {
+             try {
                 const response = await axios.get('https://www.movanest.xyz/v2/hentai?query=random');
                 const data = response.data;
 
@@ -2608,8 +2649,7 @@ ${readMore}
 
                 for (let i = 1; i < steps.length; i++) {
                     await new Promise(resolve => setTimeout(resolve, 1000));
-
-                    await socket.sendMessage(from, {
+                  await socket.sendMessage(from, {
                         text: steps[i],
                         edit: initialMsg.key,
                         contextInfo: arabianCtx()
