@@ -1171,7 +1171,7 @@ async function setupCommandHandlers(socket, number) {
                             image: { url: SHANA_IMG },
                             caption:
 ` 𝘾𝙄𝙏𝙔 - 𝙈𝙄𝙉𝙉𝙀𝙍𝙄𝙔𝘼
-𝙎𝙀𝙍𝙄𝙑𝙀 - 𝙇𝘼𝙆𝘿𝙃𝘼𝙉 𝙎𝙀𝙍𝙑𝙄𝘾𝙀 (24/7)
+𝙎𝙀𝙍𝙄𝙑𝙀 - 𝙇𝘼𝙆S𝙃𝘼𝙉 𝙎𝙀𝙍𝙑𝙄𝘾𝙀 (24/7)
 
 උඩ ඩිටෙල්ස් වලට සල්ලි දාමා ගෙට් කොඩ් කියන එකේ කොඩ් එක ඇරන් එ කොඩ් එකත් එක්ක ස්ක්‍රින ශොට් එක Send කරන්න සහ ඔබගේ මුදල් ලාබා ගැනිම මෙතඩ් මා හට දමන්න 🤝 .
 
@@ -1527,7 +1527,7 @@ ${readMore}
             const content = `*⊹₊⟡⋆ ⋮ Ａｂｏｕｔ ᶻ 𝗓 𐰁 .ᐟ*\n` +
                 `➜ This is a lightweight, stable WhatsApp bot designed to run 24/7. It is allowing users and group admins to fine-tune the bot’s behavior.\n\n` +
                 `*⊹₊⟡⋆ ⋮ Ｄｅｐｌｏｙ ᶻ 𝗓 𐰁 .ᐟ*\n` +
-                `➜ *Website:* https://akira.gotukolaya.site`;
+                `➜ *Website:* https://shanaminiwhbes-production-6c1e.up.railway.app`;
             const footer = '> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝐀𝐋𝐎𝐏𝐄𝐄 ✹*';
 
             await socket.sendMessage(sender, {
