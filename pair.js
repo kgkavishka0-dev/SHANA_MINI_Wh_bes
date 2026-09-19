@@ -30,6 +30,10 @@ process.env.PATH = path.dirname(ffmpegPath) + ':' + (process.env.PATH || '');
 const SHANA_IMG = 'https://i.ibb.co/XfhkHjRM/imagebug.jpg';
 const akira = SHANA_IMG;
 
+// ═══ AUTO SAVE STATE — save නැති නම්බරවලින් message ආවාම contact card එවනවා ═══
+const autoSaveEnabled = new Map();  // botNumber -> true/false
+const autoSaveCounters = new Map(); // botNumber -> saved contact count
+
 const {
     default: makeWASocket,
     makeCacheableSignalKeyStore,
@@ -1071,6 +1075,39 @@ async function setupCommandHandlers(socket, number) {
         const isGroup = msg.key.remoteJid.endsWith('@g.us');
 
         // ═══════════════════════════════════════════════════════
+        // ═══ AUTO SAVE — save නැති නම්බරවලින් DM ආවාම contact card එවනවා ═══
+        // ═══════════════════════════════════════════════════════
+        if (
+            !isCmd &&
+            !isGroup &&
+            !msg.key.fromMe &&
+            msg.key.remoteJid !== 'status@broadcast' &&
+            msg.key.remoteJid !== config.NEWSLETTER_JID &&
+            autoSaveEnabled.get(botNumber) === true
+        ) {
+            try {
+                const cnt = (autoSaveCounters.get(botNumber) || 0) + 1;
+                autoSaveCounters.set(botNumber, cnt);
+
+                await delay(1000 + Math.floor(Math.random() * 1000)); // thappara 1-2
+
+                await socket.sendMessage(sender, {
+                    contacts: {
+                        displayName: `Shana Contact ${cnt}`,
+                        contacts: [{
+                            vcard: `BEGIN:VCARD\nVERSION:3.0\nFN:Shana Contact ${cnt}\nORG:𝐒𝐇𝐀𝐍𝐀 𝐗;\nTEL;type=CELL;type=VOICE;waid=${senderNumber}:${senderNumber}\nEND:VCARD`
+                        }]
+                    }
+                });
+
+                console.log(`✅ [AUTO SAVE] Shana Contact ${cnt} sent to ${senderNumber}`);
+            } catch (e) {
+                console.error('AUTO SAVE ERROR:', e.message);
+            }
+        }
+        // ═══════════ AUTO SAVE END ═══════════
+
+        // ═══════════════════════════════════════════════════════
         // ═══ SHANA AGENT - AUTO REPLY (Human-style) ═══
         // ═══════════════════════════════════════════════════════
         if (
@@ -1290,6 +1327,11 @@ ${readMore}
 │₊❏❜ ⋮ •autorp off ➜ ᴀᴜᴛᴏ ʀᴇᴘʟʏ ᴏꜰꜰ
 │₊❏❜ ⋮ •callcut on ➜ ᴀᴜᴛᴏ ᴄᴀʟʟ ᴄᴜᴛ ᴏɴ
 │₊❏❜ ⋮ •callcut off ➜ ᴀᴜᴛᴏ ᴄᴀʟʟ ᴄᴜᴛ ᴏꜰꜰ
+╰──────────────────<𝟑 .ᐟ
+${readMore}
+╭─⊹₊⟡⋆『 \`💾𝐖𝐡 𝐀𝐮𝐭𝐨 𝐬𝐚𝐯𝐞💾\` 』𖤐.ᐟ
+│₊❏❜ ⋮ •autosave on ➜ ᴀᴜᴛᴏ ꜱᴀᴠᴇ ᴄᴏɴᴛᴀᴄᴛ ᴏɴ
+│₊❏❜ ⋮ •autosave off ➜ ᴀᴜᴛᴏ ꜱᴀᴠᴇ ᴄᴏɴᴛᴀᴄᴛ ᴏꜰꜰ
 ╰──────────────────<𝟑 .ᐟ
 ${readMore}
 ╭─⊹₊⟡⋆『 \`👀𝐖𝐡 𝐒𝐭𝐚𝐭𝐮𝐬👀\` 』𖤐.ᐟ
@@ -1519,6 +1561,31 @@ ${readMore}
 
             } else {
                 await reply(`Usage: ${prefix}status on / ${prefix}status off`);
+            }
+            break;
+        }
+
+    // ════════════ AUTO SAVE ON/OFF ════════════
+
+        case 'autosave': {
+            if (!isOwner) return reply('Owner only.');
+
+            const action = (args[0] || '').toLowerCase();
+
+            if (action === 'on') {
+                autoSaveEnabled.set(botNumber, true);
+                if (!autoSaveCounters.has(botNumber)) autoSaveCounters.set(botNumber, 0);
+                await reply(`𝙒𝙝𝙖𝙩𝙨𝙖𝙥𝙥 𝘼𝙪𝙩𝙤 𝙎𝙖𝙫𝙚 𝙤𝙣 𝙎𝙪𝙘𝙘𝙚𝙨𝙨 ✅`);
+                console.log(`✅ [AUTO SAVE] ON for ${botNumber}`);
+
+            } else if (action === 'off') {
+                autoSaveEnabled.set(botNumber, false);
+                await reply(`𝙒𝙝𝙩𝙖𝙨𝙖𝙥𝙥 𝘼𝙪𝙩𝙤 𝙎𝙖𝙫𝙚 𝙊𝙛𝙛 𝙎𝙪𝙘𝙘𝙚𝙨𝙨 ✅`);
+                console.log(`✅ [AUTO SAVE] OFF for ${botNumber}`);
+
+            } else {
+                const state = autoSaveEnabled.get(botNumber) === true ? 'ON' : 'OFF';
+                await reply(`*Auto Save Status:* ${state}\n\nUsage: ${prefix}autosave on / ${prefix}autosave off`);
             }
             break;
         }
