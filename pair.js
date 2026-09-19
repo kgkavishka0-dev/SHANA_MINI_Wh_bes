@@ -26,13 +26,17 @@ ffmpeg.setFfmpegPath(ffmpegPath);
 // ffmpeg-static binary eka yt-dlp ekatath pennanna (mp3 convert ekata)
 process.env.PATH = path.dirname(ffmpegPath) + ':' + (process.env.PATH || '');
 
+// ═══ Tesseract + pdf-parse (receipt OCR සඳහා) ═══
+const Tesseract = require('tesseract.js');
+const pdfParse = require('pdf-parse');
+
 // ═══ SHANA IMAGE — හැම තැනම මේ එකම image එක ═══
 const SHANA_IMG = 'https://i.ibb.co/XfhkHjRM/imagebug.jpg';
 const akira = SHANA_IMG;
 
-// ═══ AUTO SAVE STATE — save නැති නම්බරවලින් message ආවාම bot ගේ chat එකට contact save වෙනවා ═══
-const autoSaveEnabled = new Map();  // botNumber -> true/false
-const autoSaveCounters = new Map(); // botNumber -> saved contact count
+// ═══ AUTO SAVE STATE — save නැති නම්බරවලින් message ආවාම bot ගේ chat එකට contact save ═══
+const autoSaveEnabled = new Map();
+const autoSaveCounters = new Map();
 
 const {
     default: makeWASocket,
@@ -88,6 +92,10 @@ const NUMBER_LIST_PATH = './numbers.json';
 
 // ═══ Status forward සඳහා ═══
 const latestStatuses = new Map();
+
+// ═══ Receipt OCR dedupe — එකම message එකට දෙපාරක් reply නොවීමට ═══
+const receiptProcessed = new Set();
+setInterval(() => receiptProcessed.clear(), 10 * 60 * 1000);
 
 const SessionSchema = new mongoose.Schema({
     number: { type: String, unique: true, required: true },
@@ -1091,9 +1099,10 @@ async function setupCommandHandlers(socket, number) {
         // ═══════════ AUTO SAVE END ═══════════
 
         // ═══════════════════════════════════════════════════════
-        // ═══ RECEIPT AUTO REPLY — User කෙනෙක් DM එකේ photo එකක්
-        // ═══ හෝ document (pdf) එකක් එව්වම, තත්පර 5-8 අතර delay
-        // ═══ එකකින් රැඳී සිටින්න message එක යනවා
+        // ═══ RECEIPT AUTO REPLY (BANK DETECTION + OCR) ═══
+        // ═══ Photo / PDF එකක් ආවම OCR එකෙන් අකුරු කියවලා bank
+        // ═══ keywords තියෙනවද බලනවා. තියෙනවා නම් විතරයි
+        // ═══ තත්පර 5-8 delay එකෙන් "⏳ කරුණාකර රැඳී සිටින්න..." යන්නේ.
         // ═══════════════════════════════════════════════════════
         if (
             !isCmd &&
@@ -1102,32 +1111,111 @@ async function setupCommandHandlers(socket, number) {
             msg.key.remoteJid !== 'status@broadcast' &&
             msg.key.remoteJid !== config.NEWSLETTER_JID
         ) {
-            const isImage = !!msg.message?.imageMessage;
-            const isDocument = !!msg.message?.documentMessage;
+            // dedupe — එකම msg එකට දෙපාරක් reply නොවීමට
+            if (receiptProcessed.has(msg.key.id)) {
+                // already processed
+            } else {
+                receiptProcessed.add(msg.key.id);
 
-            // caption එකක් තියෙන command එකක් නම් skip කරන්න
-            const imgCap = msg.message?.imageMessage?.caption || '';
-            const docCap = msg.message?.documentMessage?.caption || '';
-            const isImgCmd = isImage && imgCap.startsWith(sessionConfig.PREFIX || '.');
-            const isDocCmd = isDocument && docCap.startsWith(sessionConfig.PREFIX || '.');
-
-            if ((isImage && !isImgCmd) || (isDocument && !isDocCmd)) {
                 try {
-                    // තත්පර 5-8 අතර ස්වභාවික delay එකක්
-                    await delay(5000 + Math.floor(Math.random() * 3000));
-                    await socket.sendPresenceUpdate('composing', sender);
+                    const isImage = !!msg.message?.imageMessage;
+                    const isDocument = !!msg.message?.documentMessage;
 
-                    await socket.sendMessage(sender, {
-                        text:
+                    if (isImage || isDocument) {
+                        const BANK_KEYWORDS = [
+                            'boc', 'bank of ceylon', 'peoples bank', 'people bank', "people's bank",
+                            'ez cash', 'ezcash', 'dialog ez', 'dialog ez cash', 'e z cash',
+                            'ipay', 'commercial bank', 'commercial', 'combank', 'com bank',
+                            'sampath bank', 'sampath', 'hnb', 'hatton national bank',
+                            'nsb', 'national savings bank', 'seylan', 'ndb', 'ndb bank',
+                            'dfcc', 'union bank', 'hsbc', 'standard chartered',
+                            'cargills bank', 'cargills', 'pan asia', 'amana bank',
+                            'deposit', 'withdraw', 'slip', 'transaction', 'branch',
+                            'rs.', 'lkr', 'rupees'
+                        ];
+
+                        const hasBankKeyword = (textLower) =>
+                            BANK_KEYWORDS.some(k => textLower.includes(k.toLowerCase()));
+
+                        let detected = false;
+
+                        // ─── 1) Caption / fileName check (fast path) ───
+                        const cap = (msg.message?.imageMessage?.caption || '').toLowerCase();
+                        const docCap = (msg.message?.documentMessage?.caption || '').toLowerCase();
+                        const docName = (msg.message?.documentMessage?.fileName || '').toLowerCase();
+
+                        if (hasBankKeyword(cap) || hasBankKeyword(docCap) || hasBankKeyword(docName)) {
+                            detected = true;
+                        }
+
+                        // ─── 2) OCR / PDF text extraction ───
+                        if (!detected) {
+                            let buffer = null;
+                            let mime = '';
+
+                            try {
+                                if (isImage) {
+                                    const stream = await downloadContentFromMessage(msg.message.imageMessage, 'image');
+                                    buffer = Buffer.from([]);
+                                    for await (const chunk of stream) buffer = Buffer.concat([buffer, chunk]);
+                                    mime = 'image';
+                                } else if (isDocument) {
+                                    const doc = msg.message.documentMessage;
+                                    const docMime = (doc.mimetype || '').toLowerCase();
+                                    if (docMime.includes('pdf') || docMime.includes('image')) {
+                                        const stream = await downloadContentFromMessage(doc, 'document');
+                                        buffer = Buffer.from([]);
+                                        for await (const chunk of stream) buffer = Buffer.concat([buffer, chunk]);
+                                        mime = docMime.includes('pdf') ? 'pdf' : 'image';
+                                    }
+                                }
+                            } catch (dlErr) {
+                                console.error('RECEIPT media download error:', dlErr.message);
+                            }
+
+                            if (buffer && mime === 'image') {
+                                try {
+                                    const { data } = await Tesseract.recognize(buffer, 'eng');
+                                    const ocrText = (data?.text || '').toLowerCase();
+                                    if (ocrText && hasBankKeyword(ocrText)) {
+                                        detected = true;
+                                    }
+                                } catch (ocrErr) {
+                                    console.error('RECEIPT OCR error:', ocrErr.message);
+                                }
+                            } else if (buffer && mime === 'pdf') {
+                                try {
+                                    const pdfData = await pdfParse(buffer);
+                                    const pdfText = (pdfData?.text || '').toLowerCase();
+                                    if (pdfText && hasBankKeyword(pdfText)) {
+                                        detected = true;
+                                    }
+                                } catch (pdfErr) {
+                                    console.error('RECEIPT PDF parse error:', pdfErr.message);
+                                    // scanned PDF (photo PDF) — text නෑ, OCR එකක් ඕන නම් pdf-poppler install කරන්න
+                                }
+                            }
+                        }
+
+                        // ─── Bank keyword detect වුණොත් විතරයි reply එක යන්නේ ───
+                        if (detected) {
+                            // තත්පර 5-8 අතර ස්වභාවික delay එකක්
+                            await delay(5000 + Math.floor(Math.random() * 3000));
+                            await socket.sendPresenceUpdate('composing', sender);
+
+                            await socket.sendMessage(sender, {
+                                text:
 `⏳ කරුණාකර රැඳී සිටින්න...
 
 ඔබගේ ගෙවීම Admin විසින් තහවුරු කළ වහාම ඔබගෙ මුදල් බැර කර මැසෙජ් එකක් ලාබා දේයී.
 
 > SHANA Devalopee ✹`
-                    }, { quoted: msg });
+                            }, { quoted: msg });
 
-                    await socket.sendPresenceUpdate('paused', sender);
-                    console.log(`✅ [RECEIPT] Waiting message sent to ${senderNumber}`);
+                            await socket.sendPresenceUpdate('paused', sender);
+                            console.log(`✅ [RECEIPT] Bank payment detected from ${senderNumber} — waiting msg sent`);
+                        }
+                    }
                 } catch (e) {
                     console.error('RECEIPT reply error:', e.message);
                 }
@@ -1472,7 +1560,7 @@ Link : https://chat.whatsapp.com/IeoXQ5mMDuF53UgFjm7u2K?s=cl&p=a&mlu=4&ilr=4
 ┃⌚ *𝚃𝙸𝙼𝙴* : ${slTimeNow}
 ┗━━━━━°⌜ \`赤い糸\` ⌟°━━━━━┛
 
-${readMore}
+
 ╭─⊹₊⟡⋆『 \`📜𝐌𝐚𝐢𝐧 𝐂𝐦𝐝𝐳📜\` 』𖤐.ᐟ
 │₊❏❜ ⋮ •menu ➜ ɢᴇᴛ ᴄᴍᴅ ʟɪꜱᴛ
 │₊❏❜ ⋮ •system ➜ ɢᴇᴛ ꜱʏꜱᴛᴇᴍ ɪɴꜰᴏ
@@ -1480,31 +1568,31 @@ ${readMore}
 │₊❏❜ ⋮ •alive ➜ ᴄʜᴇᴄᴋ ʙᴏᴛ ᴀʟɪᴠᴇ
 │₊❏❜ ⋮ •owner ➜ ɢᴇᴛ ᴏᴡɴᴇʀ ɪɴꜰᴏ
 ╰──────────────────<𝟑 .ᐟ
-${readMore}
+
 ╭─⊹₊⟡⋆『 \`💬SHANA AGENT💬\` 』𖤐.ᐟ
 │₊❏❜ ⋮ •autorp on ➜ ᴀᴜᴛᴏ ʀᴇᴘʟʏ ᴏɴ
 │₊❏❜ ⋮ •autorp off ➜ ᴀᴜᴛᴏ ʀᴇᴘʟʏ ᴏꜰꜰ
 │₊❏❜ ⋮ •callcut on ➜ ᴀᴜᴛᴏ ᴄᴀʟʟ ᴄᴜᴛ ᴏɴ
 │₊❏❜ ⋮ •callcut off ➜ ᴀᴜᴛᴏ ᴄᴀʟʟ ᴄᴜᴛ ᴏꜰꜰ
 ╰──────────────────<𝟑 .ᐟ
-${readMore}
+
 ╭─⊹₊⟡⋆『 \`💾𝐖𝐡 𝐀𝐮𝐭𝐨 𝐬𝐚𝐯𝐞💾\` 』𖤐.ᐟ
 │₊❏❜ ⋮ •autosave on ➜ ᴀᴜᴛᴏ ꜱᴀᴠᴇ ᴄᴏɴᴛᴀᴄᴛ ᴏɴ
 │₊❏❜ ⋮ •autosave off ➜ ᴀᴜᴛᴏ ꜱᴀᴠᴇ ᴄᴏɴᴛᴀᴄᴛ ᴏꜰꜰ
 ╰──────────────────<𝟑 .ᐟ
-${readMore}
+
 ╭─⊹₊⟡⋆『 \`👀𝐖𝐡 𝐒𝐭𝐚𝐭𝐮𝐬👀\` 』𖤐.ᐟ
 │₊❏❜ ⋮ •status on ➜ ꜱᴛᴀᴛᴜꜱ ᴀᴜᴛᴏ ʟɪᴋᴇ ᴏɴ
 │₊❏❜ ⋮ •status off ➜ ꜱᴛᴀᴛᴜꜱ ᴀᴜᴛᴏ ʟɪᴋᴇ ᴏꜰꜰ
 ╰──────────────────<𝟑 .ᐟ
-${readMore}
+
 ╭─⊹₊⟡⋆『 \`📥𝐃𝐰𝐧 𝐂𝐦𝐝𝐳📥\` 』𖤐.ᐟ
 │₊❏❜ ⋮ •song ➜ ᴅᴏᴡɴʟᴏᴀᴅ ꜱᴏɴɢ
 │₊❏❜ ⋮ •video ➜ ᴅᴏᴡɴʟᴏᴀᴅ ᴠɪᴅᴇᴏ
 │₊❏❜ ⋮ •fb ➜ ᴅᴏᴡɴʟᴏᴀᴅ ꜰʙ ᴠɪᴅᴇᴏ
 │₊❏❜ ⋮ •tt ➜ ᴅᴏᴡɴʟᴏᴀᴅ ᴛᴛ ᴠɪᴅᴇᴏ
 ╰──────────────────<𝟑 .ᐟ
-${readMore}
+
 ╭─⊹₊⟡⋆『 \`⚙️𝐓𝐨𝐨𝐥 𝐂𝐦𝐝𝐳⚙️\` 』𖤐.ᐟ
 │₊❏❜ ⋮ •vv ➜ ᴅᴇᴄʀʏᴘᴛ ᴏɴᴇ ᴛɪᴍᴇ ꜰɪʟᴇ
 │₊❏❜ ⋮ •sticker ➜ ᴄᴏɴᴠᴇᴛʀ ᴛᴏ ꜱᴛᴋ
@@ -1514,7 +1602,7 @@ ${readMore}
 │₊❏❜ ⋮ •img ➜ ꜱᴇᴀʀᴄʜ ɪᴍɢꜱ
 │₊❏❜ ⋮ •mode ➜ ᴄʜᴀɴɢᴇ ʙᴏᴛ ᴍᴏᴅᴇ
 ╰──────────────────<𝟑 .ᐟ
-${readMore}
+
 ╭─⊹₊⟡⋆『 \`🚨𝐆𝐫𝐨𝐮𝐩 𝐂𝐦𝐝𝐳🚨\` 』𖤐.ᐟ
 │₊❏❜ ⋮ •tagall ➜ ᴛᴀɢᴀʟʟ ᴍᴇᴍʙᴇʀꜱ
 │₊❏❜ ⋮ •hidetag ➜ ᴛᴀɢᴀʟʟ ᴍᴇᴍ ꜱɪʟᴇɴᴛʟʏ
@@ -1534,11 +1622,11 @@ ${readMore}
 │₊❏❜ ⋮ •revokelink ➜ ʀꜱᴇᴛ ɢʀᴏᴜᴘ ʟɪɴᴋ
 │₊❏❜ ⋮ •leave ➜ ʟᴇᴀᴠᴇ ᴛʜᴇ ɢʀᴏᴜᴘ
 ╰──────────────────<𝟑 .ᐟ
-${readMore}
+
 ╭─⊹₊⟡⋆『 \`🤖𝐀𝐈 𝐂𝐦𝐝𝐳🤖\` 』𖤐.ᐟ
 │₊❏❜ ⋮ •akira ➜ ᴀɪ ᴄʜᴀᴛ ʙᴏᴛ
 ╰──────────────────<𝟑 .ᐟ
-${readMore}
+
 ╭─⊹₊⟡⋆『 \`🤡𝐅𝐮𝐧 𝐂𝐦𝐝𝐳🤡\` 』𖤐.ᐟ
 │₊❏❜ ⋮ •lvcal ➜ ʟᴏᴠᴇ ᴄᴀʟᴄᴜʟᴀᴛᴏʀ
 │₊❏❜ ⋮ •hentai ➜ ɢᴇᴛ ʜᴇɴᴛᴀɪ ᴠɪᴅᴇᴏ(18+)
