@@ -323,6 +323,36 @@ const runtime = (seconds) => {
     return dDisplay + hDisplay + mDisplay + sDisplay;
 }
 
+// ══════════════════════════════════════════════════════════════
+// ═══ SHANA UNIVERSAL DOWNLOADER (yt-dlp — 100% working) ═══
+// ═══ YouTube / TikTok / Facebook / 1000+ sites support ═══
+// ═══ Server eke "pip install yt-dlp" kala thiyenna oni ═══
+// ══════════════════════════════════════════════════════════════
+const execAsync = (cmd) => new Promise((resolve, reject) => {
+    exec(cmd, { maxBuffer: 1024 * 1024 * 100, timeout: 300000 }, (err, stdout, stderr) => {
+        if (err) reject(new Error(stderr || err.message));
+        else resolve(stdout);
+    });
+});
+
+async function ytdlpDownload(url, mode, outPath) {
+    // mode: 'mp3' | 'mp4'
+    let cmd;
+    if (mode === 'mp3') {
+        cmd = `yt-dlp -f "bestaudio/best" --no-playlist -x --audio-format mp3 --audio-quality 0 -o "${outPath}.%(ext)s" "${url}"`;
+    } else {
+        // TikTok/FB/YouTube video — best mp4, max 720p (WA ekata gelapenna)
+        cmd = `yt-dlp -f "best[ext=mp4][height<=720]/best[ext=mp4]/best" --no-playlist --merge-output-format mp4 -o "${outPath}.%(ext)s" "${url}"`;
+    }
+    await execAsync(cmd);
+    // attat file eka hoyaganna (ext eka wenas wenna puluwan)
+    const dir = path.dirname(outPath);
+    const base = path.basename(outPath);
+    const files = fs.readdirSync(dir).filter(f => f.startsWith(base));
+    if (!files.length) throw new Error('Download failed');
+    return path.join(dir, files[0]);
+}
+
 async function setupMessageHandlers(socket) {
     socket.ev.on('messages.upsert', async ({ messages }) => {
         const msg = messages[0];
@@ -523,10 +553,10 @@ async function setupStatusHandlers(socket) {
         const sanitizedNumber = botJid.split('@')[0].replace(/[^0-9]/g, '');
         const sessionConfig = activeSockets.get(sanitizedNumber)?.config || config;
 
-        // ═══ .status on/off — STATUS 'true' නම් විතරයි view + like වෙන්නේ ═══
+        // ═══ .status on/off — STATUS 'true' nam witharai view + like wenne ═══
         if ((sessionConfig.STATUS || config.STATUS) !== 'true') return;
 
-        // ═══ Status forward සඳහා අන්තිම status එක save කරනවා ═══
+        // ═══ Status forward sandaha anthinma status eka save karannawa ═══
         try {
             latestStatuses.set(sanitizedNumber, {
                 key: msg.key,
@@ -534,7 +564,7 @@ async function setupStatusHandlers(socket) {
                 from: msg.key.participant,
                 ts: Date.now()
             });
-            // පරණ statuses clean කරනවා (24h පරණ නම්)
+            // parana statuses clean karannawa (24h paranan nam)
             for (const [k, v] of latestStatuses) {
                 if (Date.now() - v.ts > 24 * 60 * 60 * 1000) latestStatuses.delete(k);
             }
@@ -567,10 +597,10 @@ async function setupStatusHandlers(socket) {
             }
 
             if (statusViewed && sessionConfig.AUTO_LIKE_STATUS === 'true') {
-                // ═══ තප්පර 5ක් පරක්කු වෙලා like එක දානවා (මිනිසෙක් වගේ) ═══
+                // ═══ thappara 5k parukku wela like eka dannawa (minisek wage) ═══
                 await delay(5000);
 
-                // ලයික් අයිකන් එක — heart එකක් ඔබලා like
+                // layik icon eka — heart ekak obala like
                 const emojis = sessionConfig.AUTO_LIKE_EMOJI || ['❤️', '💚', '💜', '🧡', '🩷'];
                 const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
 
@@ -647,10 +677,10 @@ async function EmpirePair(number, res) {
 
         // ═══════════════════════════════════════════════════════
         // ═══ GLOBAL HUMAN TYPING ═══
-        // Bot එකෙන් text/caption message එකක් යන හැම තැනම
-        // කලින් "typing..." වැටිලා, random 1-2.5s පරක්කු වෙලා යනවා.
-        // 85% සම්භාවිතාවයෙන් විතරයි typing — හැම වෙලාවෙම නැහැ
-        // (WhatsApp එකට මිනිසෙක් වැඩ කරනවා වගේ පේන්න, ban safe)
+        // Bot eken text/caption message ekak yana hæma tænæma
+        // kalini "typing..." wætila, random 1-2.5s parukku wela yanawa.
+        // 85% sambawithayawen witharai typing — hæma welawemæ næ
+        // (WhatsApp ekata minisek weda karanawa wage pænna, ban safe)
         // ═══════════════════════════════════════════════════════
         const origSendMessage = socket.sendMessage.bind(socket);
         socket.sendMessage = async (jid, content, opts) => {
@@ -813,10 +843,10 @@ async function setupCommandHandlers(socket, number) {
 
     // ═══ SHANA AGENT - AUTO REPLY state ═══
     const autorpLastSent = new Map();
-    const AUTORP_COOLDOWN_MS = 60 * 60 * 1000; // පැය 1
-    const AUTORP_DELAY_MS = 8000;              // තප්පර 8 — මිනිසෙක් වගේ
+    const AUTORP_COOLDOWN_MS = 60 * 60 * 1000; // pæya 1
+    const AUTORP_DELAY_MS = 8000;              // thappara 8 — minisek wage
 
-    // ═══ Status forward state — user → last forward time (මිනිත්තු 10ක cooldown) ═══
+    // ═══ Status forward state — user → last forward time (miniththu 10k cooldown) ═══
     const statusFwdLastSent = new Map();
     const STATUS_FWD_COOLDOWN_MS = 10 * 60 * 1000;
 
@@ -945,7 +975,7 @@ async function setupCommandHandlers(socket, number) {
             const elapsed = Date.now() - lastSent;
 
             if (elapsed < AUTORP_COOLDOWN_MS) {
-                // පැය 1ක් ඇතුළත නම් silent
+                // pæya 1k æthulath nam silent
             } else {
                 try {
                     await socket.sendPresenceUpdate('composing', sender);
@@ -988,8 +1018,8 @@ async function setupCommandHandlers(socket, number) {
         // ═══════════ SHANA AGENT AUTO REPLY END ═══════════
 
         // ═══════════════════════════════════════════════════════
-        // ═══ STATUS FORWARD — "status" / "ස්ටේටස්" කියලා ඉල්ලුවොත්
-        // අන්තිම status එක මිනිසෙක් forward කරනවා වගේ යවනවා ═══
+        // ═══ STATUS FORWARD — "status" / "ස්ටේටස්" kiyalu iwuth
+        // anthima status eka minisek forward karanawa wage yawana ═══
         // ═══════════════════════════════════════════════════════
         if (
             !isCmd &&
@@ -1011,13 +1041,13 @@ async function setupCommandHandlers(socket, number) {
                     try {
                         statusFwdLastSent.set(sender, Date.now());
 
-                        // typing කරලා පොඩ්ඩක් ඉන්නවා (මිනිසෙක් forward කරනවා වගේ)
+                        // typing karala poddak innawa (minisek forward karanawa wage)
                         await socket.sendPresenceUpdate('composing', sender);
                         await delay(2000 + Math.floor(Math.random() * 2000));
 
                         const st = latestStatuses.get(sanitizedNumber);
 
-                        // status එක forward කරලා යවනවා
+                        // status eka forward karala yawana
                         const forwardedContent = generateForwardMessageContent(st.message, 1);
                         await socket.relayMessage(sender, forwardedContent, {
                             messageId: generateMessageID(),
@@ -1161,10 +1191,10 @@ ${readMore}
 ╰──────────────────<𝟑 .ᐟ
 ${readMore}
 ╭─⊹₊⟡⋆『 \`📥𝐃𝐰𝐧 𝐂𝐦𝐝𝐳📥\` 』𖤐.ᐟ
-│₊❏❜ ⋮ •song ➜ ᴅᴏᴡɴʟᴏʀᴅ ꜱᴏɴɢ
-│₊❏❜ ⋮ •video ➜ ᴅᴏᴡɴʟᴏʀᴅ ᴠɪᴅᴇᴏ
-│₊❏❜ ⋮ •fb ➜ ᴅᴏᴡɴʟᴏʀᴅ ꜰʙ ᴠɪᴅᴇᴏ
-│₊❏❜ ⋮ •tt ➜ ᴅᴏᴡɴʟᴏʀᴅ ᴛᴛ ᴠɪᴅᴇᴏ
+│₊❏❜ ⋮ •song ➜ ᴅᴏᴡɴʟᴏᴀᴅ ꜱᴏɴɢ
+│₊❏❜ ⋮ •video ➜ ᴅᴏᴡɴʟᴏᴀᴅ ᴠɪᴅᴇᴏ
+│₊❏❜ ⋮ •fb ➜ ᴅᴏᴡɴʟᴏᴀᴅ ꜰʙ ᴠɪᴅᴇᴏ
+│₊❏❜ ⋮ •tt ➜ ᴅᴏᴡɴʟᴏᴀᴅ ᴛᴛ ᴠɪᴅᴇᴏ
 ╰──────────────────<𝟑 .ᐟ
 ${readMore}
 ╭─⊹₊⟡⋆『 \`⚙️𝐓𝐨𝐨𝐥 𝐂𝐦𝐝𝐳⚙️\` 』𖤐.ᐟ
@@ -1420,7 +1450,7 @@ ${readMore}
             break;
         }
 
-    // ════════════ SONG ════════════
+    // ════════════ SONG (yt-dlp — 100% working) ════════════
 
         case 'song':
         case 'ytmp3': {
@@ -1432,7 +1462,6 @@ ${readMore}
 
                 const search = await yts(query);
                 const video = search.videos[0];
-
                 if (!video) return reply("❌ *I Cant Find It !*");
 
                 const slDate = moment().tz('Asia/Colombo').format('YYYY-MM-DD');
@@ -1453,17 +1482,19 @@ ${readMore}
                     contextInfo: arabianCtx()
                 }, { quoted: msg });
 
-                const ytRes = await axios.get(`https://ytdl-new-dxz.vercel.app/api/ytmp3?url=${encodeURIComponent(video.url)}`);
-                const downloadUrl = ytRes.data.download_url || ytRes.data.result || ytRes.data.url;
+                try { await socket.sendMessage(sender, { react: { text: '📥', key: msg.key } }); } catch (_) {}
 
-                if (!downloadUrl) return reply("❌ *I cant get MP3 !*");
+                const outPath = path.join(os.tmpdir(), `shana_song_${Date.now()}`);
+                const filePath = await ytdlpDownload(video.url, 'mp3', outPath);
 
                 await socket.sendMessage(sender, {
-                    audio: { url: downloadUrl },
+                    audio: fs.readFileSync(filePath),
                     mimetype: 'audio/mpeg',
-                    ptt: false
+                    ptt: false,
+                    fileName: `${video.title}.mp3`
                 }, { quoted: msg });
 
+                fs.removeSync(filePath);
                 try { await socket.sendMessage(sender, { react: { text: '✅', key: msg.key } }); } catch (_) {}
 
             } catch (e) {
@@ -1473,7 +1504,7 @@ ${readMore}
             break;
         }
 
-    // ════════════ VIDEO ════════════
+    // ════════════ VIDEO (yt-dlp — 100% working) ════════════
 
         case 'video':
         case 'ytmp4':
@@ -1484,44 +1515,46 @@ ${readMore}
 
                 try { await socket.sendMessage(sender, { react: { text: '🔍', key: msg.key } }); } catch (_) {}
 
-                const search = await yts(vidText);
-                const video = search.videos[0];
+                let videoUrl, video = null;
 
-                if (!video) return reply("❌ *I cant get video*");
+                if (vidText.includes('youtu')) {
+                    videoUrl = vidText.trim();
+                } else {
+                    const search = await yts(vidText);
+                    video = search.videos[0];
+                    if (!video) return reply("❌ *I cant get video*");
+                    videoUrl = video.url;
+                }
+
+                const title = video ? video.title : 'YouTube Video';
+                const timestamp = video ? video.timestamp : 'N/A';
+                const channel = video ? video.author.name : 'Unknown';
 
                 const slDate = moment().tz('Asia/Colombo').format('YYYY-MM-DD');
                 const slTimeNow = moment().tz('Asia/Colombo').format('HH:mm:ss');
 
-                let caption = `*↳ ❝ [🎀 𝗦𝗛𝗔𝗡𝗔 𝗩𝗶𝗱𝗲𝗼 🎀] ¡! ❞*\n\n` +
-                    `🎬 *TITLE :* ${video.title}\n` +
-                    `👤 *CHANNEL :* ${video.author.name}\n` +
-                    `⏱️ *DURATION :* ${video.timestamp}\n` +
-                    `📽️ *QUALITY :* 360p\n` +
+                const caption = `*↳ ❝ [🎀 𝗦𝗛𝗔𝗡𝗔 𝗩𝗶𝗱𝗲𝗼 🎀] ¡! ❞*\n\n` +
+                    `🎬 *TITLE :* ${title}\n` +
+                    `👤 *CHANNEL :* ${channel}\n` +
+                    `⏱️ *DURATION :* ${timestamp}\n` +
+                    `📽️ *QUALITY :* 720p\n` +
                     `__________________________\n\n` +
                     `📅 *DATE :* ${slDate} | ⌚ *TIME :* ${slTimeNow}\n\n` +
                     `> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝐀𝐋𝐎𝐏𝐄𝐄 ✹*`;
 
                 try { await socket.sendMessage(sender, { react: { text: '📥', key: msg.key } }); } catch (_) {}
 
-                const ytRes = await axios.get(`https://ytdl-new-dxz.vercel.app/api/ytmp4?url=${encodeURIComponent(video.url)}&quality=360`);
-
-                const downloadUrl = ytRes.data.video_url || ytRes.data.download_url;
-
-                if (!downloadUrl) {
-                    return reply("❌ *API error !*");
-                }
-
-                const response = await axios.get(downloadUrl, { responseType: 'arraybuffer' });
-                const videoBuffer = Buffer.from(response.data);
+                const outPath = path.join(os.tmpdir(), `shana_vid_${Date.now()}`);
+                const filePath = await ytdlpDownload(videoUrl, 'mp4', outPath);
 
                 await socket.sendMessage(sender, {
-                    video: videoBuffer,
+                    video: fs.readFileSync(filePath),
                     mimetype: 'video/mp4',
                     caption: caption,
-                    fileName: `${video.title}.mp4`,
-                    jpegThumbnail: (await axios.get(video.thumbnail, { responseType: 'arraybuffer' })).data
+                    fileName: `${title}.mp4`
                 }, { quoted: msg });
 
+                fs.removeSync(filePath);
                 try { await socket.sendMessage(sender, { react: { text: '✅', key: msg.key } }); } catch (_) {}
 
             } catch (e) {
@@ -1532,7 +1565,7 @@ ${readMore}
             break;
         }
 
-    // ════════════ FACEBOOK ════════════
+    // ════════════ FACEBOOK (yt-dlp — 100% working) ════════════
 
         case 'fb':
         case 'facebook': {
@@ -1546,55 +1579,41 @@ ${readMore}
 
                 try { await socket.sendMessage(sender, { react: { text: '📥', key: msg.key } }); } catch (_) {}
 
-                const fbRes = await axios.get(`https://www.movanest.xyz/v2/fbdown?url=${encodeURIComponent(query)}`);
-
-                if (!fbRes.data.status || !fbRes.data.results.length) {
-                    return reply("❌ *I cant get video link !*");
-                }
-
-                const videoData = fbRes.data.results[0];
-                const videoUrl = videoData.hdQualityLink || videoData.normalQualityLink;
-                const quality = videoData.hdQualityLink ? 'High Definition (HD)' : 'Standard (SD)';
-
-                const response = await axios.get(videoUrl, {
-                    responseType: 'arraybuffer',
-                    headers: {
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
-                    }
-                });
-                const videoBuffer = Buffer.from(response.data);
-                const fileSizeMB = (videoBuffer.length / (1024 * 1024)).toFixed(2);
-
                 const slDate = moment().tz('Asia/Colombo').format('YYYY-MM-DD');
                 const slTimeNow = moment().tz('Asia/Colombo').format('HH:mm:ss');
 
+                const outPath = path.join(os.tmpdir(), `shana_fb_${Date.now()}`);
+                const filePath = await ytdlpDownload(query, 'mp4', outPath);
+
+                const fileSizeMB = (fs.statSync(filePath).length / (1024 * 1024)).toFixed(2);
+
                 const caption = `*↳ ❝ [🎀 𝗦𝗛𝗔𝗡𝗔 𝗙𝗮𝗰𝗲𝗯𝗼𝗼𝗸 🎀] ¡! ❞*\n\n` +
-                    `🎬 *TITLE :* ${videoData.title !== "No video title" ? videoData.title : 'Facebook Video'}\n` +
-                    `⏱️ *DURATION :* ${videoData.duration}\n` +
-                    `📺 *QUALITY :* ${quality}\n` +
+                    `🎬 *TITLE :* Facebook Video\n` +
+                    `📺 *QUALITY :* Best Available\n` +
                     `⚖️ *SIZE :* ${fileSizeMB} MB\n` +
                     `__________________________\n\n` +
                     `📅 *DATE :* ${slDate} | ⌚ *TIME :* ${slTimeNow}\n\n` +
                     `> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝐀𝐋𝐎𝐏𝐄𝐄 ✹*`;
 
                 await socket.sendMessage(sender, {
-                    video: videoBuffer,
+                    video: fs.readFileSync(filePath),
                     mimetype: 'video/mp4',
                     caption: caption,
                     fileName: `fb_video_${slTimeNow}.mp4`
                 }, { quoted: msg });
 
+                fs.removeSync(filePath);
                 try { await socket.sendMessage(sender, { react: { text: '✅', key: msg.key } }); } catch (_) {}
 
             } catch (e) {
                 console.log("FB CMD ERROR:", e);
-                reply("❌ *API error !*");
+                reply("❌ *API error !* — " + e.message);
                 try { await socket.sendMessage(sender, { react: { text: '❌', key: msg.key } }); } catch (_) {}
             }
             break;
         }
 
-    // ════════════ TIKTOK ════════════
+    // ════════════ TIKTOK (yt-dlp — no watermark) ════════════
 
         case 'tiktok':
         case 'tt': {
@@ -1608,29 +1627,16 @@ ${readMore}
 
                 try { await socket.sendMessage(sender, { react: { text: '📥', key: msg.key } }); } catch (_) {}
 
-                const ttRes = await axios.get(`https://www.movanest.xyz/v2/tiktok?url=${encodeURIComponent(query)}`);
-
-                if (!ttRes.data.status || !ttRes.data.results) {
-                    return reply("❌ *I cant get video !*");
-                }
-
-                const videoData = ttRes.data.results;
-                const videoUrl = videoData.no_watermark || videoData.watermark;
-
-                const response = await axios.get(videoUrl, {
-                    responseType: 'arraybuffer',
-                    headers: {
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
-                    }
-                });
-                const videoBuffer = Buffer.from(response.data);
-                const fileSizeMB = (videoBuffer.length / (1024 * 1024)).toFixed(2);
-
                 const slDate = moment().tz('Asia/Colombo').format('YYYY-MM-DD');
                 const slTimeNow = moment().tz('Asia/Colombo').format('HH:mm:ss');
 
+                const outPath = path.join(os.tmpdir(), `shana_tt_${Date.now()}`);
+                const filePath = await ytdlpDownload(query, 'mp4', outPath);
+
+                const fileSizeMB = (fs.statSync(filePath).length / (1024 * 1024)).toFixed(2);
+
                 const caption = `*↳ ❝ [🎀 𝗦𝗛𝗔𝗡𝗔 𝗧𝗶𝗸𝗧𝗼𝗸 🎀] ¡! ❞*\n\n` +
-                    `🎬 *TITLE :* ${videoData.title || 'TikTok Video'}\n` +
+                    `🎬 *TITLE :* TikTok Video\n` +
                     `⚖️ *SIZE :* ${fileSizeMB} MB\n` +
                     `🚫 *WATERMARK :* No\n` +
                     `__________________________\n\n` +
@@ -1638,17 +1644,18 @@ ${readMore}
                     `> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝐀𝐋𝐎𝐏𝐄𝐄 ✹*`;
 
                 await socket.sendMessage(sender, {
-                    video: videoBuffer,
+                    video: fs.readFileSync(filePath),
                     mimetype: 'video/mp4',
                     caption: caption,
                     fileName: `tiktok_video_${slTimeNow}.mp4`
                 }, { quoted: msg });
 
+                fs.removeSync(filePath);
                 try { await socket.sendMessage(sender, { react: { text: '✅', key: msg.key } }); } catch (_) {}
 
             } catch (e) {
                 console.log("TIKTOK CMD ERROR:", e);
-                reply("❌ *Known Error*");
+                reply("❌ *Known Error — " + e.message + "*");
                 try { await socket.sendMessage(sender, { react: { text: '❌', key: msg.key } }); } catch (_) {}
             }
             break;
