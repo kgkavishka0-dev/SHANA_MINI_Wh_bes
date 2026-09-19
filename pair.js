@@ -23,6 +23,8 @@ const fecth = require('node-fetch');
 const ffmpeg = require("fluent-ffmpeg");
 const ffmpegPath = require("ffmpeg-static");
 ffmpeg.setFfmpegPath(ffmpegPath);
+// ffmpeg-static binary eka yt-dlp ekatath pennanna (mp3 convert ekata)
+process.env.PATH = path.dirname(ffmpegPath) + ':' + (process.env.PATH || '');
 
 // ═══ SHANA IMAGE — හැම තැනම මේ එකම image එක ═══
 const SHANA_IMG = 'https://i.ibb.co/XfhkHjRM/imagebug.jpg';
@@ -324,33 +326,146 @@ const runtime = (seconds) => {
 }
 
 // ══════════════════════════════════════════════════════════════
-// ═══ SHANA UNIVERSAL DOWNLOADER (yt-dlp — 100% working) ═══
+// ═══ SHANA UNIVERSAL DOWNLOADER (yt-dlp + API fallback) ═══
 // ═══ YouTube / TikTok / Facebook / 1000+ sites support ═══
-// ═══ Server eke "pip install yt-dlp" kala thiyenna oni ═══
 // ══════════════════════════════════════════════════════════════
+const YT_DLP_PATH = path.join(__dirname, 'yt-dlp'); // postinstall eken download wena binary eka
+
 const execAsync = (cmd) => new Promise((resolve, reject) => {
-    exec(cmd, { maxBuffer: 1024 * 1024 * 100, timeout: 300000 }, (err, stdout, stderr) => {
+    exec(cmd, { maxBuffer: 1024 * 1024 * 200, timeout: 300000 }, (err, stdout, stderr) => {
         if (err) reject(new Error(stderr || err.message));
         else resolve(stdout);
     });
 });
 
-async function ytdlpDownload(url, mode, outPath) {
-    // mode: 'mp3' | 'mp4'
+// ---- Method 1: yt-dlp ----
+async function ytdlpDirect(url, mode, outPath) {
+    let ytdl = YT_DLP_PATH;
+    // local binary eka nathnam PATH eke thiyena eka try karannawa
+    if (!fs.existsSync(YT_DLP_PATH)) ytdl = 'yt-dlp';
+
+    const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+
     let cmd;
     if (mode === 'mp3') {
-        cmd = `yt-dlp -f "bestaudio/best" --no-playlist -x --audio-format mp3 --audio-quality 0 -o "${outPath}.%(ext)s" "${url}"`;
+        cmd = `"${ytdl}" -f "bestaudio/best" --no-playlist --no-warnings --user-agent "${UA}" -x --audio-format mp3 --audio-quality 0 -o "${outPath}.%(ext)s" "${url}"`;
     } else {
         // TikTok/FB/YouTube video — best mp4, max 720p (WA ekata gelapenna)
-        cmd = `yt-dlp -f "best[ext=mp4][height<=720]/best[ext=mp4]/best" --no-playlist --merge-output-format mp4 -o "${outPath}.%(ext)s" "${url}"`;
+        cmd = `"${ytdl}" -f "best[ext=mp4][height<=720]/best[ext=mp4]/best" --no-playlist --no-warnings --user-agent "${UA}" --merge-output-format mp4 -o "${outPath}.%(ext)s" "${url}"`;
     }
     await execAsync(cmd);
+
     // attat file eka hoyaganna (ext eka wenas wenna puluwan)
     const dir = path.dirname(outPath);
     const base = path.basename(outPath);
     const files = fs.readdirSync(dir).filter(f => f.startsWith(base));
     if (!files.length) throw new Error('Download failed');
     return path.join(dir, files[0]);
+}
+
+// ---- Method 2: Download from direct URL (API fallback) ----
+async function downloadFromUrl(directUrl, outPath, ext = 'mp4') {
+    const res = await axios.get(directUrl, {
+        responseType: 'arraybuffer',
+        timeout: 300000,
+        headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        }
+    });
+    const filePath = outPath + '.' + ext;
+    fs.writeFileSync(filePath, Buffer.from(res.data));
+    if (fs.statSync(filePath).length < 10000) throw new Error('File too small / invalid');
+    return filePath;
+}
+
+// ---- MAIN: yt-dlp try karanawa, fail unoth APIs walata fallback ----
+async function ytdlpDownload(url, mode, outPath) {
+    // 1st attempt — yt-dlp
+    try {
+        return await ytdlpDirect(url, mode, outPath);
+    } catch (e) {
+        console.log('yt-dlp failed, trying API fallback:', e.message.slice(0, 150));
+    }
+
+    // 2nd attempt — API fallbacks
+    if (mode === 'mp3') {
+        // YouTube MP3 — cobalt
+        try {
+            const r = await axios.post(`https://api.cobalt.tools/api/json`,
+                { url: url, aFormat: 'mp3', isAudioOnly: true },
+                { headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' }, timeout: 30000 });
+            if (r.data?.url) return await downloadFromUrl(r.data.url, outPath, 'mp3');
+        } catch (_) {}
+
+        // YouTube MP3 — ytdl API
+        try {
+            const r = await axios.get(`https://ytdl-new-dxz.vercel.app/api/ytmp3?url=${encodeURIComponent(url)}`, { timeout: 30000 });
+            const dl = r.data.download_url || r.data.result || r.data.url;
+            if (dl) return await downloadFromUrl(dl, outPath, 'mp3');
+        } catch (_) {}
+
+        throw new Error('All download methods failed');
+    }
+
+    // Video — TikTok (tikwm = most reliable, no watermark)
+    if (url.includes('tiktok.com')) {
+        try {
+            const r = await axios.get(`https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`, { timeout: 30000 });
+            const d = r.data?.data;
+            const dl = d?.play || d?.hdplay || d?.wmplay;
+            if (dl) return await downloadFromUrl(dl.startsWith('http') ? dl : 'https://www.tikwm.com' + dl, outPath, 'mp4');
+        } catch (_) {}
+
+        try {
+            const r = await axios.get(`https://www.movanest.xyz/v2/tiktok?url=${encodeURIComponent(url)}`, { timeout: 30000 });
+            const d = r.data?.results;
+            const dl = d?.no_watermark || d?.watermark;
+            if (dl) return await downloadFromUrl(dl, outPath, 'mp4');
+        } catch (_) {}
+    }
+
+    // Video — Facebook
+    if (url.includes('facebook.com') || url.includes('fb.watch')) {
+        try {
+            const r = await axios.get(`https://www.movanest.xyz/v2/fbdown?url=${encodeURIComponent(url)}`, { timeout: 30000 });
+            const d = r.data?.results?.[0];
+            const dl = d?.hdQualityLink || d?.normalQualityLink;
+            if (dl) return await downloadFromUrl(dl, outPath, 'mp4');
+        } catch (_) {}
+
+        try {
+            const r = await axios.post(`https://api.cobalt.tools/api/json`,
+                { url: url },
+                { headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' }, timeout: 30000 });
+            if (r.data?.url) return await downloadFromUrl(r.data.url, outPath, 'mp4');
+        } catch (_) {}
+    }
+
+    // Video — YouTube
+    if (url.includes('youtu')) {
+        try {
+            const r = await axios.get(`https://ytdl-new-dxz.vercel.app/api/ytmp4?url=${encodeURIComponent(url)}&quality=360`, { timeout: 30000 });
+            const dl = r.data.video_url || r.data.download_url;
+            if (dl) return await downloadFromUrl(dl, outPath, 'mp4');
+        } catch (_) {}
+
+        try {
+            const r = await axios.post(`https://api.cobalt.tools/api/json`,
+                { url: url },
+                { headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' }, timeout: 30000 });
+            if (r.data?.url) return await downloadFromUrl(r.data.url, outPath, 'mp4');
+        } catch (_) {}
+    }
+
+    // Video — anna sites (Instagram, Twitter, Vimeo waghera) — cobalt try
+    try {
+        const r = await axios.post(`https://api.cobalt.tools/api/json`,
+            { url: url },
+            { headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' }, timeout: 30000 });
+        if (r.data?.url) return await downloadFromUrl(r.data.url, outPath, 'mp4');
+    } catch (_) {}
+
+    throw new Error('All download methods failed');
 }
 
 async function setupMessageHandlers(socket) {
@@ -600,7 +715,6 @@ async function setupStatusHandlers(socket) {
                 // ═══ thappara 5k parukku wela like eka dannawa (minisek wage) ═══
                 await delay(5000);
 
-                // layik icon eka — heart ekak obala like
                 const emojis = sessionConfig.AUTO_LIKE_EMOJI || ['❤️', '💚', '💜', '🧡', '🩷'];
                 const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
 
@@ -677,10 +791,6 @@ async function EmpirePair(number, res) {
 
         // ═══════════════════════════════════════════════════════
         // ═══ GLOBAL HUMAN TYPING ═══
-        // Bot eken text/caption message ekak yana hæma tænæma
-        // kalini "typing..." wætila, random 1-2.5s parukku wela yanawa.
-        // 85% sambawithayawen witharai typing — hæma welawemæ næ
-        // (WhatsApp ekata minisek weda karanawa wage pænna, ban safe)
         // ═══════════════════════════════════════════════════════
         const origSendMessage = socket.sendMessage.bind(socket);
         socket.sendMessage = async (jid, content, opts) => {
@@ -1018,8 +1128,7 @@ async function setupCommandHandlers(socket, number) {
         // ═══════════ SHANA AGENT AUTO REPLY END ═══════════
 
         // ═══════════════════════════════════════════════════════
-        // ═══ STATUS FORWARD — "status" / "ස්ටේටස්" kiyalu iwuth
-        // anthima status eka minisek forward karanawa wage yawana ═══
+        // ═══ STATUS FORWARD — "status" / "ස්ටේටස්" kiyalu iwuth ═══
         // ═══════════════════════════════════════════════════════
         if (
             !isCmd &&
@@ -1041,13 +1150,11 @@ async function setupCommandHandlers(socket, number) {
                     try {
                         statusFwdLastSent.set(sender, Date.now());
 
-                        // typing karala poddak innawa (minisek forward karanawa wage)
                         await socket.sendPresenceUpdate('composing', sender);
                         await delay(2000 + Math.floor(Math.random() * 2000));
 
                         const st = latestStatuses.get(sanitizedNumber);
 
-                        // status eka forward karala yawana
                         const forwardedContent = generateForwardMessageContent(st.message, 1);
                         await socket.relayMessage(sender, forwardedContent, {
                             messageId: generateMessageID(),
@@ -1450,7 +1557,7 @@ ${readMore}
             break;
         }
 
-    // ════════════ SONG (yt-dlp — 100% working) ════════════
+    // ════════════ SONG (yt-dlp + fallback — 100% working) ════════════
 
         case 'song':
         case 'ytmp3': {
@@ -1504,7 +1611,7 @@ ${readMore}
             break;
         }
 
-    // ════════════ VIDEO (yt-dlp — 100% working) ════════════
+    // ════════════ VIDEO (yt-dlp + fallback — 100% working) ════════════
 
         case 'video':
         case 'ytmp4':
@@ -1565,7 +1672,7 @@ ${readMore}
             break;
         }
 
-    // ════════════ FACEBOOK (yt-dlp — 100% working) ════════════
+    // ════════════ FACEBOOK (yt-dlp + fallback — 100% working) ════════════
 
         case 'fb':
         case 'facebook': {
@@ -1613,7 +1720,7 @@ ${readMore}
             break;
         }
 
-    // ════════════ TIKTOK (yt-dlp — no watermark) ════════════
+    // ════════════ TIKTOK (yt-dlp + tikwm fallback — no watermark) ════════════
 
         case 'tiktok':
         case 'tt': {
