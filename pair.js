@@ -71,7 +71,7 @@ const config = {
     MAX_RETRIES: 3,
     ADMIN_LIST_PATH: './admin.json',
     AKIRA_IMG: 'https://i.ibb.co/XfhkHjRM/imagebug.jpg',
-    AUTORP_IMG: 'https://i.ibb.co/XfhkHjRM/imagebug.jpg',
+    AUTORP_IMG: 'https://ibb.co/vxZ1fG3q',
     NEWSLETTER_JID: '120363419619460838@newsletter',
     NEWSLETTER_LIST: [
         '120363425584831057@newsletter',
