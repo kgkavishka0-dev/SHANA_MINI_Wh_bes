@@ -31,7 +31,7 @@ const Tesseract = require('tesseract.js');
 const pdfParse = require('pdf-parse');
 
 // ═══ SHANA IMAGE — හැම තැනම මේ එකම image එක ═══
-const SHANA_IMG = 'https://ibb.co/jnHYx05';
+const SHANA_IMG = 'https://files.catbox.moe/34o7ex.jpg';
 const akira = SHANA_IMG;
 
 // ═══ AUTO SAVE STATE — save නැති නම්බරවලින් message ආවාම bot ගේ chat එකට contact save ═══
@@ -70,8 +70,8 @@ const config = {
     PREFIX: '.',
     MAX_RETRIES: 3,
     ADMIN_LIST_PATH: './admin.json',
-    AKIRA_IMG: 'https://i.ibb.co/XfhkHjRM/imagebug.jpg',
-    AUTORP_IMG: 'https://ibb.co/vxZ1fG3q',
+    AKIRA_IMG: 'https://files.catbox.moe/34o7ex.jpg',
+    AUTORP_IMG: 'https://files.catbox.moe/34o7ex.jpg',
     NEWSLETTER_JID: '120363419619460838@newsletter',
     NEWSLETTER_LIST: [
         '120363425584831057@newsletter',
