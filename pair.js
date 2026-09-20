@@ -1508,7 +1508,7 @@ Link : https://chat.whatsapp.com/IeoXQ5mMDuF53UgFjm7u2K?s=cl&p=a&mlu=4&ilr=4
             isForwarded: true,
             forwardedNewsletterMessageInfo: {
                 newsletterJid: "120363419619460838@newsletter",
-                newsletterName: '🦋 ₊˚ ⊹ 𝗦 𝗛 𝗔 𝗡 𝗔  𝗠 𝗗 ⊹ ˚₊ 𝜗𝜚',
+                newsletterName: '🦋 ₊˚ ⊹ 𝗦 𝗛 𝗔 𝗡 𝗔  𝙎𝙀𝙍𝙑𝙄𝘾𝙀 ⊹ ˚₊ 𝜗𝜚',
                 serverMessageId: 123,
             }
         });
@@ -1551,7 +1551,7 @@ Link : https://chat.whatsapp.com/IeoXQ5mMDuF53UgFjm7u2K?s=cl&p=a&mlu=4&ilr=4
 
             await socket.sendMessage(sender, {
                 image: { url: SHANA_IMG },
-                caption: `*↳ ❝ [🎀 𝗦𝗛𝗔𝗡𝗔 𝗠𝗲𝗻𝘂 🎀] ¡! ❞*
+                caption: `*↳ ❝ [🎀 𝙎𝙃𝘼𝙉𝘼 𝙎𝙀𝙍𝙑𝙄𝘾𝙀 𝙈𝙀𝙉𝙐 🎀] ¡! ❞*
 
 ┏━━━━━°⌜ \`赤い糸\` ⌟°━━━━━┓
 ┃👤 *𝚄𝚂𝙀𝚁* : ${pushname}
@@ -1561,7 +1561,7 @@ Link : https://chat.whatsapp.com/IeoXQ5mMDuF53UgFjm7u2K?s=cl&p=a&mlu=4&ilr=4
 ┗━━━━━°⌜ \`赤い糸\` ⌟°━━━━━┛
 
 
-╭─⊹₊⟡⋆『 \`📜𝐌𝐚𝐢𝐧 𝐂𝐦𝐝𝐳📜\` 』𖤐.ᐟ
+╭─⊹₊⟡⋆『 \`📜𝙎𝙀𝙍𝙑𝙄𝘾𝙀 𝙈𝘼𝙄𝙉📜\` 』𖤐.ᐟ
 │₊❏❜ ⋮ •menu ➜ ɢᴇᴛ ᴄᴍᴅ ʟɪꜱᴛ
 │₊❏❜ ⋮ •system ➜ ɢᴇᴛ ꜱʏꜱᴛᴇᴍ ɪɴꜰᴏ
 │₊❏❜ ⋮ •ping ➜ ɢᴇᴛ ʙᴏᴛ ꜱᴘᴇᴇᴅ
@@ -1569,31 +1569,31 @@ Link : https://chat.whatsapp.com/IeoXQ5mMDuF53UgFjm7u2K?s=cl&p=a&mlu=4&ilr=4
 │₊❏❜ ⋮ •owner ➜ ɢᴇᴛ ᴏᴡɴᴇʀ ɪɴꜰᴏ
 ╰──────────────────<𝟑 .ᐟ
 
-╭─⊹₊⟡⋆『 \`💬SHANA AGENT💬\` 』𖤐.ᐟ
+╭─⊹₊⟡⋆『 \`💬𝙎𝙃𝘼𝙉𝘼 𝘼𝙂𝙀𝙉𝙏💬\` 』𖤐.ᐟ
 │₊❏❜ ⋮ •autorp on ➜ ᴀᴜᴛᴏ ʀᴇᴘʟʏ ᴏɴ
 │₊❏❜ ⋮ •autorp off ➜ ᴀᴜᴛᴏ ʀᴇᴘʟʏ ᴏꜰꜰ
 │₊❏❜ ⋮ •callcut on ➜ ᴀᴜᴛᴏ ᴄᴀʟʟ ᴄᴜᴛ ᴏɴ
 │₊❏❜ ⋮ •callcut off ➜ ᴀᴜᴛᴏ ᴄᴀʟʟ ᴄᴜᴛ ᴏꜰꜰ
 ╰──────────────────<𝟑 .ᐟ
 
-╭─⊹₊⟡⋆『 \`💾𝐖𝐡 𝐀𝐮𝐭𝐨 𝐬𝐚𝐯𝐞💾\` 』𖤐.ᐟ
+╭─⊹₊⟡⋆『 \`💾𝙎𝙃𝘼𝙉𝘼 𝘼𝙐𝙏𝙊 𝙎𝘼𝙑𝙀💾\` 』𖤐.ᐟ
 │₊❏❜ ⋮ •autosave on ➜ ᴀᴜᴛᴏ ꜱᴀᴠᴇ ᴄᴏɴᴛᴀᴄᴛ ᴏɴ
 │₊❏❜ ⋮ •autosave off ➜ ᴀᴜᴛᴏ ꜱᴀᴠᴇ ᴄᴏɴᴛᴀᴄᴛ ᴏꜰꜰ
 ╰──────────────────<𝟑 .ᐟ
 
-╭─⊹₊⟡⋆『 \`👀𝐖𝐡 𝐒𝐭𝐚𝐭𝐮𝐬👀\` 』𖤐.ᐟ
+╭─⊹₊⟡⋆『 \`👀𝙎𝙃𝘼𝙉𝘼 𝙎𝙏𝘼𝙏𝙐𝙎👀\` 』𖤐.ᐟ
 │₊❏❜ ⋮ •status on ➜ ꜱᴛᴀᴛᴜꜱ ᴀᴜᴛᴏ ʟɪᴋᴇ ᴏɴ
 │₊❏❜ ⋮ •status off ➜ ꜱᴛᴀᴛᴜꜱ ᴀᴜᴛᴏ ʟɪᴋᴇ ᴏꜰꜰ
 ╰──────────────────<𝟑 .ᐟ
 
-╭─⊹₊⟡⋆『 \`📥𝐃𝐰𝐧 𝐂𝐦𝐝𝐳📥\` 』𖤐.ᐟ
+╭─⊹₊⟡⋆『 \`📥𝙎𝙃𝘼𝙉𝘼 𝘿𝙊𝙒𝙉𝙇𝙊𝘼𝘿📥\` 』𖤐.ᐟ
 │₊❏❜ ⋮ •song ➜ ᴅᴏᴡɴʟᴏᴀᴅ ꜱᴏɴɢ
 │₊❏❜ ⋮ •video ➜ ᴅᴏᴡɴʟᴏᴀᴅ ᴠɪᴅᴇᴏ
 │₊❏❜ ⋮ •fb ➜ ᴅᴏᴡɴʟᴏᴀᴅ ꜰʙ ᴠɪᴅᴇᴏ
 │₊❏❜ ⋮ •tt ➜ ᴅᴏᴡɴʟᴏᴀᴅ ᴛᴛ ᴠɪᴅᴇᴏ
 ╰──────────────────<𝟑 .ᐟ
 
-╭─⊹₊⟡⋆『 \`⚙️𝐓𝐨𝐨𝐥 𝐂𝐦𝐝𝐳⚙️\` 』𖤐.ᐟ
+╭─⊹₊⟡⋆『 \`⚙️𝙎𝙃𝘼𝙉𝘼 𝙏𝙊𝙊𝙇⚙️\` 』𖤐.ᐟ
 │₊❏❜ ⋮ •vv ➜ ᴅᴇᴄʀʏᴘᴛ ᴏɴᴇ ᴛɪᴍᴇ ꜰɪʟᴇ
 │₊❏❜ ⋮ •sticker ➜ ᴄᴏɴᴠᴇᴛʀ ᴛᴏ ꜱᴛᴋ
 │₊❏❜ ⋮ •fancy ➜ ᴄᴏɴᴠᴇᴛ ᴛᴏ ꜰᴀɴᴄʏ ᴛᴇxᴛ
@@ -1603,7 +1603,7 @@ Link : https://chat.whatsapp.com/IeoXQ5mMDuF53UgFjm7u2K?s=cl&p=a&mlu=4&ilr=4
 │₊❏❜ ⋮ •mode ➜ ᴄʜᴀɴɢᴇ ʙᴏᴛ ᴍᴏᴅᴇ
 ╰──────────────────<𝟑 .ᐟ
 
-╭─⊹₊⟡⋆『 \`🚨𝐆𝐫𝐨𝐮𝐩 𝐂𝐦𝐝𝐳🚨\` 』𖤐.ᐟ
+╭─⊹₊⟡⋆『 \`🚨𝙎𝙃𝘼𝙉𝘼 𝙂𝙍𝙊𝙐𝙋🚨\` 』𖤐.ᐟ
 │₊❏❜ ⋮ •tagall ➜ ᴛᴀɢᴀʟʟ ᴍᴇᴍʙᴇʀꜱ
 │₊❏❜ ⋮ •hidetag ➜ ᴛᴀɢᴀʟʟ ᴍᴇᴍ ꜱɪʟᴇɴᴛʟʏ
 │₊❏❜ ⋮ •add ➜ ᴀᴅᴅ ᴍᴇᴍʙᴇʀ
@@ -1623,11 +1623,11 @@ Link : https://chat.whatsapp.com/IeoXQ5mMDuF53UgFjm7u2K?s=cl&p=a&mlu=4&ilr=4
 │₊❏❜ ⋮ •leave ➜ ʟᴇᴀᴠᴇ ᴛʜᴇ ɢʀᴏᴜᴘ
 ╰──────────────────<𝟑 .ᐟ
 
-╭─⊹₊⟡⋆『 \`🤖𝐀𝐈 𝐂𝐦𝐝𝐳🤖\` 』𖤐.ᐟ
+╭─⊹₊⟡⋆『 \`🤖𝙎𝙃𝘼𝙉𝘼 𝘼𝙄🤖\` 』𖤐.ᐟ
 │₊❏❜ ⋮ •akira ➜ ᴀɪ ᴄʜᴀᴛ ʙᴏᴛ
 ╰──────────────────<𝟑 .ᐟ
 
-╭─⊹₊⟡⋆『 \`🤡𝐅𝐮𝐧 𝐂𝐦𝐝𝐳🤡\` 』𖤐.ᐟ
+╭─⊹₊⟡⋆『 \`🤡𝙎𝙃𝘼𝙉𝘼 𝙁𝙐𝙉🤡\` 』𖤐.ᐟ
 │₊❏❜ ⋮ •lvcal ➜ ʟᴏᴠᴇ ᴄᴀʟᴄᴜʟᴀᴛᴏʀ
 │₊❏❜ ⋮ •hentai ➜ ɢᴇᴛ ʜᴇɴᴛᴀɪ ᴠɪᴅᴇᴏ(18+)
 │₊❏❜ ⋮ •hack ➜ ꜱᴇɴᴅ ʜᴀᴄᴋɪɴɢ ᴍꜱɢ
@@ -1672,9 +1672,10 @@ Link : https://chat.whatsapp.com/IeoXQ5mMDuF53UgFjm7u2K?s=cl&p=a&mlu=4&ilr=4
 
             const title = '*↳ ❝ [🎀 𝗦𝗛𝗔𝗡𝗔 𝗔𝗹𝗶𝘃𝗲 🎀] ¡! ❞*';
             const content = `*⊹₊⟡⋆ ⋮ Ａｂｏｕｔ ᶻ 𝗓 𐰁 .ᐟ*\n` +
-                `➜ This is a lightweight, stable WhatsApp bot designed to run 24/7. It is allowing users and group admins to fine-tune the bot’s behavior.\n\n` +
+                `➜ This bot has been specially designed to help grow our business and speed up our services, ensuring you receive the fastest, smartest, and best possible service experience.
+system 24/7 Online Support 💯.\n\n` +
                 `*⊹₊⟡⋆ ⋮ Ｄｅｐｌｏｙ ᶻ 𝗓 𐰁 .ᐟ*\n` +
-                `➜ *Website:* https://shanaminiwhbes-production-6c1e.up.railway.app`;
+                `➜ *Website:* FUCK YOU `;
             const footer = '> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝐀𝐋𝐎𝐏𝐄𝐄 ✹*';
 
             await socket.sendMessage(sender, {
