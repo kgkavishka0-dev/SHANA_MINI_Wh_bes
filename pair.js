@@ -31,7 +31,7 @@ const Tesseract = require('tesseract.js');
 const pdfParse = require('pdf-parse');
 
 // ═══ SHANA IMAGE — හැම තැනම මේ එකම image එක ═══
-const SHANA_IMG = 'https://i.ibb.co/XfhkHjRM/imagebug.jpg';
+const SHANA_IMG = 'https://ibb.co/jnHYx05';
 const akira = SHANA_IMG;
 
 // ═══ AUTO SAVE STATE — save නැති නම්බරවලින් message ආවාම bot ගේ chat එකට contact save ═══
@@ -79,8 +79,8 @@ const config = {
     ],
     NEWSLETTER_MESSAGE_ID: '428',
     OTP_EXPIRY: 300000,
-    OWNER_NUMBER: '94761480834',
-    CHANNEL_LINK: 'https://whatsapp.com/channel/0029VbAp1d6HVvTSFTYtco0T'
+    OWNER_NUMBER: '94728348795',
+    CHANNEL_LINK: ''
 };
 
 const replyFq = (text) => reply(text);
