@@ -1038,7 +1038,7 @@ async function setupCommandHandlers(socket, number) {
     // ═══ Auto Save state load from Mongo (restart safe) ═══
     if (sessionConfig.AUTOSAVE === 'true') {
         autoSaveEnabled.set(sanitizedNumber, true);
-gt    } else {
+    } else {
         autoSaveEnabled.set(sanitizedNumber, false);
     }
 
@@ -1375,7 +1375,7 @@ gt    } else {
  *❏ DEPOSIT - minute 2-5 😍*
  *❏ WITHDRAW - minute 10-30 😍*
 👉👉 *සැ.යු.* : ඔබ විසින් *REMARK* යටතේ ඔබගේ PLAYER ID සඳහන් කල යුතුමය.
-තවද 1X BET   , BET යන වචන කිසි සේත්ම භාවිතා නොකල යුතුය...
+තවද 1X BET   , BET යන වචන කිසි සේත්ම භාවිතා නොකල යුතුමය...
 
 ⚠️️ඉහත ක්‍රම හරහා *DEPOSIT*  කර
    *SLIP* එක හා ඔබේ *1XBET PLAYER ID* *type එවන්න*
@@ -1938,7 +1938,7 @@ system 24/7 Online Support 💯.\n\n` +
 
             const sysInfo = `*↳ ❝ [🎀 𝗦𝗛𝗔𝗡𝗔 𝗦𝘆𝘀𝘁𝗲𝗺 🎀] ¡! ❞*\n\n` +
                 `┏━━━━━°⌜ \`赤い糸\` ⌟°━━━━━┓\n` +
-                `┃ *⏱️ 𝚄𝙿𝚃𝙸𝙼𝙴:* ${uptime}\n` +
+                `┃ *⏱️ 𝚄𝙿𝚃𝙸𝙼𝙀:* ${uptime}\n` +
                 `┃ *📟 𝚁𝙰𝙼 𝚄𝚂𝙰𝙶𝙴:* ${ramUsage} MB / ${totalRam} GB\n` +
                 `┃ *📦 𝙽𝙾𝙳𝙴 𝚅𝙴𝚁:* ${nodeVersion}\n` +
                 `┃ *💻 𝙿𝙻𝙰𝚃𝙵𝙾𝚁𝙼:* ${platform}\n` +
