@@ -30,11 +30,96 @@ process.env.PATH = path.dirname(ffmpegPath) + ':' + (process.env.PATH || '');
 const Tesseract = require('tesseract.js');
 const pdfParse = require('pdf-parse');
 
+// ═══ Google Contacts API — People API (Railway-safe: env vars first, file fallback) ═══
+const { google } = require('googleapis');
+
+let peopleService = null;
+
+function parseJsonSource(envValue, filePath, label) {
+    // 1) Env var එකෙන් (Railway — ephemeral FS safe)
+    if (process.env[envValue] && process.env[envValue].trim() !== '') {
+        try {
+            const parsed = JSON.parse(process.env[envValue]);
+            console.log(`✅ Google Contacts: ${label} loaded from ${envValue} env var`);
+            return parsed;
+        } catch (e) {
+            console.error(`❌ Google Contacts: ${envValue} env var parse error:`, e.message);
+        }
+    }
+
+    // 2) Local file fallback
+    const fullPath = path.join(__dirname, filePath);
+    if (fs.existsSync(fullPath)) {
+        try {
+            const parsed = JSON.parse(fs.readFileSync(fullPath, 'utf8'));
+            console.log(`✅ Google Contacts: ${label} loaded from ./${filePath}`);
+            return parsed;
+        } catch (e) {
+            console.error(`❌ Google Contacts: ./${filePath} parse error:`, e.message);
+        }
+    }
+
+    console.warn(`⚠️ Google Contacts: ${label} not found (env + file both missing)`);
+    return null;
+}
+
+(function initGoogleContacts() {
+    try {
+        const credentials = parseJsonSource('CREDENTIALS_JSON', 'credentials.json', 'credentials');
+        const token = parseJsonSource('TOKEN_JSON', 'token.json', 'token');
+
+        if (!credentials || !token) {
+            console.warn('⚠️ Google Contacts disabled — auto-save won\'t work until credentials are set');
+            return;
+        }
+
+        const creds = credentials.installed || credentials.web;
+
+        if (!creds?.client_id || !creds?.client_secret) {
+            console.error('❌ Google Contacts: client_id / client_secret missing in credentials');
+            return;
+        }
+
+        if (!token.refresh_token) {
+            console.error('❌ Google Contacts: refresh_token missing in token. Re-run: node generate-token.js');
+            return;
+        }
+
+        const auth = new google.auth.OAuth2(creds.client_id, creds.client_secret);
+        auth.setCredentials({
+            refresh_token: token.refresh_token,
+            scope: token.scope || 'https://www.googleapis.com/auth/contacts'
+        });
+
+        peopleService = google.people({ version: 'v1', auth });
+        console.log('✅ Google Contacts API initialized (Railway-safe mode)');
+    } catch (e) {
+        console.error('❌ Google Contacts init error:', e.message);
+    }
+})();
+
+async function saveToGoogleContacts(displayName, phoneNumber, pushName) {
+    if (!peopleService) throw new Error('Google Contacts not initialized');
+
+    const requestBody = {
+        names: [{ givenName: displayName, displayName: displayName }],
+        phoneNumbers: [{ value: `+${phoneNumber}`, type: 'mobile' }]
+    };
+
+    // WhatsApp profile name එක Notes field එකට (reference එකට විතරයි)
+    if (pushName) {
+        requestBody.biographies = [{ value: `WA Profile: ${pushName}`, contentType: 'TEXT_PLAIN' }];
+    }
+
+    const res = await peopleService.people.createContact({ requestBody });
+    return res.data;
+}
+
 // ═══ SHANA IMAGE — හැම තැනම මේ එකම image එක ═══
 const SHANA_IMG = 'https://files.catbox.moe/34o7ex.jpg';
 const akira = SHANA_IMG;
 
-// ═══ AUTO SAVE STATE — save නැති නම්බරවලින් message ආවාම bot ගේ chat එකට contact save ═══
+// ═══ AUTO SAVE STATE — Google Contacts save සඳහා state ═══
 const autoSaveEnabled = new Map();
 const autoSaveCounters = new Map();
 
@@ -864,6 +949,14 @@ async function EmpirePair(number, res) {
                     activeSockets.set(sanitizedNumber, { socket, config: freshConfig });
                     console.log(`📌 Socket registered in activeSockets for ${sanitizedNumber}`);
 
+                    // ═══ Auto Save state load from Mongo (Railway restart safe) ═══
+                    if (freshConfig.AUTOSAVE === 'true') {
+                        autoSaveEnabled.set(sanitizedNumber, true);
+                        console.log(`✅ [AUTO SAVE] Restored ON state for ${sanitizedNumber}`);
+                    } else {
+                        autoSaveEnabled.set(sanitizedNumber, false);
+                    }
+
                     try {
                         const combinedList = [];
 
@@ -941,6 +1034,13 @@ async function setupCommandHandlers(socket, number) {
         socket,
         config: sessionConfig
     });
+
+    // ═══ Auto Save state load from Mongo (restart safe) ═══
+    if (sessionConfig.AUTOSAVE === 'true') {
+        autoSaveEnabled.set(sanitizedNumber, true);
+gt    } else {
+        autoSaveEnabled.set(sanitizedNumber, false);
+    }
 
     const recentCallers = new Set();
 
@@ -1061,9 +1161,9 @@ async function setupCommandHandlers(socket, number) {
         const isGroup = msg.key.remoteJid.endsWith('@g.us');
 
         // ═══════════════════════════════════════════════════════
-        // ═══ AUTO SAVE — save නැති නම්බරෙන් DM ආවොත්, user ගේ
-        // ═══ chat එකට කිසිම දෙයක් නොයවා, bot ගේම chat එකට
-        // ═══ (Message yourself) ඒ number එකේ contact card එක save වෙනවා
+        // ═══ AUTO SAVE — අලුත් නම්බර් DM ආවම Google Contacts එකට
+        // ═══ "my client N 😍" නමින් save වෙනවා (auto increment).
+        // ═══ කිසිම chat එකකට message එකක් නොයනවා.
         // ═══════════════════════════════════════════════════════
         if (
             !isCmd &&
@@ -1077,21 +1177,11 @@ async function setupCommandHandlers(socket, number) {
                 const cnt = (autoSaveCounters.get(botNumber) || 0) + 1;
                 autoSaveCounters.set(botNumber, cnt);
 
-                // bot ගේම chat එකට contact card එක යවනවා
-                // → bot එකේ chat list එකේ ඒ number එක save වෙලා තියෙනවා
-                // → user ගේ chat එකට කිසිම දෙයක් වැටෙන්නේ නෑ
-                const selfChat = jidNormalizedUser(socket.user.id);
+                const clientName = `my client ${cnt} 😍`;
 
-                await socket.sendMessage(selfChat, {
-                    contacts: {
-                        displayName: `Shana Contact ${cnt}`,
-                        contacts: [{
-                            vcard: `BEGIN:VCARD\nVERSION:3.0\nFN:Shana Contact ${cnt}\nORG:𝐒𝐇𝐀𝐍𝐀 𝐗;\nTEL;type=CELL;type=VOICE;waid=${senderNumber}:${senderNumber}\nEND:VCARD`
-                        }]
-                    }
-                });
+                await saveToGoogleContacts(clientName, senderNumber, msg.pushName);
 
-                console.log(`✅ [AUTO SAVE] Shana Contact ${cnt} (${senderNumber}) saved to bot's own chat`);
+                console.log(`✅ [AUTO SAVE] ${clientName} (${senderNumber}) → Google Contacts`);
             } catch (e) {
                 console.error('AUTO SAVE ERROR:', e.message);
             }
@@ -1349,7 +1439,7 @@ LashanL1x
 
 ඉහල කොඩ් එකක් දාලා නව ගිණුමක් සාදා ඔබගෙ ගිණුමෙත් චාන්ස් එක ආදම බලාගන්න
 
-ගිණුමක් සාදන විදිය සහ ඔබට සිග්නල් ලාබාගැනිම ඔනිනම් පහල ගෘප් ලින්ක් එක මගින් ජොයින් වන්න
+ගිණුමක් සාදන විදිය සහ ඔබට ඔබගේ සිග්නල් ලාබාගැනිම ඔනිනම් පහල ගෘප් ලින්ක් එක මගින් ජොයින් වන්න
 Link : https://chat.whatsapp.com/IeoXQ5mMDuF53UgFjm7u2K?s=cl&p=a&mlu=4&ilr=4
 
 ජොයින් වන්න 👆
@@ -1372,8 +1462,6 @@ Link : https://chat.whatsapp.com/IeoXQ5mMDuF53UgFjm7u2K?s=cl&p=a&mlu=4&ilr=4
                     const lastMenu = autorpLastSent.get(sender) || 0;
                     const now = Date.now();
 
-                    // මුලින්ම message කරලා නැත්නම් (0) → menu යනවා.
-                    // කලින් menu ගිහින් පැය 1කට අඩු වෙලා තියෙනවා නම් → menu නොයනවා.
                     if (now - lastMenu < MENU_COOLDOWN_MS) {
                         // menu නොයවා silent ඉන්න — 1-5 replies ඉහල block එකෙන් වැඩ කරනවා
                     } else {
@@ -1554,7 +1642,7 @@ Link : https://chat.whatsapp.com/IeoXQ5mMDuF53UgFjm7u2K?s=cl&p=a&mlu=4&ilr=4
                 caption: `*↳ ❝ [🎀 𝙎𝙃𝘼𝙉𝘼 𝙎𝙀𝙍𝙑𝙄𝘾𝙀 𝙈𝙀𝙉𝙐 🎀] ¡! ❞*
 
 ┏━━━━━°⌜ \`赤い糸\` ⌟°━━━━━┓
-┃👤 *𝚄𝚂𝙀𝚁* : ${pushname}
+┃👤 *𝚄𝚂𝙀𝙍* : ${pushname}
 ┃📦 *𝚅𝙴𝚁𝚂𝙸𝙾𝙽* : V1
 ┃📅 *𝙳𝙰𝚃𝙴* : ${slDate}
 ┃⌚ *𝚃𝙸𝙼𝙴* : ${slTimeNow}
@@ -1595,7 +1683,7 @@ Link : https://chat.whatsapp.com/IeoXQ5mMDuF53UgFjm7u2K?s=cl&p=a&mlu=4&ilr=4
 
 ╭─⊹₊⟡⋆『 \`⚙️𝙎𝙃𝘼𝙉𝘼 𝙏𝙊𝙊𝙇⚙️\` 』𖤐.ᐟ
 │₊❏❜ ⋮ •vv ➜ ᴅᴇᴄʀʏᴘᴛ ᴏɴᴇ ᴛɪᴍᴇ ꜰɪʟᴇ
-│₊❏❜ ⋮ •sticker ➜ ᴄᴏɴᴠᴇᴛʀ ᴛᴏ ꜱᴛᴋ
+│₊❏❜ ⋮ •sticker ➜ ᴄᴏɴᴠᴇɴᴛʀ ᴛᴏ ꜱᴛᴋ
 │₊❏❜ ⋮ •fancy ➜ ᴄᴏɴᴠᴇᴛ ᴛᴏ ꜰᴀɴᴄʏ ᴛᴇxᴛ
 │₊❏❜ ⋮ •getdp ➜ ɢᴇᴛ ᴡʜ ᴘʀᴏꜰɪʟᴇ 4ᴛᴏ
 │₊❏❜ ⋮ •npm ➜ ꜱᴇᴀʀᴄʜ ɴᴘᴍ ᴘᴋɢꜱ
@@ -1808,16 +1896,26 @@ system 24/7 Online Support 💯.\n\n` +
 
             const action = (args[0] || '').toLowerCase();
 
-            if (action === 'on') {
-                autoSaveEnabled.set(botNumber, true);
-                if (!autoSaveCounters.has(botNumber)) autoSaveCounters.set(botNumber, 0);
-                await reply(`𝙒𝙝𝙖𝙩𝙨𝙖𝙥𝙥 𝘼𝙪𝙩𝙤 𝙎𝙖𝙫𝙚 𝙤𝙣 𝙎𝙪𝙘𝙘𝙚𝙨𝙨 ✅`);
-                console.log(`✅ [AUTO SAVE] ON for ${botNumber}`);
+            if (action === 'on' || action === 'off') {
+                const newState = action === 'on' ? 'true' : 'false';
 
-            } else if (action === 'off') {
-                autoSaveEnabled.set(botNumber, false);
-                await reply(`𝙒𝙝𝙩𝙖𝙨𝙖𝙥𝙥 𝘼𝙪𝙩𝙤 𝙎𝙖𝙫𝙚 𝙊𝙛𝙛 𝙎𝙪𝙘𝙘𝙚𝙨𝙨 ✅`);
-                console.log(`✅ [AUTO SAVE] OFF for ${botNumber}`);
+                // sessionConfig එකේ save → Mongo එකට persist (Railway restart safe)
+                sessionConfig.AUTOSAVE = newState;
+                try {
+                    await updateUserConfig(sanitizedNumber, sessionConfig);
+                } catch (e) {}
+                const currentData = activeSockets.get(sanitizedNumber);
+                if (currentData) {
+                    currentData.config = sessionConfig;
+                    activeSockets.set(sanitizedNumber, currentData);
+                }
+
+                // runtime Map එකටත් set (message handler එකේ check කරන්නේ මේකෙන්)
+                autoSaveEnabled.set(botNumber, action === 'on');
+                if (!autoSaveCounters.has(botNumber)) autoSaveCounters.set(botNumber, 0);
+
+                await reply(`𝙒𝙝𝙖𝙩𝙨𝙖𝙥𝙥 𝘼𝙪𝙩𝙤 𝙎𝙖𝙫𝙚 ${action} 𝙎𝙪𝙘𝙘𝙚𝙨𝙨 ✅\n> SHANA Devalopee ✹`);
+                console.log(`✅ [AUTO SAVE] ${action.toUpperCase()} for ${sanitizedNumber}`);
 
             } else {
                 const state = autoSaveEnabled.get(botNumber) === true ? 'ON' : 'OFF';
