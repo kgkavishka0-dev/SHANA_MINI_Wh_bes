@@ -46,7 +46,7 @@
     "googleapis": "^144.0.0"
   },
   "engines": {
-    "node": "24.x"
+    "node": ">=18.x"
   },
   "keywords": [
     "whatsapp",
