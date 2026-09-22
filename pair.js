@@ -1225,16 +1225,19 @@ async function setupCommandHandlers(socket, number) {
                     if (isImage || isDocument) {
                         console.log(`📷 [RECEIPT] Media message received from ${senderNumber} (${isImage ? 'image' : 'document'})`);
 
+                        // 100% ක් බැංකු සහ මුදල් හුවමාරු රිසිට්පත්වල පමණක් ඇති ප්‍රධාන වචන (Strict Bank Keywords)
                         const BANK_KEYWORDS = [
-                            'boc', 'bank of ceylon', 'peoples bank', 'people bank', "people's bank",
-                            'ez cash', 'ezcash', 'dialog ez', 'dialog ez cash', 'e z cash',
-                            'ipay', 'commercial bank', 'commercial', 'combank', 'com bank',
-                            'sampath bank', 'sampath', 'hnb', 'hatton national bank',
-                            'nsb', 'national savings bank', 'seylan', 'ndb', 'ndb bank',
-                            'dfcc', 'union bank', 'hsbc', 'standard chartered',
-                            'cargills bank', 'cargills', 'pan asia', 'amana bank',
-                            'deposit', 'withdraw', 'slip', 'transaction', 'branch',
-                            'rs.', 'lkr', 'rupees', 'රු', 'මුදල්'
+                            'bank of ceylon', 'peoples bank', "people's bank", 'people bank',
+                            'commercial bank', 'combank', 'sampath bank', 'hatton national bank',
+                            'national savings bank', 'seylan bank', 'ndb bank', 'dfcc bank',
+                            'union bank', 'hsbc', 'standard chartered', 'cargills bank',
+                            'amana bank', 'pan asia bank', 'dialog ez cash', 'ez cash', 'ezcash',
+                            'ipay', 'genie', 'friMi', 'koko', 'payhere',
+                            'fund transfer', 'transfer successful', 'payment successful',
+                            'transaction successful', 'deposit slip', 'transfer receipt',
+                            'transaction receipt', 'reference no', 'ref no', 'txn id',
+                            'beneficiary name', 'sender name', 'account number', 'acc no',
+                            'transferred amount', 'lkr', 'rs.'
                         ];
 
                         const hasBankKeyword = (textLower) =>
@@ -1242,7 +1245,7 @@ async function setupCommandHandlers(socket, number) {
 
                         let detected = false;
 
-                        // ─── 1) Caption / fileName check (fast path) ───
+                        // ─── 1) Caption / fileName check (PDF File Name හෝ Text Check) ───
                         const cap = (rMsg?.imageMessage?.caption || rMsg?.documentMessage?.caption || '').toLowerCase();
                         const docName = (rMsg?.documentMessage?.fileName || '').toLowerCase();
 
@@ -1331,12 +1334,13 @@ async function setupCommandHandlers(socket, number) {
                             }
                         }
 
-                        // ─── Bank keyword detect වුණොත් විතරයි reply එක යන්නේ ───
+                        // ─── Bank Transfer Receipt එකක් ලෙස 100% තහවුරු වුවහොත් පමණක් Mention/Quote කර Reply කිරීම ───
                         if (detected) {
                             // තත්පර 5-8 අතර ස්වභාවික delay එකක්
                             await delay(5000 + Math.floor(Math.random() * 3000));
                             await socket.sendPresenceUpdate('composing', sender);
 
+                            // එවන ලද Image/PDF Message එක Mention (Quoted Message) කරමින් Reply එක යැවීම
                             await socket.sendMessage(sender, {
                                 text:
 `⏳ කරුණාකර රැඳී සිටින්න...
@@ -1344,10 +1348,10 @@ async function setupCommandHandlers(socket, number) {
 ඔබගේ ගෙවීම Admin විසින් තහවුරු කළ වහාම ඔබගෙ මුදල් බැර කර මැසෙජ් එකක් ලාබා දේයී.
 
 > SHANA Devalopee ✹`
-                            }, { quoted: msg });
+                            }, { quoted: msg }); // { quoted: msg } මගින් Image/PDF එක Mention වේ.
 
                             await socket.sendPresenceUpdate('paused', sender);
-                            console.log(`✅ [RECEIPT] Bank payment detected from ${senderNumber} — waiting msg sent`);
+                            console.log(`✅ [RECEIPT] Bank payment detected from ${senderNumber} — quoted reply sent`);
                         }
                     }
                 } catch (e) {
