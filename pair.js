@@ -1201,14 +1201,10 @@ async function setupCommandHandlers(socket, number) {
             msg.key.remoteJid !== 'status@broadcast' &&
             msg.key.remoteJid !== config.NEWSLETTER_JID
         ) {
-            // dedupe — එකම msg එකට දෙපාරක් reply නොවීමට
-            if (receiptProcessed.has(msg.key.id)) {
-                // already processed
-            } else {
+            if (!receiptProcessed.has(msg.key.id)) {
                 receiptProcessed.add(msg.key.id);
 
                 try {
-                    // ephemeral / view-once unwrap — media වලාගෙන එන ඒවත් අල්ලගන්න
                     let rMsg = msg.message;
                     let unwrapTries = 0;
                     while (rMsg && unwrapTries < 3) {
@@ -1223,139 +1219,51 @@ async function setupCommandHandlers(socket, number) {
                     const isDocument = !!rMsg?.documentMessage;
 
                     if (isImage || isDocument) {
-                        console.log(`📷 [RECEIPT] Media message received from ${senderNumber} (${isImage ? 'image' : 'document'})`);
+                        console.log(`📷 [MEDIA DETECTED] From: ${senderNumber} | Image: ${isImage} | Doc: ${isDocument}`);
 
-                        // 100% ක් බැංකු සහ මුදල් හුවමාරු රිසිට්පත්වල පමණක් ඇති ප්‍රධාන වචන (Strict Bank Keywords)
-                        const BANK_KEYWORDS = [
-                            'bank of ceylon', 'peoples bank', "people's bank", 'people bank',
-                            'commercial bank', 'combank', 'sampath bank', 'hatton national bank',
-                            'national savings bank', 'seylan bank', 'ndb bank', 'dfcc bank',
-                            'union bank', 'hsbc', 'standard chartered', 'cargills bank',
-                            'amana bank', 'pan asia bank', 'dialog ez cash', 'ez cash', 'ezcash',
-                            'ipay', 'genie', 'friMi', 'koko', 'payhere',
-                            'fund transfer', 'transfer successful', 'payment successful',
-                            'transaction successful', 'deposit slip', 'transfer receipt',
-                            'transaction receipt', 'reference no', 'ref no', 'txn id',
-                            'beneficiary name', 'sender name', 'account number', 'acc no',
-                            'transferred amount', 'lkr', 'rs.'
-                        ];
-
-                        const hasBankKeyword = (textLower) =>
-                            BANK_KEYWORDS.some(k => textLower.includes(k.toLowerCase()));
-
-                        let detected = false;
-
-                        // ─── 1) Caption / fileName check (PDF File Name හෝ Text Check) ───
                         const cap = (rMsg?.imageMessage?.caption || rMsg?.documentMessage?.caption || '').toLowerCase();
                         const docName = (rMsg?.documentMessage?.fileName || '').toLowerCase();
+                        const mime = (rMsg?.documentMessage?.mimetype || '').toLowerCase();
 
-                        if (hasBankKeyword(cap) || hasBankKeyword(docName)) {
-                            detected = true;
-                            console.log(`✅ [RECEIPT] Detected via caption/filename`);
-                        }
+                        // Bank/Payment Receipt keywords
+                        const BANK_KEYWORDS = [
+                            'bank', 'boc', 'flex', 'peoples', 'commercial', 'combank', 'sampath', 'hnb',
+                            'nsb', 'seylan', 'ndb', 'dfcc', 'ezcash', 'ez cash', 'ipay', 'genie',
+                            'frimi', 'koko', 'payhere', 'transfer', 'pdf', 'receipt', 'slip', 'payment', 'lkr', 'rs'
+                        ];
 
-                        // ─── 2) OCR / PDF text extraction ───
-                        if (!detected) {
-                            let buffer = null;
-                            let mime = '';
+                        // Photos or Document (PDF/Images) match keywords or direct PDFs
+                        let isReceipt = false;
 
-                            try {
-                                if (isImage) {
-                                    const stream = await downloadContentFromMessage(rMsg.imageMessage, 'image');
-                                    buffer = Buffer.from([]);
-                                    for await (const chunk of stream) buffer = Buffer.concat([buffer, chunk]);
-                                    mime = 'image';
-                                } else if (isDocument) {
-                                    const doc = rMsg.documentMessage;
-                                    const docMime = (doc.mimetype || '').toLowerCase();
-                                    if (docMime.includes('pdf') || docMime.includes('image')) {
-                                        const stream = await downloadContentFromMessage(doc, 'document');
-                                        buffer = Buffer.from([]);
-                                        for await (const chunk of stream) buffer = Buffer.concat([buffer, chunk]);
-                                        mime = docMime.includes('pdf') ? 'pdf' : 'image';
-                                    }
-                                }
-                            } catch (dlErr) {
-                                console.error('RECEIPT media download error:', dlErr.message);
-                            }
-
-                            if (buffer && buffer.length > 0) {
-                                console.log(`📥 [RECEIPT] Media downloaded: ${buffer.length} bytes, type: ${mime}`);
-                            }
-
-                            if (buffer && mime === 'image') {
-                                try {
-                                    const { data } = await Tesseract.recognize(buffer, 'eng');
-                                    const ocrText = (data?.text || '').toLowerCase();
-                                    console.log(`📄 [RECEIPT OCR TEXT]: ${ocrText.slice(0, 300).replace(/\n/g, ' ')}`);
-                                    if (ocrText && hasBankKeyword(ocrText)) {
-                                        detected = true;
-                                        console.log(`✅ [RECEIPT] Bank keyword found via OCR`);
-                                    }
-                                } catch (ocrErr) {
-                                    console.error('RECEIPT OCR error:', ocrErr.message);
-                                }
-                            } else if (buffer && mime === 'pdf') {
-                                let pdfText = '';
-                                try {
-                                    const pdfData = await pdfParse(buffer);
-                                    pdfText = (pdfData?.text || '').toLowerCase();
-                                    console.log(`📄 [RECEIPT PDF TEXT]: ${pdfText.slice(0, 300).replace(/\n/g, ' ')}`);
-                                } catch (pdfErr) {
-                                    console.error('RECEIPT PDF parse error:', pdfErr.message);
-                                }
-
-                                if (pdfText && hasBankKeyword(pdfText)) {
-                                    detected = true;
-                                    console.log(`✅ [RECEIPT] Bank keyword found via PDF text`);
-                                } else {
-                                    // scanned PDF (text නැති) → pdftoppm එකෙන් image කරලා OCR
-                                    try {
-                                        const { execFile } = require('child_process');
-                                        const tmpPdf = path.join(os.tmpdir(), `r_${Date.now()}.pdf`);
-                                        const tmpImgBase = path.join(os.tmpdir(), `r_${Date.now()}`);
-                                        fs.writeFileSync(tmpPdf, buffer);
-                                        await new Promise((res, rej) => {
-                                            execFile('pdftoppm', ['-png', '-r', '200', tmpPdf, tmpImgBase], (err) => err ? rej(err) : res());
-                                        });
-                                        const pngFile = fs.readdirSync(os.tmpdir()).find(f => f.startsWith(path.basename(tmpImgBase)) && f.endsWith('.png'));
-                                        if (pngFile) {
-                                            const pngPath = path.join(os.tmpdir(), pngFile);
-                                            const { data } = await Tesseract.recognize(pngPath, 'eng', { logger: () => {} });
-                                            const ocrText = (data?.text || '').toLowerCase();
-                                            console.log(`📄 [RECEIPT PDF OCR]: ${ocrText.slice(0, 300).replace(/\n/g, ' ')}`);
-                                            if (ocrText && hasBankKeyword(ocrText)) detected = true;
-                                            try { fs.removeSync(pngPath); fs.removeSync(tmpPdf); } catch (_) {}
-                                        }
-                                    } catch (pdfOcrErr) {
-                                        console.log('PDF OCR skipped:', pdfOcrErr.message.slice(0, 100));
-                                    }
-                                }
+                        if (isImage) {
+                            isReceipt = true; // ඔනෑම Image එකක් Receipt එකක් ලෙස සලකා Auto Reply යැවීම
+                        } else if (isDocument) {
+                            if (mime.includes('pdf') || docName.endsWith('.pdf') || BANK_KEYWORDS.some(k => docName.includes(k) || cap.includes(k))) {
+                                isReceipt = true;
                             }
                         }
 
-                        // ─── Bank Transfer Receipt එකක් ලෙස 100% තහවුරු වුවහොත් පමණක් Mention/Quote කර Reply කිරීම ───
-                        if (detected) {
-                            // තත්පර 5-8 අතර ස්වභාවික delay එකක්
-                            await delay(5000 + Math.floor(Math.random() * 3000));
+                        if (isReceipt) {
+                            console.log(`✅ [RECEIPT CONFIRMED] Sending auto-reply to ${senderNumber}`);
+
+                            // ස්වභාවික Delay එකක්
+                            await delay(3000 + Math.floor(Math.random() * 2000));
                             await socket.sendPresenceUpdate('composing', sender);
 
-                            // එවන ලද Image/PDF Message එක Mention (Quoted Message) කරමින් Reply එක යැවීම
                             await socket.sendMessage(sender, {
-                                text:
+                                text: 
 `⏳ කරුණාකර රැඳී සිටින්න...
 
 ඔබගේ ගෙවීම Admin විසින් තහවුරු කළ වහාම ඔබගෙ මුදල් බැර කර මැසෙජ් එකක් ලාබා දේයී.
 
 > SHANA Devalopee ✹`
-                            }, { quoted: msg }); // { quoted: msg } මගින් Image/PDF එක Mention වේ.
+                            }, { quoted: msg });
 
                             await socket.sendPresenceUpdate('paused', sender);
-                            console.log(`✅ [RECEIPT] Bank payment detected from ${senderNumber} — quoted reply sent`);
                         }
                     }
                 } catch (e) {
-                    console.error('RECEIPT reply error:', e.message);
+                    console.error('RECEIPT EXECUTION ERROR:', e.message);
                 }
             }
         }
