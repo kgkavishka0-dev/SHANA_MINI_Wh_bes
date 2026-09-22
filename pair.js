@@ -1194,79 +1194,94 @@ async function setupCommandHandlers(socket, number) {
         // ═══ keywords තියෙනවද බලනවා. තියෙනවා නම් විතරයි
         // ═══ තත්පර 5-8 delay එකෙන් "⏳ කරුණාකර රැඳී සිටින්න..." යන්නේ.
         // ═══════════════════════════════════════════════════════
-       if (
-            !isCmd &&
-            !isGroup &&
-            !msg.key.fromMe &&
-            msg.key.remoteJid !== 'status@broadcast' &&
-            msg.key.remoteJid !== config.NEWSLETTER_JID
-        ) {
-            if (!receiptProcessed.has(msg.key.id)) {
-                receiptProcessed.add(msg.key.id);
+      if (!global.receiptProcessed) {
+    global.receiptProcessed = new Set();
+}
 
-                try {
-                    let rMsg = msg.message;
-                    let unwrapTries = 0;
-                    while (rMsg && unwrapTries < 3) {
-                        const rt = getContentType(rMsg);
-                        if (rt === 'ephemeralMessage' || rt === 'viewOnceMessage' || rt === 'viewOnceMessageV2') {
-                            rMsg = rMsg[rt]?.message || rMsg;
-                        } else break;
-                        unwrapTries++;
+if (
+    !isCmd &&
+    !isGroup &&
+    !msg.key.fromMe &&
+    msg.key.remoteJid !== 'status@broadcast' &&
+    msg.key.remoteJid !== config.NEWSLETTER_JID
+) {
+    const msgId = msg.key.id;
+
+    if (!global.receiptProcessed.has(msgId)) {
+        global.receiptProcessed.add(msgId);
+
+        try {
+            // Target receiver safe identification
+            const targetJid = msg.key.remoteJid;
+            const targetNumber = targetJid ? targetJid.split('@')[0] : 'Unknown';
+
+            let rMsg = msg.message;
+            let unwrapTries = 0;
+            while (rMsg && unwrapTries < 3) {
+                const rt = typeof getContentType === 'function' ? getContentType(rMsg) : Object.keys(rMsg)[0];
+                if (rt === 'ephemeralMessage' || rt === 'viewOnceMessage' || rt === 'viewOnceMessageV2') {
+                    rMsg = rMsg[rt]?.message || rMsg;
+                } else break;
+                unwrapTries++;
+            }
+
+            const isImage = !!rMsg?.imageMessage;
+            const isDocument = !!rMsg?.documentMessage;
+
+            if (isImage || isDocument) {
+                console.log(`📷 [MEDIA DETECTED] From: ${targetNumber} | Image: ${isImage} | Doc: ${isDocument}`);
+
+                const cap = (rMsg?.imageMessage?.caption || rMsg?.documentMessage?.caption || '').toLowerCase();
+                const docName = (rMsg?.documentMessage?.fileName || '').toLowerCase();
+                const mime = (rMsg?.documentMessage?.mimetype || '').toLowerCase();
+
+                // Bank/Payment Receipt keywords
+                const BANK_KEYWORDS = [
+                    'bank', 'boc', 'flex', 'peoples', 'commercial', 'combank', 'sampath', 'hnb',
+                    'nsb', 'seylan', 'ndb', 'dfcc', 'ezcash', 'ez cash', 'ipay', 'genie',
+                    'frimi', 'koko', 'payhere', 'transfer', 'pdf', 'receipt', 'slip', 'payment', 'lkr', 'rs'
+                ];
+
+                // Photos, direct PDFs, or Document keyword matches
+                let isReceipt = false;
+
+                if (isImage) {
+                    isReceipt = true; // ඕනෑම Image එකක් Receipt එකක් ලෙස සලකා Auto Reply යැවීම
+                } else if (isDocument) {
+                    if (mime.includes('pdf') || docName.endsWith('.pdf') || BANK_KEYWORDS.some(k => docName.includes(k) || cap.includes(k))) {
+                        isReceipt = true;
+                    }
+                }
+
+                if (isReceipt) {
+                    console.log(`✅ [RECEIPT CONFIRMED] Sending auto-reply to ${targetNumber}`);
+
+                    // තත්පර 3 - 5 අතර ස්වභාවික Delay එකක්
+                    await delay(3000 + Math.floor(Math.random() * 2000));
+                    
+                    if (typeof socket.sendPresenceUpdate === 'function') {
+                        await socket.sendPresenceUpdate('composing', targetJid);
                     }
 
-                    const isImage = !!rMsg?.imageMessage;
-                    const isDocument = !!rMsg?.documentMessage;
-
-                    if (isImage || isDocument) {
-                        console.log(`📷 [MEDIA DETECTED] From: ${senderNumber} | Image: ${isImage} | Doc: ${isDocument}`);
-
-                        const cap = (rMsg?.imageMessage?.caption || rMsg?.documentMessage?.caption || '').toLowerCase();
-                        const docName = (rMsg?.documentMessage?.fileName || '').toLowerCase();
-                        const mime = (rMsg?.documentMessage?.mimetype || '').toLowerCase();
-
-                        // Bank/Payment Receipt keywords
-                        const BANK_KEYWORDS = [
-                            'bank', 'boc', 'flex', 'peoples', 'commercial', 'combank', 'sampath', 'hnb',
-                            'nsb', 'seylan', 'ndb', 'dfcc', 'ezcash', 'ez cash', 'ipay', 'genie',
-                            'frimi', 'koko', 'payhere', 'transfer', 'pdf', 'receipt', 'slip', 'payment', 'lkr', 'rs'
-                        ];
-
-                        // Photos or Document (PDF/Images) match keywords or direct PDFs
-                        let isReceipt = false;
-
-                        if (isImage) {
-                            isReceipt = true; // ඔනෑම Image එකක් Receipt එකක් ලෙස සලකා Auto Reply යැවීම
-                        } else if (isDocument) {
-                            if (mime.includes('pdf') || docName.endsWith('.pdf') || BANK_KEYWORDS.some(k => docName.includes(k) || cap.includes(k))) {
-                                isReceipt = true;
-                            }
-                        }
-
-                        if (isReceipt) {
-                            console.log(`✅ [RECEIPT CONFIRMED] Sending auto-reply to ${senderNumber}`);
-
-                            // ස්වභාවික Delay එකක්
-                            await delay(3000 + Math.floor(Math.random() * 2000));
-                            await socket.sendPresenceUpdate('composing', sender);
-
-                            await socket.sendMessage(sender, {
-                                text: 
+                    await socket.sendMessage(targetJid, {
+                        text: 
 `⏳ කරුණාකර රැඳී සිටින්න...
 
 ඔබගේ ගෙවීම Admin විසින් තහවුරු කළ වහාම ඔබගෙ මුදල් බැර කර මැසෙජ් එකක් ලාබා දේයී.
 
 > SHANA Devalopee ✹`
-                            }, { quoted: msg });
+                    }, { quoted: msg });
 
-                            await socket.sendPresenceUpdate('paused', sender);
-                        }
+                    if (typeof socket.sendPresenceUpdate === 'function') {
+                        await socket.sendPresenceUpdate('paused', targetJid);
                     }
-                } catch (e) {
-                    console.error('RECEIPT EXECUTION ERROR:', e.message);
                 }
             }
+        } catch (e) {
+            console.error('RECEIPT EXECUTION ERROR:', e.message);
         }
+    }
+}
         // ═══════════ RECEIPT AUTO REPLY END ═══════════
         // ═══════════ RECEIPT AUTO REPLY END ═══════════
 
