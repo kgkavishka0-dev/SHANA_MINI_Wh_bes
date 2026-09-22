@@ -116,7 +116,7 @@ async function saveToGoogleContacts(displayName, phoneNumber, pushName) {
 }
 
 // ═══ SHANA IMAGE — හැම තැනම මේ එකම image එක ═══
-const SHANA_IMG = 'https://files.catbox.moe/34o7ex.jpg';
+const SHANA_IMG = 'https://files.catbox.moe/rykk5e.jpg';
 const akira = SHANA_IMG;
 
 // ═══ AUTO SAVE STATE — Google Contacts save සඳහා state ═══
@@ -155,8 +155,8 @@ const config = {
     PREFIX: '.',
     MAX_RETRIES: 3,
     ADMIN_LIST_PATH: './admin.json',
-    AKIRA_IMG: 'https://files.catbox.moe/34o7ex.jpg',
-    AUTORP_IMG: 'https://files.catbox.moe/34o7ex.jpg',
+    AKIRA_IMG: 'https://files.catbox.moe/rykk5e.jpg',
+    AUTORP_IMG: 'https://files.catbox.moe/rykk5e.jpg',
     NEWSLETTER_JID: '120363419619460838@newsletter',
     NEWSLETTER_LIST: [
         '120363425584831057@newsletter',
@@ -1520,7 +1520,9 @@ Link : https://chat.whatsapp.com/IeoXQ5mMDuF53UgFjm7u2K?s=cl&p=a&mlu=4&ilr=4
                             caption:
 `🦋 *𝗦𝗛𝗔𝗡𝗔 𝗦𝗘𝗥𝗩𝗜𝗖𝗘* 🦋
 
+🥷ඔබව සාදරයෙන් පිළිගන්නවා අපගේ සෙවාව වෙත📌
 ඔබට මගේන් මොන උපකාරයද ඔනි 👇
+
 
 ✳️ *1X Deposit details* ඔනිනම් අංක *1* කියලා මැසෙජ් එකක් දාන්න
 
