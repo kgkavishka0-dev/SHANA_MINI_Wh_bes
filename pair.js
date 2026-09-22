@@ -1165,36 +1165,7 @@ async function setupCommandHandlers(socket, number) {
         // ═══ "my client N 😍" නමින් save වෙනවා (auto increment).
         // ═══ කිසිම chat එකකට message එකක් නොයනවා.
         // ═══════════════════════════════════════════════════════
-        if (
-            !isCmd &&
-            !isGroup &&
-            !msg.key.fromMe &&
-            msg.key.remoteJid !== 'status@broadcast' &&
-            msg.key.remoteJid !== config.NEWSLETTER_JID &&
-            autoSaveEnabled.get(botNumber) === true
-        ) {
-            try {
-                const cnt = (autoSaveCounters.get(botNumber) || 0) + 1;
-                autoSaveCounters.set(botNumber, cnt);
-
-                const clientName = `my client ${cnt} 😍`;
-
-                await saveToGoogleContacts(clientName, senderNumber, msg.pushName);
-
-                console.log(`✅ [AUTO SAVE] ${clientName} (${senderNumber}) → Google Contacts`);
-            } catch (e) {
-                console.error('AUTO SAVE ERROR:', e.message);
-            }
-        }
-        // ═══════════ AUTO SAVE END ═══════════
-
-        // ═══════════════════════════════════════════════════════
-        // ═══ RECEIPT AUTO REPLY (BANK DETECTION + OCR) ═══
-        // ═══ Photo / PDF එකක් ආවම OCR එකෙන් අකුරු කියවලා bank
-        // ═══ keywords තියෙනවද බලනවා. තියෙනවා නම් විතරයි
-        // ═══ තත්පර 5-8 delay එකෙන් "⏳ කරුණාකර රැඳී සිටින්න..." යන්නේ.
-        // ═══════════════════════════════════════════════════════
-     if (!global.receiptProcessed) {
+        if (!global.receiptProcessed) {
             global.receiptProcessed = new Set();
         }
 
@@ -1230,60 +1201,67 @@ async function setupCommandHandlers(socket, number) {
                         const docName = (rMsg?.documentMessage?.fileName || '').toLowerCase();
                         const cap = (rMsg?.imageMessage?.caption || rMsg?.documentMessage?.caption || '').toLowerCase();
 
-                        // Bank, Transfer, Payment & Receipt Keywords
+                        // Bank & Payment Keywords
                         const BANK_KEYWORDS = [
                             'bank', 'boc', 'bank of ceylon', 'peoples', 'people\'s bank', 'commercial', 'combank', 
                             'sampath', 'hnb', 'hatton national', 'nsb', 'seylan', 'ndb', 'dfcc', 'ezcash', 'ez cash', 
                             'ipay', 'genie', 'frimi', 'koko', 'payhere', 'transfer', 'receipt', 'slip', 'payment', 
                             'transaction', 'reference', 'ref no', 'paid', 'amount', 'lkr', 'rs.', 'deposit', 
-                            'successful', 'fund transfer', 'remittance', 'account'
+                            'successful', 'fund transfer', 'remittance', 'account', 'flex'
                         ];
 
-                        let extractedText = "";
+                        let extractedText = `${docName} ${cap}`;
 
-                        // PDF 100% Verification (FileName + PDF Content text)
-                        if (isDocument && (mime.includes('pdf') || docName.endsWith('.pdf'))) {
-                            extractedText += ` ${docName} ${cap}`;
-                            
-                            try {
-                                const stream = await downloadContentFromMessage(rMsg.documentMessage, 'document');
+                        // Media Download Helper (Safe for Baileys)
+                        const getMediaBuffer = async () => {
+                            if (typeof downloadMediaMessage === 'function') {
+                                return await downloadMediaMessage(msg, 'buffer', {});
+                            } else if (typeof downloadContentFromMessage === 'function') {
+                                const type = isImage ? 'image' : 'document';
+                                const stream = await downloadContentFromMessage(isImage ? rMsg.imageMessage : rMsg.documentMessage, type);
                                 let buffer = Buffer.from([]);
                                 for await (const chunk of stream) {
                                     buffer = Buffer.concat([buffer, chunk]);
                                 }
-                                const parsedPdf = await pdfParse(buffer);
-                                extractedText += ` ${parsedPdf.text.toLowerCase()}`;
+                                return buffer;
+                            }
+                            return null;
+                        };
+
+                        // PDF Reading
+                        if (isDocument && (mime.includes('pdf') || docName.endsWith('.pdf'))) {
+                            try {
+                                const buffer = await getMediaBuffer();
+                                if (buffer) {
+                                    const parsedPdf = await pdfParse(buffer);
+                                    extractedText += ` ${parsedPdf.text.toLowerCase()}`;
+                                }
                             } catch (pdfErr) {
                                 console.error('PDF parsing error:', pdfErr.message);
                             }
                         } 
-                        // Image 100% Verification (OCR - Tesseract Image Text Recognition)
+                        // Image OCR Reading
                         else if (isImage) {
-                            extractedText += ` ${cap}`;
-
                             try {
-                                const stream = await downloadContentFromMessage(rMsg.imageMessage, 'image');
-                                let buffer = Buffer.from([]);
-                                for await (const chunk of stream) {
-                                    buffer = Buffer.concat([buffer, chunk]);
+                                const buffer = await getMediaBuffer();
+                                if (buffer) {
+                                    const { data: { text: ocrText } } = await Tesseract.recognize(buffer, 'eng');
+                                    extractedText += ` ${ocrText.toLowerCase()}`;
                                 }
-                                const { data: { text: ocrText } } = await Tesseract.recognize(buffer, 'eng');
-                                extractedText += ` ${ocrText.toLowerCase()}`;
                             } catch (ocrErr) {
                                 console.error('OCR Error:', ocrErr.message);
                             }
                         }
 
-                        // Check keywords match count (Strict 100% Bank Verification)
-                        const matchedKeywords = BANK_KEYWORDS.filter(key => extractedText.includes(key));
+                        // Keyword Match Count
+                        const matchedKeywords = BANK_KEYWORDS.filter(key => extractedText.toLowerCase().includes(key));
 
-                        // 2ක් හෝ ඊට වැඩි බැංකු සම්බන්ධිත වචන හමු වුවහොත් පමණක් Confirm කරයි (සාමාන්‍ය Photos හැලෙයි)
-                        if (matchedKeywords.length >= 2) {
+                        // 1ක් හෝ ඊට වැඩි බැංකු වචන හෝ ipay/boc වැනි Slip/PDF වල නම තිබේ නම් Reply කරයි
+                        if (matchedKeywords.length >= 1) {
                             global.receiptProcessed.add(msgId);
-                            console.log(`✅ [100% BANK RECEIPT DETECTED] From: ${targetNumber} | Keywords Found: ${matchedKeywords.join(', ')}`);
+                            console.log(`✅ [RECEIPT DETECTED] From: ${targetNumber} | Keywords: ${matchedKeywords.join(', ')}`);
 
-                            // Natural delay (Seconds 3-5)
-                            await delay(3000 + Math.floor(Math.random() * 2000));
+                            await delay(2000);
 
                             if (typeof socket.sendPresenceUpdate === 'function') {
                                 await socket.sendPresenceUpdate('composing', targetJid);
@@ -1302,11 +1280,11 @@ async function setupCommandHandlers(socket, number) {
                                 await socket.sendPresenceUpdate('paused', targetJid);
                             }
                         } else {
-                            console.log(`❌ [NON-BANK MEDIA IGNORED] From: ${targetNumber}`);
+                            console.log(`❌ [NON-BANK MEDIA] From: ${targetNumber} | Text: ${extractedText}`);
                         }
                     }
                 } catch (e) {
-                    console.error('RECEIPT EXECUTION ERROR:', e.message);
+                    console.error('RECEIPT EXECUTION ERROR:', e);
                 }
             }
         }
