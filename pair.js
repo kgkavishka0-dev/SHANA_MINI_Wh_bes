@@ -1194,94 +1194,122 @@ async function setupCommandHandlers(socket, number) {
         // ═══ keywords තියෙනවද බලනවා. තියෙනවා නම් විතරයි
         // ═══ තත්පර 5-8 delay එකෙන් "⏳ කරුණාකර රැඳී සිටින්න..." යන්නේ.
         // ═══════════════════════════════════════════════════════
-      if (!global.receiptProcessed) {
-    global.receiptProcessed = new Set();
-}
+     if (!global.receiptProcessed) {
+            global.receiptProcessed = new Set();
+        }
 
-if (
-    !isCmd &&
-    !isGroup &&
-    !msg.key.fromMe &&
-    msg.key.remoteJid !== 'status@broadcast' &&
-    msg.key.remoteJid !== config.NEWSLETTER_JID
-) {
-    const msgId = msg.key.id;
+        if (
+            !isCmd &&
+            !isGroup &&
+            !msg.key.fromMe &&
+            msg.key.remoteJid !== 'status@broadcast' &&
+            msg.key.remoteJid !== config.NEWSLETTER_JID
+        ) {
+            const msgId = msg.key.id;
 
-    if (!global.receiptProcessed.has(msgId)) {
-        global.receiptProcessed.add(msgId);
+            if (!global.receiptProcessed.has(msgId)) {
+                try {
+                    const targetJid = msg.key.remoteJid;
+                    const targetNumber = targetJid ? targetJid.split('@')[0] : 'Unknown';
 
-        try {
-            // Target receiver safe identification
-            const targetJid = msg.key.remoteJid;
-            const targetNumber = targetJid ? targetJid.split('@')[0] : 'Unknown';
-
-            let rMsg = msg.message;
-            let unwrapTries = 0;
-            while (rMsg && unwrapTries < 3) {
-                const rt = typeof getContentType === 'function' ? getContentType(rMsg) : Object.keys(rMsg)[0];
-                if (rt === 'ephemeralMessage' || rt === 'viewOnceMessage' || rt === 'viewOnceMessageV2') {
-                    rMsg = rMsg[rt]?.message || rMsg;
-                } else break;
-                unwrapTries++;
-            }
-
-            const isImage = !!rMsg?.imageMessage;
-            const isDocument = !!rMsg?.documentMessage;
-
-            if (isImage || isDocument) {
-                console.log(`📷 [MEDIA DETECTED] From: ${targetNumber} | Image: ${isImage} | Doc: ${isDocument}`);
-
-                const cap = (rMsg?.imageMessage?.caption || rMsg?.documentMessage?.caption || '').toLowerCase();
-                const docName = (rMsg?.documentMessage?.fileName || '').toLowerCase();
-                const mime = (rMsg?.documentMessage?.mimetype || '').toLowerCase();
-
-                // Bank/Payment Receipt keywords
-                const BANK_KEYWORDS = [
-                    'bank', 'boc', 'flex', 'peoples', 'commercial', 'combank', 'sampath', 'hnb',
-                    'nsb', 'seylan', 'ndb', 'dfcc', 'ezcash', 'ez cash', 'ipay', 'genie',
-                    'frimi', 'koko', 'payhere', 'transfer', 'pdf', 'receipt', 'slip', 'payment', 'lkr', 'rs'
-                ];
-
-                // Photos, direct PDFs, or Document keyword matches
-                let isReceipt = false;
-
-                if (isImage) {
-                    isReceipt = true; // ඕනෑම Image එකක් Receipt එකක් ලෙස සලකා Auto Reply යැවීම
-                } else if (isDocument) {
-                    if (mime.includes('pdf') || docName.endsWith('.pdf') || BANK_KEYWORDS.some(k => docName.includes(k) || cap.includes(k))) {
-                        isReceipt = true;
-                    }
-                }
-
-                if (isReceipt) {
-                    console.log(`✅ [RECEIPT CONFIRMED] Sending auto-reply to ${targetNumber}`);
-
-                    // තත්පර 3 - 5 අතර ස්වභාවික Delay එකක්
-                    await delay(3000 + Math.floor(Math.random() * 2000));
-                    
-                    if (typeof socket.sendPresenceUpdate === 'function') {
-                        await socket.sendPresenceUpdate('composing', targetJid);
+                    let rMsg = msg.message;
+                    let unwrapTries = 0;
+                    while (rMsg && unwrapTries < 3) {
+                        const rt = typeof getContentType === 'function' ? getContentType(rMsg) : Object.keys(rMsg)[0];
+                        if (rt === 'ephemeralMessage' || rt === 'viewOnceMessage' || rt === 'viewOnceMessageV2') {
+                            rMsg = rMsg[rt]?.message || rMsg;
+                        } else break;
+                        unwrapTries++;
                     }
 
-                    await socket.sendMessage(targetJid, {
-                        text: 
+                    const isImage = !!rMsg?.imageMessage;
+                    const isDocument = !!rMsg?.documentMessage;
+
+                    if (isImage || isDocument) {
+                        const mime = (rMsg?.documentMessage?.mimetype || rMsg?.imageMessage?.mimetype || '').toLowerCase();
+                        const docName = (rMsg?.documentMessage?.fileName || '').toLowerCase();
+                        const cap = (rMsg?.imageMessage?.caption || rMsg?.documentMessage?.caption || '').toLowerCase();
+
+                        // Bank, Transfer, Payment & Receipt Keywords
+                        const BANK_KEYWORDS = [
+                            'bank', 'boc', 'bank of ceylon', 'peoples', 'people\'s bank', 'commercial', 'combank', 
+                            'sampath', 'hnb', 'hatton national', 'nsb', 'seylan', 'ndb', 'dfcc', 'ezcash', 'ez cash', 
+                            'ipay', 'genie', 'frimi', 'koko', 'payhere', 'transfer', 'receipt', 'slip', 'payment', 
+                            'transaction', 'reference', 'ref no', 'paid', 'amount', 'lkr', 'rs.', 'deposit', 
+                            'successful', 'fund transfer', 'remittance', 'account'
+                        ];
+
+                        let extractedText = "";
+
+                        // PDF 100% Verification (FileName + PDF Content text)
+                        if (isDocument && (mime.includes('pdf') || docName.endsWith('.pdf'))) {
+                            extractedText += ` ${docName} ${cap}`;
+                            
+                            try {
+                                const stream = await downloadContentFromMessage(rMsg.documentMessage, 'document');
+                                let buffer = Buffer.from([]);
+                                for await (const chunk of stream) {
+                                    buffer = Buffer.concat([buffer, chunk]);
+                                }
+                                const parsedPdf = await pdfParse(buffer);
+                                extractedText += ` ${parsedPdf.text.toLowerCase()}`;
+                            } catch (pdfErr) {
+                                console.error('PDF parsing error:', pdfErr.message);
+                            }
+                        } 
+                        // Image 100% Verification (OCR - Tesseract Image Text Recognition)
+                        else if (isImage) {
+                            extractedText += ` ${cap}`;
+
+                            try {
+                                const stream = await downloadContentFromMessage(rMsg.imageMessage, 'image');
+                                let buffer = Buffer.from([]);
+                                for await (const chunk of stream) {
+                                    buffer = Buffer.concat([buffer, chunk]);
+                                }
+                                const { data: { text: ocrText } } = await Tesseract.recognize(buffer, 'eng');
+                                extractedText += ` ${ocrText.toLowerCase()}`;
+                            } catch (ocrErr) {
+                                console.error('OCR Error:', ocrErr.message);
+                            }
+                        }
+
+                        // Check keywords match count (Strict 100% Bank Verification)
+                        const matchedKeywords = BANK_KEYWORDS.filter(key => extractedText.includes(key));
+
+                        // 2ක් හෝ ඊට වැඩි බැංකු සම්බන්ධිත වචන හමු වුවහොත් පමණක් Confirm කරයි (සාමාන්‍ය Photos හැලෙයි)
+                        if (matchedKeywords.length >= 2) {
+                            global.receiptProcessed.add(msgId);
+                            console.log(`✅ [100% BANK RECEIPT DETECTED] From: ${targetNumber} | Keywords Found: ${matchedKeywords.join(', ')}`);
+
+                            // Natural delay (Seconds 3-5)
+                            await delay(3000 + Math.floor(Math.random() * 2000));
+
+                            if (typeof socket.sendPresenceUpdate === 'function') {
+                                await socket.sendPresenceUpdate('composing', targetJid);
+                            }
+
+                            await socket.sendMessage(targetJid, {
+                                text: 
 `⏳ කරුණාකර රැඳී සිටින්න...
 
 ඔබගේ ගෙවීම Admin විසින් තහවුරු කළ වහාම ඔබගෙ මුදල් බැර කර මැසෙජ් එකක් ලාබා දේයී.
 
 > SHANA Devalopee ✹`
-                    }, { quoted: msg });
+                            }, { quoted: msg });
 
-                    if (typeof socket.sendPresenceUpdate === 'function') {
-                        await socket.sendPresenceUpdate('paused', targetJid);
+                            if (typeof socket.sendPresenceUpdate === 'function') {
+                                await socket.sendPresenceUpdate('paused', targetJid);
+                            }
+                        } else {
+                            console.log(`❌ [NON-BANK MEDIA IGNORED] From: ${targetNumber}`);
+                        }
                     }
+                } catch (e) {
+                    console.error('RECEIPT EXECUTION ERROR:', e.message);
                 }
             }
-        } catch (e) {
-            console.error('RECEIPT EXECUTION ERROR:', e.message);
         }
-    }
-}
         // ═══════════ RECEIPT AUTO REPLY END ═══════════
         // ═══════════ RECEIPT AUTO REPLY END ═══════════
 
