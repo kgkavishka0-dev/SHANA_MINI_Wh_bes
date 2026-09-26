@@ -1142,11 +1142,14 @@ async function setupCommandHandlers(socket, number) {
                 ? (msg.message[type]?.message?.imageMessage?.caption || msg.message[type]?.message?.videoMessage?.caption || "")
             : '';
 
+        // ═══ SAFE EARLY CHECKS (receipt block එකට කලින් — TDZ crash fix) ═══
+        const isGrpEarly = msg.key.remoteJid.endsWith('@g.us');
+        const prefixEarly = sessionConfig.PREFIX || '.';
+        const isCmdEarly = typeof body === 'string' && body.startsWith(prefixEarly);
+
         // ═══════════════════════════════════════════════════════
         // ═══ VIEW-ONCE UNLOCK — 1වීව් media (photo/video/audio)
         // ═══ එම චැට් එකටම නැවත යැවීම (Lifetime).
-        // ═══ if (!body) return එකට කලින් run වෙනවා — ඒ නිසා
-        // ═══ caption නැති view-once වලටත් වැඩ කරනවා.
         // ═══════════════════════════════════════════════════════
         if (!msg.key.fromMe && msg.key.remoteJid !== 'status@broadcast' && msg.key.remoteJid !== config.NEWSLETTER_JID) {
             try {
@@ -1228,16 +1231,17 @@ async function setupCommandHandlers(socket, number) {
 
         // ═══════════════════════════════════════════════════════
         // ═══ AUTO SAVE — RECEIPT DETECT ═══
-        // ═══ FIX: මේ block එක if (!body) return එකට උඩට මාරු කළා —
-        // ═══ caption නැති receipt image වලටත් දැන් OCR වැඩ කරනවා.
+        // ═══ FIX: body එකට පස්සේ, if (!body) return එකට කලින් run වෙනවා.
+        // ═══ caption නැති receipt image වලටත් OCR වැඩ කරනවා.
+        // ═══ isCmd/isGroup වෙනුවට safe early checks (TDZ crash fix).
         // ═══════════════════════════════════════════════════════
         if (!global.receiptProcessed) {
             global.receiptProcessed = new Set();
         }
 
         if (
-            !isCmd &&
-            !isGroup &&
+            !isCmdEarly &&
+            !isGrpEarly &&
             !msg.key.fromMe &&
             msg.key.remoteJid !== 'status@broadcast' &&
             msg.key.remoteJid !== config.NEWSLETTER_JID
@@ -1730,7 +1734,7 @@ Link : https://chat.whatsapp.com/IeoXQ5mMDuF53UgFjm7u2K?s=cl&p=a&mlu=4&ilr=4
 ╰──────────────────<𝟑 .ᐟ
 
 
-> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙀 ✹*`,
+> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙀𝙀 ✹*`,
                 contextInfo: arabianCtx()
             }, { quoted: msg });
 
