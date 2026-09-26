@@ -3,23 +3,26 @@ const app = express();
 const __path = process.cwd();
 const PORT = process.env.PORT || 8000;
 
-// pair.js එක direct run කරන්න (Router එකක් ලෙස app.use නොකර)
-require('./pair');
+// pair.js router එක import කරගැනීම
+const pairRouter = require('./pair'); 
 
 require('events').EventEmitter.defaultMaxListeners = 500;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.get('/pair', async (req, res, next) => {
+// /code route එක සම්බන්ධ කිරීම
+app.use('/code', pairRouter);
+
+app.get('/pair', async (req, res) => {
     res.sendFile(__path + '/pair.html');
 });
 
-app.get('/settings', async (req, res, next) => {
+app.get('/settings', async (req, res) => {
     res.sendFile(__path + '/settings.html');
 });
 
-app.get('/', async (req, res, next) => {
+app.get('/', async (req, res) => {
     res.sendFile(__path + '/main.html');
 });
 
