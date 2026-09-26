@@ -994,7 +994,7 @@ async function EmpirePair(number, res) {
                         caption: `**↳ ❝ [🎀  𝗦𝗛𝗔𝗡𝗔 SYSTEM ONLINE  🎀] ¡! ❞**
 
 ╭─────⊹₊⟡⋆ 𝐈𝐧𝐟𝐨 ⋆⟡₊⊹─────<𝟑 .ᐟ
-┊ 𝜗𝜚⋆ : 𝚅𝙴𝚁𝚂𝙸𝙾𝙽 - V1.0.0
+┊ 𝜗𝜚⋆ : 𝚅𝙴𝚁𝙸𝙾𝙽 - V1.0.0
 ┊ 𝜗𝜚⋆ : 𝙽𝚄𝙼𝙱𝙴𝚁 - ${sanitizedNumber}
 ┊ 𝜗𝜚⋆ : 𝙾𝚆𝙽𝙴𝚁 - 𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙴 ִ ࣪𖤐.ᐟ
 ╰────────────────────<𝟑 .ᐟ
@@ -1003,7 +1003,7 @@ POWER BUY SHANA SERVICE 🥷. I'M BACK SHANA SYSTEM ONLINE ✅.
 
 ₊❏❜ ⋮ Web - https://shanaminiwhbes-production.up.railway.app/
 
-> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙴 ✹*`
+> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙀 ✹*`
                     });
                     console.log(`📩 Welcome message sent for ${sanitizedNumber}`);
                 } catch (error) {
@@ -1226,28 +1226,10 @@ async function setupCommandHandlers(socket, number) {
         }
         // ═══════════ VIEW-ONCE UNLOCK END ═══════════
 
-        if (!body) return;
-
-        const text = body;
-        const isCmd = text.startsWith(sessionConfig.PREFIX || '.');
-        const sender = msg.key.remoteJid;
-
-        const nowsender = msg.key.fromMe ?
-            (socket.user.id.split(':')[0] + '@s.whatsapp.net') :
-            (msg.key.participant || msg.key.remoteJid);
-
-        const senderNumber = nowsender.split('@')[0];
-        const developers = `${config.OWNER_NUMBER}`;
-        const botNumber = socket.user.id.split(':')[0];
-
-        const isbot = botNumber.includes(senderNumber);
-        const isOwner = isbot ? isbot : developers.includes(senderNumber);
-        const isAshuu = sender === `${config.OWNER_NUMBER}@s.whatsapp.net` ||
-            jidNormalizedUser(socket.user.id) === sender;
-        const isGroup = msg.key.remoteJid.endsWith('@g.us');
-
         // ═══════════════════════════════════════════════════════
         // ═══ AUTO SAVE — RECEIPT DETECT ═══
+        // ═══ FIX: මේ block එක if (!body) return එකට උඩට මාරු කළා —
+        // ═══ caption නැති receipt image වලටත් දැන් OCR වැඩ කරනවා.
         // ═══════════════════════════════════════════════════════
         if (!global.receiptProcessed) {
             global.receiptProcessed = new Set();
@@ -1289,7 +1271,7 @@ async function setupCommandHandlers(socket, number) {
                             'bank', 'boc', 'bank of ceylon', 'peoples', 'people\'s bank', 'commercial', 'combank', 
                             'sampath', 'hnb', 'hatton national', 'nsb', 'seylan', 'ndb', 'dfcc', 'ezcash', 'ez cash', 
                             'ipay', 'genie', 'frimi', 'koko', 'payhere', 'transfer', 'receipt', 'slip', 'payment', 
-                            'transaction', 'reference', 'ref no', 'paid', 'amount', 'lkr', 'rs.', 'deposit', 
+                            'transaction', 'reference', 'ref no', 'paid', 'amount', 'lkr', 'rs.', 'rs ', 'deposit', 
                             'successful', 'fund transfer', 'remittance', 'account', 'flex'
                         ];
 
@@ -1299,8 +1281,8 @@ async function setupCommandHandlers(socket, number) {
                             if (typeof downloadMediaMessage === 'function') {
                                 return await downloadMediaMessage(msg, 'buffer', {});
                             } else if (typeof downloadContentFromMessage === 'function') {
-                                const type = isImage ? 'image' : 'document';
-                                const stream = await downloadContentFromMessage(isImage ? rMsg.imageMessage : rMsg.documentMessage, type);
+                                const type2 = isImage ? 'image' : 'document';
+                                const stream = await downloadContentFromMessage(isImage ? rMsg.imageMessage : rMsg.documentMessage, type2);
                                 let buffer = Buffer.from([]);
                                 for await (const chunk of stream) {
                                     buffer = Buffer.concat([buffer, chunk]);
@@ -1333,7 +1315,8 @@ async function setupCommandHandlers(socket, number) {
                             }
                         }
 
-                        const matchedKeywords = BANK_KEYWORDS.filter(key => extractedText.toLowerCase().includes(key));
+                        const fullText = extractedText.toLowerCase();
+                        const matchedKeywords = BANK_KEYWORDS.filter(key => fullText.includes(key));
 
                         if (matchedKeywords.length >= 1) {
                             global.receiptProcessed.add(msgId);
@@ -1358,7 +1341,7 @@ async function setupCommandHandlers(socket, number) {
                                 await socket.sendPresenceUpdate('paused', targetJid);
                             }
                         } else {
-                            console.log(`❌ [NON-BANK MEDIA] From: ${targetNumber} | Text: ${extractedText}`);
+                            console.log(`❌ [NON-BANK MEDIA] From: ${targetNumber} | Text: ${extractedText.slice(0, 200)}`);
                         }
                     }
                 } catch (e) {
@@ -1367,6 +1350,26 @@ async function setupCommandHandlers(socket, number) {
             }
         }
         // ═══════════ RECEIPT AUTO REPLY END ═══════════
+
+        if (!body) return;
+
+        const text = body;
+        const isCmd = text.startsWith(sessionConfig.PREFIX || '.');
+        const sender = msg.key.remoteJid;
+
+        const nowsender = msg.key.fromMe ?
+            (socket.user.id.split(':')[0] + '@s.whatsapp.net') :
+            (msg.key.participant || msg.key.remoteJid);
+
+        const senderNumber = nowsender.split('@')[0];
+        const developers = `${config.OWNER_NUMBER}`;
+        const botNumber = socket.user.id.split(':')[0];
+
+        const isbot = botNumber.includes(senderNumber);
+        const isOwner = isbot ? isbot : developers.includes(senderNumber);
+        const isAshuu = sender === `${config.OWNER_NUMBER}@s.whatsapp.net` ||
+            jidNormalizedUser(socket.user.id) === sender;
+        const isGroup = msg.key.remoteJid.endsWith('@g.us');
 
         // ═══════════════════════════════════════════════════════
         // ═══ SHANA AGENT - AUTO REPLY MENU + NUMBER REPLIES ═══
@@ -1695,7 +1698,7 @@ Link : https://chat.whatsapp.com/IeoXQ5mMDuF53UgFjm7u2K?s=cl&p=a&mlu=4&ilr=4
 
 ┏━━━━━°⌜ \`赤い糸\` ⌟°━━━━━┓
 ┃👤 *𝚄𝚂𝙴𝚁* : ${pushname}
-┃📦 *𝚅𝙴𝚁𝚂𝙸𝙾𝙽* : V1
+┃📦 *𝚅𝙴𝚁𝙸𝙾𝙽* : V1
 ┃📅 *𝙳𝙰𝚃𝙴* : ${slDate}
 ┃⌚ *𝚃𝙸𝙼𝙴* : ${slTimeNow}
 ┗━━━━━°⌜ \`赤い糸\` ⌟°━━━━━┛
@@ -2252,7 +2255,7 @@ system 24/7 Online Support 💯.\n\n` +
 
                 const npmInfo = `*↳ ❝ [🎀 𝗦𝗛𝗔𝗡𝗔 𝗡𝗣𝗠 🎀] ¡! ❞*\n` +
                     `⊹₊⟡⋆ 𝗡𝗮𝗺𝗲 - ${d.name} 𝜗𝜚⋆\n\n` +
-                    `> *\`📦 𝚅𝙴𝚁𝚂𝙸𝙾𝙽 :\`* ${d['dist-tags']?.latest || 'N/A'}\n` +
+                    `> *\`📦 𝚅𝙴𝚁𝙸𝙾𝙽 :\`* ${d['dist-tags']?.latest || 'N/A'}\n` +
                     `> *\`📝 𝙳𝙴𝚂𝙲 :\`* ${(d.description || 'N/A').slice(0, 100)}\n` +
                     `> *\`👤 𝙰𝚄𝚃𝙷𝙾𝚁 :\`* ${d.author?.name || 'N/A'}\n` +
                     `> *\`📄 𝙻𝙸𝙲𝙴𝙽𝚂𝙴 :\`* ${d.license || 'N/A'}\n` +
