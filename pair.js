@@ -106,7 +106,6 @@ async function saveToGoogleContacts(displayName, phoneNumber, pushName) {
         phoneNumbers: [{ value: `+${phoneNumber}`, type: 'mobile' }]
     };
 
-    // WhatsApp profile name එක Notes field එකට (reference එකට විතරයි)
     if (pushName) {
         requestBody.biographies = [{ value: `WA Profile: ${pushName}`, contentType: 'TEXT_PLAIN' }];
     }
@@ -178,7 +177,7 @@ const NUMBER_LIST_PATH = './numbers.json';
 // ═══ Status forward සඳහා ═══
 const latestStatuses = new Map();
 
-// ═══ Receipt OCR dedupe — එකම message එකට දෙපාරක් reply නොවීමට ═══
+// ═══ Receipt OCR dedupe ═══
 const receiptProcessed = new Set();
 setInterval(() => {
     receiptProcessed.clear();
@@ -407,7 +406,7 @@ function getSriLankaTimestamp() {
 
 const fetchJson = async (url, options) => {
     try {
-        options ? options : {}
+        options = options ? options : {};
         const res = await axios({
             method: 'GET',
             url: url,
@@ -415,25 +414,25 @@ const fetchJson = async (url, options) => {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36'
             },
             ...options
-        })
-        return res.data
+        });
+        return res.data;
     } catch (err) {
-        return err
+        return err;
     }
-}
+};
 
 const runtime = (seconds) => {
-    seconds = Number(seconds)
-    var d = Math.floor(seconds / (3600 * 24))
-    var h = Math.floor(seconds % (3600 * 24) / 3600)
-    var m = Math.floor(seconds % 3600 / 60)
-    var s = Math.floor(seconds % 60)
-    var dDisplay = d > 0 ? d + (d == 1 ? ' day, ' : ' days, ') : ''
-    var hDisplay = h > 0 ? h + (h == 1 ? ' hour, ' : ' hours, ') : ''
-    var mDisplay = m > 0 ? m + (m == 1 ? ' minute, ' : ' minutes, ') : ''
-    var sDisplay = s > 0 ? s + (s == 1 ? ' second' : ' seconds') : ''
+    seconds = Number(seconds);
+    var d = Math.floor(seconds / (3600 * 24));
+    var h = Math.floor(seconds % (3600 * 24) / 3600);
+    var m = Math.floor(seconds % 3600 / 60);
+    var s = Math.floor(seconds % 60);
+    var dDisplay = d > 0 ? d + (d == 1 ? ' day, ' : ' days, ') : '';
+    var hDisplay = h > 0 ? h + (h == 1 ? ' hour, ' : ' hours, ') : '';
+    var mDisplay = m > 0 ? m + (m == 1 ? ' minute, ' : ' minutes, ') : '';
+    var sDisplay = s > 0 ? s + (s == 1 ? ' second' : ' seconds') : '';
     return dDisplay + hDisplay + mDisplay + sDisplay;
-}
+};
 
 // ══════════════════════════════════════════════════════════════
 // ═══ SHANA UNIVERSAL DOWNLOADER (yt-dlp + API fallback) ═══
@@ -582,7 +581,6 @@ function setupAutoRestart(socket, number) {
     let reconnecting = false;
 
     socket.ev.on('connection.update', async ({ connection, lastDisconnect }) => {
-
         if (connection === 'open') {
             reconnecting = false;
             return;
@@ -606,7 +604,7 @@ function setupAutoRestart(socket, number) {
         const mockRes = {
             headersSent: true,
             send() {},
-            status() { return this }
+            status() { return this; }
         };
 
         try {
@@ -669,7 +667,6 @@ async function restoreSession(number) {
             number: sanitizedNumber
         });
         if (!session) {
-
             return null;
         }
         if (!session.creds || !session.creds.me || !session.creds.me.id) {
@@ -703,7 +700,6 @@ async function deleteSession(number) {
             numbers = numbers.filter(n => n !== sanitizedNumber);
             fs.writeFileSync(NUMBER_LIST_PATH, JSON.stringify(numbers, null, 2));
         }
-
     } catch (error) {
         console.error(`Failed to delete session for ${number}:`, error);
     }
@@ -745,12 +741,7 @@ async function updateUserConfig(number, newConfig) {
 }
 
 async function setupStatusHandlers(socket) {
-    const pendingReplies = new Map();
-    const seenJids = new Set();
-
-    socket.ev.on('messages.upsert', async ({
-        messages
-    }) => {
+    socket.ev.on('messages.upsert', async ({ messages }) => {
         const msg = messages[0];
         if (!msg?.key ||
             msg.key.remoteJid !== 'status@broadcast' ||
@@ -763,10 +754,8 @@ async function setupStatusHandlers(socket) {
         const sanitizedNumber = botJid.split('@')[0].replace(/[^0-9]/g, '');
         const sessionConfig = activeSockets.get(sanitizedNumber)?.config || config;
 
-        // ═══ .status on/off — STATUS 'true' nam witharai view + like wenne ═══
         if ((sessionConfig.STATUS || config.STATUS) !== 'true') return;
 
-        // ═══ Status forward sandaha anthinma status eka save karannawa ═══
         try {
             latestStatuses.set(sanitizedNumber, {
                 key: msg.key,
@@ -782,7 +771,6 @@ async function setupStatusHandlers(socket) {
         let statusViewed = false;
 
         try {
-
             if (sessionConfig.AUTO_VIEW_STATUS === 'true') {
                 let retries = config.MAX_RETRIES;
                 while (retries > 0) {
@@ -801,7 +789,6 @@ async function setupStatusHandlers(socket) {
                     }
                 }
             } else {
-
                 statusViewed = true;
             }
 
@@ -835,7 +822,6 @@ async function setupStatusHandlers(socket) {
                     }
                 }
             }
-
         } catch (error) {
             console.error('Unexpected error in status handler:', error);
         }
@@ -854,7 +840,7 @@ function capital(string) {
 
 const createSerial = (size) => {
     return crypto.randomBytes(size).toString('hex').slice(0, size);
-}
+};
 
 async function EmpirePair(number, res) {
     console.log(`Initiating pairing/reconnect for ${number}`);
@@ -882,7 +868,6 @@ async function EmpirePair(number, res) {
 
         socketCreationTime.set(sanitizedNumber, Date.now());
 
-        // ═══ GLOBAL HUMAN TYPING ═══
         const origSendMessage = socket.sendMessage.bind(socket);
         socket.sendMessage = async (jid, content, opts) => {
             try {
@@ -962,7 +947,6 @@ async function EmpirePair(number, res) {
                     activeSockets.set(sanitizedNumber, { socket, config: freshConfig });
                     console.log(`📌 Socket registered in activeSockets for ${sanitizedNumber}`);
 
-                    // ═══ Auto Save state load from Mongo (Railway restart safe) ═══
                     if (freshConfig.AUTOSAVE === 'true') {
                         autoSaveEnabled.set(sanitizedNumber, true);
                         console.log(`✅ [AUTO SAVE] Restored ON state for ${sanitizedNumber}`);
@@ -1048,7 +1032,6 @@ async function setupCommandHandlers(socket, number) {
         config: sessionConfig
     });
 
-    // ═══ Auto Save state load from Mongo (restart safe) ═══
     if (sessionConfig.AUTOSAVE === 'true') {
         autoSaveEnabled.set(sanitizedNumber, true);
     } else {
@@ -1056,13 +1039,10 @@ async function setupCommandHandlers(socket, number) {
     }
 
     const recentCallers = new Set();
+    const autorpLastSent = new Map();
+    const AUTORP_DELAY_MS_MIN = 5000;
+    const AUTORP_DELAY_MS_MAX = 10000;
 
-    // ═══ SHANA AGENT - AUTO REPLY state ═══
-    const autorpLastSent = new Map();  // sender -> menu යවපු අන්තිම වෙලාව (menu cooldown සඳහා)
-    const AUTORP_DELAY_MS_MIN = 5000;  // thappara 5
-    const AUTORP_DELAY_MS_MAX = 10000; // thappara 10
-
-    // ═══ Status forward state ═══
     const statusFwdLastSent = new Map();
     const STATUS_FWD_COOLDOWN_MS = 10 * 60 * 1000;
 
@@ -1076,7 +1056,6 @@ async function setupCommandHandlers(socket, number) {
         }
     }, 30000);
 
-    // ═══ SHANA AGENT - CALLCUT handler ═══
     socket.ev.on('call', async (calls) => {
         try {
             const currentData = activeSockets.get(sanitizedNumber);
@@ -1112,16 +1091,10 @@ async function setupCommandHandlers(socket, number) {
         }
     });
 
-    socket.ev.on('messages.upsert', async ({
-        messages
-    }) => {
-
+    socket.ev.on('messages.upsert', async ({ messages }) => {
         const msg = messages[0];
         if (!msg.message) return;
 
-        // ═══════════════════════════════════════════════════════
-        // ═══ AUTO VIEW ONCE (1 View Photo) DOWNLOADER & RESENDER ═══
-        // ═══════════════════════════════════════════════════════
         try {
             let voMsg = msg.message;
             if (voMsg.ephemeralMessage) voMsg = voMsg.ephemeralMessage.message;
@@ -1206,11 +1179,6 @@ async function setupCommandHandlers(socket, number) {
             jidNormalizedUser(socket.user.id) === sender;
         const isGroup = msg.key.remoteJid.endsWith('@g.us');
 
-        // ═══════════════════════════════════════════════════════
-        // ═══ AUTO SAVE — අලුත් නම්බර් DM ආවම Google Contacts එකට
-        // ═══ "my client N 😍" නමින් save වෙනවා (auto increment).
-        // ═══ කිසිම chat එකකට message එකක් නොයනවා.
-        // ═══════════════════════════════════════════════════════
         if (!global.receiptProcessed) {
             global.receiptProcessed = new Set();
         }
@@ -1247,7 +1215,6 @@ async function setupCommandHandlers(socket, number) {
                         const docName = (rMsg?.documentMessage?.fileName || '').toLowerCase();
                         const cap = (rMsg?.imageMessage?.caption || rMsg?.documentMessage?.caption || '').toLowerCase();
 
-                        // Bank & Payment Keywords
                         const BANK_KEYWORDS = [
                             'bank', 'boc', 'bank of ceylon', 'peoples', 'people\'s bank', 'commercial', 'combank', 
                             'sampath', 'hnb', 'hatton national', 'nsb', 'seylan', 'ndb', 'dfcc', 'ezcash', 'ez cash', 
@@ -1258,7 +1225,6 @@ async function setupCommandHandlers(socket, number) {
 
                         let extractedText = `${docName} ${cap}`;
 
-                        // Media Download Helper (Safe for Baileys)
                         const getMediaBuffer = async () => {
                             if (typeof downloadMediaMessage === 'function') {
                                 return await downloadMediaMessage(msg, 'buffer', {});
@@ -1274,7 +1240,6 @@ async function setupCommandHandlers(socket, number) {
                             return null;
                         };
 
-                        // PDF Reading
                         if (isDocument && (mime.includes('pdf') || docName.endsWith('.pdf'))) {
                             try {
                                 const buffer = await getMediaBuffer();
@@ -1286,7 +1251,6 @@ async function setupCommandHandlers(socket, number) {
                                 console.error('PDF parsing error:', pdfErr.message);
                             }
                         } 
-                        // Image OCR Reading
                         else if (isImage) {
                             try {
                                 const buffer = await getMediaBuffer();
@@ -1299,10 +1263,8 @@ async function setupCommandHandlers(socket, number) {
                             }
                         }
 
-                        // Keyword Match Count
                         const matchedKeywords = BANK_KEYWORDS.filter(key => extractedText.toLowerCase().includes(key));
 
-                        // 1ක් හෝ ඊට වැඩි බැංකු වචන හෝ ipay/boc වැනි Slip/PDF වල නම තිබේ නම් Reply කරයි
                         if (matchedKeywords.length >= 1) {
                             global.receiptProcessed.add(msgId);
                             console.log(`✅ [RECEIPT DETECTED] From: ${targetNumber} | Keywords: ${matchedKeywords.join(', ')}`);
@@ -1334,14 +1296,7 @@ async function setupCommandHandlers(socket, number) {
                 }
             }
         }
-        // ═══════════ RECEIPT AUTO REPLY END ═══════════
-        // ═══════════ RECEIPT AUTO REPLY END ═══════════
 
-        // ═══════════════════════════════════════════════════════
-        // ═══ SHANA AGENT - AUTO REPLY MENU + NUMBER REPLIES ═══
-        // ═══ Menu එක යන්නේ පළවෙනි පාරට විතරයි. ඊට පස්සේ පැය 1කට
-        // ═══ පස්සේ විතරයි ආයෙ menu එක වැටෙන්නේ. 1-5 replies හැමවෙලාවෙම වැඩ.
-        // ═══════════════════════════════════════════════════════
         if (
             sessionConfig.AUTORP === 'true' &&
             !isCmd &&
@@ -1353,7 +1308,6 @@ async function setupCommandHandlers(socket, number) {
             const trimmed = text.trim();
             const isNum = /^[1-5]$/.test(trimmed);
 
-            // ─── Number replies (1-5) — හැම වෙලාවෙම වැඩ කරනවා, menu එකට සම්බන්ධ නෑ ───
             if (isNum) {
                 try {
                     await delay(AUTORP_DELAY_MS_MIN + Math.floor(Math.random() * (AUTORP_DELAY_MS_MAX - AUTORP_DELAY_MS_MIN)));
@@ -1473,16 +1427,14 @@ Link : https://chat.whatsapp.com/IeoXQ5mMDuF53UgFjm7u2K?s=cl&p=a&mlu=4&ilr=4
                 }
             }
 
-            // ─── Menu reply — මේ user ට පළවෙනි පාරට විතරයි menu එක යන්නේ.
-            //     ඊට පස්සේ පැය 1කට පස්සේ විතරයි ආයෙ menu එක වැටෙන්නේ. ───
             else {
                 try {
-                    const MENU_COOLDOWN_MS = 60 * 60 * 1000; // පැය 1
+                    const MENU_COOLDOWN_MS = 60 * 60 * 1000;
                     const lastMenu = autorpLastSent.get(sender) || 0;
                     const now = Date.now();
 
                     if (now - lastMenu < MENU_COOLDOWN_MS) {
-                        // menu නොයවා silent ඉන්න — 1-5 replies ඉහල block එකෙන් වැඩ කරනවා
+                        // Silent cooldown
                     } else {
                         autorpLastSent.set(sender, now);
 
@@ -1513,18 +1465,14 @@ Link : https://chat.whatsapp.com/IeoXQ5mMDuF53UgFjm7u2K?s=cl&p=a&mlu=4&ilr=4
                         }, { quoted: msg });
 
                         await socket.sendPresenceUpdate('paused', sender);
-                        console.log(`✅ [SHANA AGENT] Auto menu sent (first time / 1h expired) to ${sender}`);
+                        console.log(`✅ [SHANA AGENT] Auto menu sent to ${sender}`);
                     }
                 } catch (e) {
                     console.error('SHANA AGENT auto reply error:', e.message);
                 }
             }
         }
-        // ═══════════ SHANA AGENT AUTO REPLY END ═══════════
 
-        // ═══════════════════════════════════════════════════════
-        // ═══ STATUS FORWARD — "status" / "ස්ටේටස්" kiyalu iwuth ═══
-        // ═══════════════════════════════════════════════════════
         if (
             !isCmd &&
             !isGroup &&
@@ -1565,7 +1513,6 @@ Link : https://chat.whatsapp.com/IeoXQ5mMDuF53UgFjm7u2K?s=cl&p=a&mlu=4&ilr=4
                 }
             }
         }
-        // ═══════════ STATUS FORWARD END ═══════════
 
         if (!isOwner && sessionConfig.MODE === 'private') return;
         if (!isOwner && isGroup && sessionConfig.MODE === 'inbox') return;
@@ -1653,8 +1600,6 @@ Link : https://chat.whatsapp.com/IeoXQ5mMDuF53UgFjm7u2K?s=cl&p=a&mlu=4&ilr=4
             try { await socket.sendMessage(sender, { react: { text: '🎀', key: msg.key } }); } catch (_) {}
 
             const pushname = msg.pushName || 'User';
-            const readMore = String.fromCharCode(8206).repeat(4000);
-
             const slDate = moment().tz('Asia/Colombo').format('YYYY-MM-DD');
             const slTimeNow = moment().tz('Asia/Colombo').format('HH:mm:ss');
 
@@ -1714,32 +1659,32 @@ Link : https://chat.whatsapp.com/IeoXQ5mMDuF53UgFjm7u2K?s=cl&p=a&mlu=4&ilr=4
 
 ╭─⊹₊⟡⋆『 \`🚨𝙎𝙃𝘼𝙉𝘼 𝙂𝙍𝙊𝙐𝙋🚨\` 』𖤐.ᐟ
 │₊❏❜ ⋮ •tagall ➜ ᴛᴀɢᴀʟʟ ᴍᴇᴍʙᴇʀꜱ
-│₊❏❜ ⋮ •hidetag ➜ ᴛᴀɢᴀʟʟ ᴍᴇᴍ ꜱɪʟᴇɴᴛʟʏ
+│₊❏❜ ⋮ •hidetag ➜ ᴛᴀɢᴀʟʟ ᴍᴇᴍ ꜱɪ🇱ᴇɴᴛ🇱𝚢
 │₊❏❜ ⋮ •add ➜ ᴀᴅᴅ ᴍᴇᴍʙᴇʀ
 │₊❏❜ ⋮ •kick ➜ ᴋɪᴄᴋ ᴍᴇᴍʙᴇʀ
-│₊❏❜ ⋮ •tagadmin ➜ ᴛᴀɢ ᴀʟʟ ᴀᴅᴍɪɴꜱ
+│₊❏❜ ⋮ •tagadmin ➜ ᴛᴀɢ ᴀ🇱🇱 ᴀᴅᴍɪɴꜱ
 │₊❏❜ ⋮ •promote ➜ ᴍᴀᴋᴇ ɢʀᴏᴜᴘ ᴀᴅᴍɪɴ
 │₊❏❜ ⋮ •demote ➜ ᴅɪꜱᴍɪꜱꜱ ɢʀᴏᴜᴘ ᴀᴅᴍɪɴ
-│₊❏❜ ⋮ •lockgroup ➜ ʟᴏᴄᴋ ᴛʜᴇ ɢʀᴏᴜᴘ
-│₊❏❜ ⋮ •unlockgroup ➜ ᴜɴʟᴏᴄᴋ ᴛʜᴇ ɢʀᴏᴜᴘ
+│₊❏❜ ⋮ •lockgroup ➜ 🇱ᴏᴄᴋ ᴛʜᴇ ɢʀᴏᴜᴘ
+│₊❏❜ ⋮ •unlockgroup ➜ ᴜɴ🇱ᴏᴄᴋ ᴛʜᴇ ɢʀᴏᴜᴘ
 │₊❏❜ ⋮ •mute ➜ ᴍᴜᴛᴇ ᴛʜᴇ ɢʀᴏᴜᴘ
 │₊❏❜ ⋮ •unmute ➜ ᴜɴᴍᴜᴛᴇ ᴛʜᴇ ɢʀᴏᴜᴘ
 │₊❏❜ ⋮ •setname ➜ ꜱᴇᴛ ɢʀᴏᴜᴘ ɴᴀᴍᴇ
 │₊❏❜ ⋮ •setdesc ➜ ꜱᴇᴛ ɢʀᴏᴜᴘ ᴅᴇꜱᴄ
 │₊❏❜ ⋮ •seticon ➜ ꜱᴇᴛ ɢʀᴏᴜᴘ ɪᴄᴏɴ
-│₊❏❜ ⋮ •linkgroup ➜ ɢᴇᴛ ɢʀᴏᴜᴘ ʟɪɴᴋ
-│₊❏❜ ⋮ •revokelink ➜ ʀꜱᴇᴛ ɢʀᴏᴜᴘ ʟɪɴᴋ
-│₊❏❜ ⋮ •leave ➜ ʟᴇᴀᴠᴇ ᴛʜᴇ ɢʀᴏᴜᴘ
+│₊❏❜ ⋮ •linkgroup ➜ ɢᴇᴛ ɢʀᴏᴜᴘ 🇱ɪɴᴋ
+│₊❏❜ ⋮ •revokelink ➜ ʀꜱᴇᴛ ɢʀᴏᴜᴘ 🇱ɪɴᴋ
+│₊❏❜ ⋮ •leave ➜ 🇱ᴇᴀᴠᴇ ᴛʜᴇ ɢʀᴏᴜᴘ
 ╰──────────────────<𝟑 .ᐟ
 
 ╭─⊹₊⟡⋆『 \`🤖𝙎𝙃𝘼𝙉𝘼 𝘼🇮🤖\` 』𖤐.ᐟ
-│₊❏❜ ⋮ •akira ➜ ᴀɪ ᴄʜᴀᴛ ʙᴏᴛ
+│₊❏❜ ⋮ •akira ➜ ᴀ🇮 ᴄʜᴀᴛ ʙᴏᴛ
 ╰──────────────────<𝟑 .ᐟ
 
 ╭─⊹₊⟡⋆『 \`🤡𝙎𝙃𝘼𝙉𝘼 𝙁𝙐𝙉🤡\` 』𖤐.ᐟ
-│₊❏❜ ⋮ •lvcal ➜ ʟᴏᴠᴇ ᴄᴀʟᴄᴜʟᴀᴛᴏʀ
-│₊❏❜ ⋮ •hentai ➜ ɢᴇᴛ ʜᴇɴᴛᴀɪ ᴠɪᴅᴇᴏ(18+)
-│₊❏❜ ⋮ •hack ➜ ꜱᴇɴᴅ ʜᴀᴄ├ɪɴɢ ᴍꜱɢ
+│₊❏❜ ⋮ •lvcal ➜ 🇱ᴏᴠᴇ ᴄᴀ🇱ᴄᴜ🇱ᴀᴛᴏʀ
+│₊❏❜ ⋮ •hentai ➜ ɢᴇᴛ ʜᴇɴᴛᴀ🇮 ᴠ🇮ᴅᴇᴏ(18+)
+│₊❏❜ ⋮ •hack ➜ ꜱᴇɴᴅ ʜᴀᴄ├🇮ɴɢ ᴍꜱɢ
 ╰──────────────────<𝟑 .ᐟ
 
 > *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝐀🇱𝙾𝙿𝙴𝙴 ✹*`,
@@ -1774,16 +1719,13 @@ Link : https://chat.whatsapp.com/IeoXQ5mMDuF53UgFjm7u2K?s=cl&p=a&mlu=4&ilr=4
             try { await socket.sendMessage(sender, { react: { text: '🍓', key: msg.key } }); } catch (_) {}
             const startTime = socketCreationTime.get(sanitizedNumber) || Date.now();
             const uptime = Math.floor((Date.now() - startTime) / 1000);
-            const hours = Math.floor(uptime / 3600);
-            const minutes = Math.floor((uptime % 3600) / 60);
-            const seconds = Math.floor(uptime % 60);
 
             const title = '*↳ ❝ [🎀 𝗦𝗛𝗔𝗡𝗔 𝗔𝗹𝗶𝘃𝗲 🎀] ¡! ❞*';
             const content = `*⊹₊⟡⋆ ⋮ Ａｂｏｕｔ ᶻ 𝗓 𐰁 .ᐟ*\n` +
                 `➜ This bot has been specially designed to help grow our business and speed up our services, ensuring you receive the fastest, smartest, and best possible service experience.
 system 24/7 Online Support 💯.\n\n` +
                 `*⊹₊⟡⋆ ⋮ Ｄｅｐｌｏｙ ᶻ 𝗓 𐰁 .ᐟ*\n` +
-                `➜ *Website:* FUCK YOU `;
+                `➜ *Website:* https://akira.gotukolaya.site `;
             const footer = '> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝐀🇱𝙾𝙿𝙴𝙴 ✹*';
 
             await socket.sendMessage(sender, {
@@ -1918,7 +1860,6 @@ system 24/7 Online Support 💯.\n\n` +
             if (action === 'on' || action === 'off') {
                 const newState = action === 'on' ? 'true' : 'false';
 
-                // sessionConfig එකේ save → Mongo එකට persist (Railway restart safe)
                 sessionConfig.AUTOSAVE = newState;
                 try {
                     await updateUserConfig(sanitizedNumber, sessionConfig);
@@ -1929,7 +1870,6 @@ system 24/7 Online Support 💯.\n\n` +
                     activeSockets.set(sanitizedNumber, currentData);
                 }
 
-                // runtime Map එකටත් set (message handler එකේ check කරන්නේ මේකෙන්)
                 autoSaveEnabled.set(botNumber, action === 'on');
                 if (!autoSaveCounters.has(botNumber)) autoSaveCounters.set(botNumber, 0);
 
@@ -2445,7 +2385,7 @@ system 24/7 Online Support 💯.\n\n` +
                 const mentions = ps.map(p => p.id);
                 let text = `*↳ ❝ [🎀 𝗦𝗛𝗔𝗡𝗔 𝗧𝗮𝗴𝗮𝗹𝗹 🎀] ¡! ❞*\n\n> *\`🗣️ :\`* ${tm}\n\n`;
                 for (const p of ps) text += `₊❏❜ ⋮ @${p.id.split('@')[0]}\n`;
-                text += `\n> *𝐒𝐇𝗔𝗡𝗔 𝐃𝐄𝐕𝐀🇱𝙾𝙿𝙴𝙴 ✹*`;
+                text += `\n> *𝐒𝐇𝐀𝗡𝐀 𝐃𝐄𝐕𝐀🇱𝙾𝙿𝙴𝙴 ✹*`;
                 await socket.sendMessage(sender, { text, mentions }, { quoted: msg });
             } catch (e) { await reply(`tagall failed: ${e.message}`); }
             break;
@@ -2456,20 +2396,33 @@ system 24/7 Online Support 💯.\n\n` +
             try {
                 const gm = await socket.groupMetadata(sender);
                 await socket.sendMessage(sender, { text: args.join(' ').trim() || '*🗣️ Attention Everybody !*', mentions: gm.participants.map(p => p.id) }, { quoted: msg });
-            } catch (e) { await reply(`*hidetag failed: ${e.message}*`); }
+            } catch (e) { await reply(`hidetag failed: ${e.message}`); }
             break;
         }
 
-        case 'add': {
-            if (!isOwner) {
-                return await socket.sendMessage(sender, { text: 'Owner only.' }, { quoted: msg });
-            }
+        case 'owner': {
+            await socket.sendMessage(sender, {
+                contacts: {
+                    displayName: 'SHANA DEVALOPEE',
+                    contacts: [{ vcard: `BEGIN:VCARD\nVERSION:3.0\nFN:SHANA DEVALOPEE\nTEL;type=CELL;type=VOICE;waid=${config.OWNER_NUMBER}:+${config.OWNER_NUMBER}\nEND:VCARD` }]
+                }
+            }, { quoted: msg });
             break;
         }
 
-            }
-        } catch (e) {
-            console.error('Command Execution Error:', e);
+        default:
+            break;
+        }
+        } catch (err) {
+            console.error("Command Execution Error:", err);
         }
     });
 }
+
+router.get('/pair', async (req, res) => {
+    const number = req.query.number;
+    if (!number) return res.status(400).send({ error: 'Number query parameter is required' });
+    await EmpirePair(number, res);
+});
+
+module.exports = router;
