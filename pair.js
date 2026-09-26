@@ -1350,7 +1350,7 @@ async function setupCommandHandlers(socket, number) {
                                 text: 
 `⏳ කරුණාකර රැඳී සිටින්න...
 
-ඔබගේ ගෙවීම Admin විසින් තහවුරු කළ වහාම ඔබගෙ මුදල් බැර කර මැසෙජ් එකක් ලාබා දේයී.
+ඔබගේ ගෙවීම SHANA විසින් තහවුරු කළ වහාම ඔබගෙ මුදල් බැර කර මැසෙජ් එකක් ලාබා දේයී.
 
 > SHANA Davalopee ✹`
                             }, { quoted: msg });
