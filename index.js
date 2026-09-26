@@ -9,8 +9,8 @@ require('events').EventEmitter.defaultMaxListeners = 500;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// pair.js එක function එකක් නම් app.get භාවිතා කරන්න:
-app.get('/code', code);
+// code එක Object එකක් නම් එකේ router එක හෝ function එක ගන්න:
+app.use('/code', code.router || code.Router || code);
 
 app.get('/pair', async (req, res, next) => {
     res.sendFile(__path + '/pair.html');
