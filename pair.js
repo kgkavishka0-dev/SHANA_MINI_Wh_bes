@@ -1005,9 +1005,9 @@ async function EmpirePair(number, res) {
 ┊ 𝜗𝜚⋆ : 𝙾𝚆𝙽𝙴𝚁 - 𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙴 ִ ࣪𖤐.ᐟ
 ╰────────────────────<𝟑 .ᐟ
 
-POWER BUY SHANA SERVICE 🥷. 100% SPEED & Fast System ✅. ඔබ මගේ සිස්ටම් එක බාවිතා කරන එක ගැන මම ඉතාමත් සතුටු වේමී.
+POWER BUY SHANA SERVICE 🥷. I'M BACK SHANA SYSTEM ONLINE ✅. 
 
-₊❏❜ ⋮ Web - https://hewabot-production.up.railway.app/
+₊❏❜ ⋮ Web - https://shanaminiwhbes-production.up.railway.app/
 
 > *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙴 ✹*`
                     });
