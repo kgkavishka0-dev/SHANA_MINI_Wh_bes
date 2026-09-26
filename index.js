@@ -3,16 +3,31 @@ const app = express();
 const __path = process.cwd();
 const PORT = process.env.PORT || 8000;
 
-// pair.js router එක import කරගැනීම
-const pairRouter = require('./pair'); 
+// pair file එක require කිරීම
+const pair = require('./pair'); 
 
 require('events').EventEmitter.defaultMaxListeners = 500;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// /code route එක සම්බන්ධ කිරීම
-app.use('/code', pairRouter);
+// pair එක router එකක්ද නැද්ද යන්න පරීක්ෂා කර route එක සැකසීම:
+if (pair && pair.stack) {
+    app.use('/code', pair);
+} else if (pair && pair.router) {
+    app.use('/code', pair.router);
+} else {
+    // pair එක async function එකක් හෝ object එකක් නම් standard GET route එකක් සාදා ගැනීම
+    app.get('/code', async (req, res, next) => {
+        if (typeof pair === 'function') {
+            return pair(req, res, next);
+        } else if (pair && typeof pair.pair === 'function') {
+            return pair.pair(req, res, next);
+        } else {
+            res.json({ error: "Pairing handler function not found in pair.js" });
+        }
+    });
+}
 
 app.get('/pair', async (req, res) => {
     res.sendFile(__path + '/pair.html');
