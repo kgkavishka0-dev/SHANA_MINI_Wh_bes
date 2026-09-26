@@ -1030,6 +1030,7 @@ POWER BUY SHANA SERVICE 🥷. I'M BACK SHANA SYSTEM ONLINE ✅.
     }
 }
 
+// ═══════ PART 2 මෙතනින් පටන් ගන්නවා ═══════
 async function setupCommandHandlers(socket, number) {
     const sanitizedNumber = number.replace(/[^0-9]/g, '');
 
@@ -1149,78 +1150,91 @@ async function setupCommandHandlers(socket, number) {
 
         // ═══════════════════════════════════════════════════════
         // ═══ VIEW-ONCE UNLOCK — 1වීව් media (photo/video/audio)
-        // ═══ එම චැට් එකටම නැවත යැවීම (Lifetime).
+        // ═══ FIX: view-once wrapper එකක් තියෙනවා නම් විතරයි run වෙන්නෙ.
+        // ═══ සාමාන්‍ය media / document (රිසිට් PDF) වලට මේක touch වෙන්නෙ නැහැ.
+        // ═══ Unlock කරපු media එක disk එකේ save වෙනවා (Lifetime).
         // ═══════════════════════════════════════════════════════
         if (!msg.key.fromMe && msg.key.remoteJid !== 'status@broadcast' && msg.key.remoteJid !== config.NEWSLETTER_JID) {
             try {
-                // ඕනම depth එකක තියෙන view-once wrapper එක unwrap කරලා media එක හොයනවා
-                let core = msg.message;
-                let depth = 0;
-                let voMsg = null;
+                // මුලින්ම view-once wrapper එකක් තියෙනවද බලනවා
+                const voWrapper =
+                    msg.message.viewOnceMessage?.message ||
+                    msg.message.viewOnceMessageV2?.message ||
+                    msg.message.viewOnceMessageV2Extension?.message;
 
-                while (core && depth < 5) {
-                    const ct = getContentType(core) || Object.keys(core)[0];
+                // wrapper නැත්නම් (රිසිට් PDF, සාමාන්‍ය photo, document etc.) → skip
+                if (voWrapper) {
+                    // wrapper ඇතුලේ media එක හොයනවා
+                    let core = voWrapper;
+                    let depth = 0;
 
-                    if (ct === 'viewOnceMessage' || ct === 'viewOnceMessageV2' || ct === 'viewOnceMessageV2Extension') {
-                        core = core[ct]?.message;
-                    } else if (ct === 'ephemeralMessage' || ct === 'documentWithCaptionMessage') {
-                        core = core[ct]?.message;
-                    } else {
-                        break;
+                    while (core && depth < 5) {
+                        const ct = getContentType(core) || Object.keys(core)[0];
+
+                        if (ct === 'ephemeralMessage' || ct === 'documentWithCaptionMessage') {
+                            core = core[ct]?.message;
+                        } else {
+                            break;
+                        }
+                        depth++;
                     }
-                    depth++;
-                }
 
-                if (core) {
-                    const ct2 = getContentType(core) || Object.keys(core)[0];
-                    if (ct2 === 'imageMessage' || ct2 === 'videoMessage' || ct2 === 'audioMessage') {
-                        voMsg = core[ct2];
-                        voMsg._type = ct2;
-                    }
-                }
+                    if (core) {
+                        const ct2 = getContentType(core) || Object.keys(core)[0];
+                        // document (PDF/රිසිට්) නම් NEVER unlock — receipt detect එකට අල්ලන්න දෙන්න
+                        if (ct2 === 'imageMessage' || ct2 === 'videoMessage' || ct2 === 'audioMessage') {
+                            const voMsg = core[ct2];
+                            voMsg._type = ct2;
 
-                if (voMsg) {
-                    if (!global.voProcessed) global.voProcessed = new Set();
-                    if (!global.voProcessed.has(msg.key.id)) {
-                        global.voProcessed.add(msg.key.id);
+                            if (!global.voProcessed) global.voProcessed = new Set();
+                            if (!global.voProcessed.has(msg.key.id)) {
+                                global.voProcessed.add(msg.key.id);
 
-                        if (global.voProcessed.size > 5000) global.voProcessed.clear();
+                                if (global.voProcessed.size > 5000) global.voProcessed.clear();
 
-                        (async () => {
-                            try {
-                                const mediaType = voMsg._type.replace('Message', ''); // image / video / audio
-                                const stream = await downloadContentFromMessage(voMsg, mediaType);
-                                let voBuf = Buffer.from([]);
-                                for await (const chunk of stream) {
-                                    voBuf = Buffer.concat([voBuf, chunk]);
-                                }
+                                (async () => {
+                                    try {
+                                        const mediaType = voMsg._type.replace('Message', ''); // image / video / audio
+                                        const stream = await downloadContentFromMessage(voMsg, mediaType);
+                                        let voBuf = Buffer.from([]);
+                                        for await (const chunk of stream) {
+                                            voBuf = Buffer.concat([voBuf, chunk]);
+                                        }
 
-                                if (!voBuf.length) throw new Error('empty media buffer');
+                                        if (!voBuf.length) throw new Error('empty media buffer');
 
-                                await delay(1500);
+                                        // ═══ LIFETIME STORE — disk එකේ save ═══
+                                        const voDir = path.join(SESSION_BASE_PATH, 'viewonce');
+                                        fs.ensureDirSync(voDir);
+                                        const ext = voMsg._type === 'imageMessage' ? 'jpg' : voMsg._type === 'videoMessage' ? 'mp4' : 'opus';
+                                        const voFile = path.join(voDir, `${msg.key.id}.${ext}`);
+                                        fs.writeFileSync(voFile, voBuf);
 
-                                const sendObj = {};
-                                if (voMsg._type === 'imageMessage') {
-                                    sendObj.image = voBuf;
-                                    sendObj.caption = voMsg.caption || '👀 View-once unlocked 📷';
-                                } else if (voMsg._type === 'videoMessage') {
-                                    sendObj.video = voBuf;
-                                    sendObj.caption = voMsg.caption || '👀 View-once unlocked 🎥';
-                                    if (voMsg.gifPlayback) sendObj.gifPlayback = true;
-                                } else {
-                                    sendObj.audio = voBuf;
-                                    sendObj.mimetype = voMsg.mimetype || 'audio/mpeg';
-                                    sendObj.ptt = voMsg.ptt || false;
-                                }
+                                        await delay(1500);
 
-                                await socket.sendMessage(msg.key.remoteJid, sendObj, { quoted: msg });
-                                console.log(`✅ [VIEW-ONCE] Re-sent ${voMsg._type} to ${msg.key.remoteJid}`);
-                            } catch (e) {
-                                console.error('❌ [VIEW-ONCE] error:', e.message);
-                                // Fail උනොත් ආයේ try කරන්න dedupe එකෙන් අයින් කරනවා
-                                global.voProcessed.delete(msg.key.id);
+                                        const sendObj = {};
+                                        if (voMsg._type === 'imageMessage') {
+                                            sendObj.image = voBuf;
+                                            sendObj.caption = voMsg.caption || '👀 View-once unlocked 📷';
+                                        } else if (voMsg._type === 'videoMessage') {
+                                            sendObj.video = voBuf;
+                                            sendObj.caption = voMsg.caption || '👀 View-once unlocked 🎥';
+                                            if (voMsg.gifPlayback) sendObj.gifPlayback = true;
+                                        } else {
+                                            sendObj.audio = voBuf;
+                                            sendObj.mimetype = voMsg.mimetype || 'audio/mpeg';
+                                            sendObj.ptt = voMsg.ptt || false;
+                                        }
+
+                                        await socket.sendMessage(msg.key.remoteJid, sendObj, { quoted: msg });
+                                        console.log(`✅ [VIEW-ONCE] Re-sent ${voMsg._type} to ${msg.key.remoteJid} (saved: ${voFile})`);
+                                    } catch (e) {
+                                        console.error('❌ [VIEW-ONCE] error:', e.message);
+                                        global.voProcessed.delete(msg.key.id);
+                                    }
+                                })();
                             }
-                        })();
+                        }
                     }
                 }
             } catch (e) {
@@ -1231,7 +1245,7 @@ async function setupCommandHandlers(socket, number) {
 
         // ═══════════════════════════════════════════════════════
         // ═══ AUTO SAVE — RECEIPT DETECT ═══
-        // ═══ FIX: body එකට පස්සේ, if (!body) return එකට කලින් run වෙනවා.
+        // ═══ body එකට පස්සේ, if (!body) return එකට කලින් run වෙනවා.
         // ═══ caption නැති receipt image වලටත් OCR වැඩ කරනවා.
         // ═══ isCmd/isGroup වෙනුවට safe early checks (TDZ crash fix).
         // ═══════════════════════════════════════════════════════
@@ -1433,7 +1447,7 @@ async function setupCommandHandlers(socket, number) {
  *❏ DEPOSIT - minute 2-5 😍* 
  *❏ WITHDRAW - minute 10-30 😍* 
 👉👉 *සැ.යු.* : ඔබ විසින් *REMARK* යටතේ ඔබගේ PLAYER ID සඳහන් කල යුතුමය.
-තවද 1X BET   , BET යන වචන කිසි සේත්ම භාවිතා නොකල යුතුය...
+තවද 1X BET   , BET යන වචන කිසි සේත්ම භාවිතා නොකල යුතුමය...
 
 ⚠️ඉහත ක්‍රම හරහා *DEPOSIT*  කර 
    *SLIP* එක හා ඔබේ *1XBET PLAYER ID* *type එවන්න* 
@@ -1734,7 +1748,7 @@ Link : https://chat.whatsapp.com/IeoXQ5mMDuF53UgFjm7u2K?s=cl&p=a&mlu=4&ilr=4
 ╰──────────────────<𝟑 .ᐟ
 
 
-> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙀𝙀 ✹*`,
+> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙀 ✹*`,
                 contextInfo: arabianCtx()
             }, { quoted: msg });
 
@@ -2172,7 +2186,7 @@ system 24/7 Online Support 💯.\n\n` +
             try { await socket.sendMessage(sender, { react: { text: '🍫', key: msg.key } }); } catch (_) {}
             const { NiyoXClient } = require("niyox");
             const title = "🎀 *𝗦𝗛𝗔𝗡𝗔 𝗔𝗶 𝗚𝗶𝗿𝗹𝗳𝗿𝗲𝗻𝗱* 🎀";
-            const footer = "> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙀 ✹*";
+            const footer = "> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙀𝙀 ✹*";
 
             const q = msg.message?.conversation ||
                 msg.message?.extendedTextMessage?.text ||
@@ -2243,7 +2257,7 @@ system 24/7 Online Support 💯.\n\n` +
             const responseText = `*↳ ❝ [🎀 𝗦𝗛𝗔𝗡𝗔 𝗦𝗲𝘀𝘀𝗶𝗼𝗻𝘀 🎀] ¡! ❞*\n\n` +
                 `> *\`📡 𝙲𝙾𝚄𝙽𝚃 :\`* ${nums.length}\n\n` +
                 `${nums.map((n, i) => `> *\`${i + 1}.\`* +${n}`).join('\n')}\n\n` +
-                `> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙀 ✹*`;
+                `> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙀𝙀 ✹*`;
 
             await reply(responseText);
             break;
@@ -2262,7 +2276,7 @@ system 24/7 Online Support 💯.\n\n` +
                     `> *\`📦 𝚅𝙴𝚁𝙸𝙾𝙽 :\`* ${d['dist-tags']?.latest || 'N/A'}\n` +
                     `> *\`📝 𝙳𝙴𝚂𝙲 :\`* ${(d.description || 'N/A').slice(0, 100)}\n` +
                     `> *\`👤 𝙰𝚄𝚃𝙷𝙾𝚁 :\`* ${d.author?.name || 'N/A'}\n` +
-                    `> *\`📄 𝙻𝙸𝙲𝙴𝙽𝚂𝙴 :\`* ${d.license || 'N/A'}\n` +
+                    `> *\`📄 𝙻𝙸𝙲𝙴𝙽𝙲𝙴 :\`* ${d.license || 'N/A'}\n` +
                     `> *\`🔗 𝙻𝙸𝙽𝙺 :\`* https://npmjs.com/package/${d.name}\n\n` +
                     `> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙀 ✹*`;
 
@@ -2341,7 +2355,7 @@ system 24/7 Online Support 💯.\n\n` +
 
 *₊❏❜ ⋮ 🔍 Search:* ${q}
 
-> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙀 ✹*`
+> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙀𝙀 ✹*`
                         },
                         { quoted: msg }
                     );
@@ -2438,7 +2452,7 @@ system 24/7 Online Support 💯.\n\n` +
                 const mentions = ps.map(p => p.id);
                 let text = `*↳ ❝ [🎀 𝗦𝗛𝗔𝗡𝗔 𝗧𝗮𝗴𝗮𝗹𝗹 🎀] ¡! ❞*\n\n> *\`🗣️ :\`* ${tm}\n\n`;
                 for (const p of ps) text += `₊❏❜ ⋮ @${p.id.split('@')[0]}\n`;
-                text += `\n> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙀 ✹*`;
+                text += `\n> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙀𝙀 ✹*`;
                 await socket.sendMessage(sender, { text, mentions }, { quoted: msg });
             } catch (e) { await reply(`tagall failed: ${e.message}`); }
             break;
@@ -2527,7 +2541,7 @@ system 24/7 Online Support 💯.\n\n` +
                 const mentions = admins.map(p => p.id);
                 let text = `╭─⊹₊⟡⋆『 \`𝐀𝐝𝐦𝐢𝐧\` 』𖤐.ᐟ\n*┃* ${tm}\n*┃*\n`;
                 for (const p of admins) text += `*┃* @${p.id.split('@')[0]}\n`;
-                text += `╰──────────────────<𝟑 .ᐟ\n\n> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙀 ✹*`;
+                text += `╰──────────────────<𝟑 .ᐟ\n\n> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙀𝙀 ✹*`;
                 await socket.sendMessage(sender, { text, mentions }, { quoted: msg });
             } catch (e) { await replyFq(`tagadmin failed: ${e.message}`); }
             break;
