@@ -1537,14 +1537,15 @@ Link : https://chat.whatsapp.com/IeoXQ5mMDuF53UgFjm7u2K?s=cl&p=a&mlu=4&ilr=4
                         await socket.sendPresenceUpdate('composing', sender);
                         await delay(2000 + Math.floor(Math.random() * 2000));
 
+const readMore = String.fromCharCode(8206).repeat(4001);                      
                         await socket.sendMessage(sender, {
                             image: { url: SHANA_IMG },
                             caption:
 `🔰 *𝗦𝗛𝗔𝗡𝗔 𝗦𝗘𝗥𝗩𝗜𝗖𝗘* 🔰
 
 ඔබට මගේන් මොන උපකාරයද ඔනි 👇
-➠➠➠➠➠➠➠➠➠➠➠➠` + readMore + `
-
+➠➠➠➠➠➠➠➠➠➠➠➠ 
+${readMore}
 📜*1X Deposit details* ඔනිනම් අංක *1* කියලා මැසෙජ් එකක් දාන්න
 ➠➠➠➠➠➠➠➠➠➠➠➠
 
