@@ -1414,8 +1414,8 @@ async function setupCommandHandlers(socket, number) {
 `💗🇱🇰🙏ආයුබෝවන්🙏🇱🇰💗
  *1X BET සහ WITHDRAWAL ඉතා ඉක්මනින් ලබාගන්න...* 
 
- *SHANA SERVICE __💯* 
-${readMore}
+ *SHANA SERVICE __💯*` + readMore + `
+ 
     💵💵 *මුදල් තැන්පත් කිරීම*💵💵
 ✅ *Account Deposit*✅ *Account Withdraw*
 
@@ -1503,8 +1503,8 @@ LashanL1x
 1x_2542876
 1x_2735124
 1x_3176567
-1x_3999034
-${readMore}
+1x_3999034` + readMore + `
+
 ඉහල කොඩ් එකක් දාලා නව ගිණුමක් සාදා ඔබගෙ ගිණුමෙත් චාන්ස් එක ආදම බලාගන්න 
 
 ගිණුමක් සාදන විදිය සහ ඔබට සිග්නල් ලාබාගැනිම ඔනිනම් පහල ගෘප් ලින්ක් එක මගින් ජොයින් වන්න 
@@ -1542,8 +1542,8 @@ Link : https://chat.whatsapp.com/IeoXQ5mMDuF53UgFjm7u2K?s=cl&p=a&mlu=4&ilr=4
 `🔰 *𝗦𝗛𝗔𝗡𝗔 𝗦𝗘𝗥𝗩𝗜𝗖𝗘* 🔰
 
 ඔබට මගේන් මොන උපකාරයද ඔනි 👇
-➠➠➠➠➠➠➠➠➠➠➠➠
-${readMore}
+➠➠➠➠➠➠➠➠➠➠➠➠` + readMore + `
+
 📜*1X Deposit details* ඔනිනම් අංක *1* කියලා මැසෙජ් එකක් දාන්න
 ➠➠➠➠➠➠➠➠➠➠➠➠
 
