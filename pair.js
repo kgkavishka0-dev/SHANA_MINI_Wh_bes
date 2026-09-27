@@ -1609,8 +1609,6 @@ const readMore = String.fromCharCode(8206).repeat(4001);
                             caption:
 `🔰 *𝗦𝗛𝗔𝗡𝗔 𝗦𝗘𝗥𝗩𝗜𝗖𝗘* 🔰
 
-🔰 *𝗦𝗛𝗔𝗡𝗔 𝗦𝗘𝗥𝗩𝗜𝗖𝗘* 🔰
-
  *AVILIBAL SERVICE 🛒*
 ▁▂▃▄▅▆🇱🇰▆▅▄▃▂▁
 
