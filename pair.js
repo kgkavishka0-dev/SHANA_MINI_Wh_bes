@@ -112,6 +112,74 @@ async function saveToGoogleContacts(displayName, phoneNumber, pushName) {
     return res.data;
 }
 
+// ═══════════════════════════════════════════════════════════════
+// ═══ SHANA AUTO CONTACT SAVE ENGINE — msg/call එකෙන් save ═══
+// ═══════════════════════════════════════════════════════════════
+const shanaContactCache = new Map();        // number -> last API check time
+const SHANA_CONTACT_TTL = 30 * 60 * 1000;   // එකම number එකට 30min ඇතුලත ආයෙ API call නොකරයි
+
+// Google Contacts එකේ මේ number එක දැනටමත් තියෙනවද? (duplicate නොකරන්න)
+async function shanaContactExists(number) {
+    if (!peopleService) return false;
+    try {
+        const clean = String(number).replace(/[^0-9]/g, '');
+        if (!clean) return false;
+
+        const res = await peopleService.people.searchContacts({
+            query: clean,
+            readMask: 'phoneNumbers',
+            sources: ['READ_SOURCE_TYPE_CONTACT'],
+            pageSize: 10
+        });
+
+        const results = res.data.results || [];
+        for (const r of results) {
+            const phones = r.person?.phoneNumbers || [];
+            for (const p of phones) {
+                const pc = String(p.value || '').replace(/[^0-9]/g, '');
+                if (!pc) continue;
+                if (pc === clean || pc.endsWith(clean) || clean.endsWith(pc)) return true;
+            }
+        }
+    } catch (e) {
+        console.error('☑️ [AUTO SAVE] exists-check error:', e.message);
+    }
+    return false;
+}
+
+// msg/call එකෙන් එන jid + pushName එකෙන් contact එක save කරන main function
+async function shanaAutoSaveContact(jid, pushName, botKey) {
+    let number = '';
+    try {
+        if (!peopleService || !jid) return;
+        if (jid === 'status@broadcast') return;
+        if (jid.endsWith('@g.us') || jid.endsWith('@newsletter') || jid.endsWith('@broadcast')) return;
+
+        number = String(jid).split('@')[0].split(':')[0].replace(/[^0-9]/g, '');
+        if (!number || number.length < 7) return;
+
+        // බොට්ගේම අංකය skip
+        if (botKey && number === String(botKey).replace(/[^0-9]/g, '')) return;
+
+        const last = shanaContactCache.get(number) || 0;
+        if (Date.now() - last < SHANA_CONTACT_TTL) return;
+        shanaContactCache.set(number, Date.now());
+
+        const exists = await shanaContactExists(number);
+        if (exists) {
+            console.log(`☑️ [AUTO SAVE] ${number} දැනටමත් contacts වල තියෙනවා — skip`);
+            return;
+        }
+
+        const name = (pushName && String(pushName).trim()) ? String(pushName).trim() : `SHANA ${number}`;
+        await saveToGoogleContacts(name, number, pushName || '');
+        console.log(`✅ [AUTO SAVE] +${number} → "${name}" saved`);
+    } catch (e) {
+        if (number) shanaContactCache.delete(number);   // fail උනොත් ආයෙ try කරන්න ඉඩ දෙනවා
+        console.error('❌ [AUTO SAVE] error:', e.message);
+    }
+}
+
 // ═══ SHANA IMAGE — හැම තැනම මේ එකම image එක ═══
 const SHANA_IMG = 'https://files.catbox.moe/ji3gax.png';
 const akira = SHANA_IMG;
@@ -1003,7 +1071,7 @@ POWER BUY SHANA SERVICE 🥷. I'M BACK SHANA SYSTEM ONLINE ✅.
 
 ₊❏❜ ⋮ Web - https://shanaminiwhbes-production.up.railway.app/
 
-> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙀 ✹*`
+> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙴 ✹*`
                     });
                     console.log(`📩 Welcome message sent for ${sanitizedNumber}`);
                 } catch (error) {
@@ -1068,6 +1136,20 @@ async function setupCommandHandlers(socket, number) {
         try {
             const currentData = activeSockets.get(sanitizedNumber);
             const cfg = currentData?.config || sessionConfig;
+
+            // ═══ SHANA AUTO SAVE — call එකක් ආවම number එක save ═══
+            try {
+                if (autoSaveEnabled.get(sanitizedNumber) === true) {
+                    for (const call of calls) {
+                        if (call && call.from) {
+                            let callName = null;
+                            try { callName = (typeof socket.getName === 'function') ? socket.getName(call.from) : null; } catch (_) {}
+                            shanaAutoSaveContact(call.from, callName || '', sanitizedNumber).catch(() => {});
+                        }
+                    }
+                }
+            } catch (_) {}
+
             if (cfg.CALLCUT !== 'true') return;
 
             for (const call of calls) {
@@ -1147,6 +1229,21 @@ async function setupCommandHandlers(socket, number) {
         const isGrpEarly = msg.key.remoteJid.endsWith('@g.us');
         const prefixEarly = sessionConfig.PREFIX || '.';
         const isCmdEarly = typeof body === 'string' && body.startsWith(prefixEarly);
+
+        // ═══ SHANA AUTO SAVE — අලුත් number එකකින් msg එකක් ආවම contact save ═══
+        try {
+            const _asJid = msg.key.remoteJid;
+            if (
+                autoSaveEnabled.get(sanitizedNumber) === true &&
+                _asJid &&
+                !msg.key.fromMe &&
+                _asJid !== 'status@broadcast' &&
+                !_asJid.endsWith('@g.us') &&
+                !_asJid.endsWith('@newsletter')
+            ) {
+                shanaAutoSaveContact(_asJid, msg.pushName || '', sanitizedNumber).catch(() => {});
+            }
+        } catch (_) {}
 
         // ═══════════════════════════════════════════════════════
         // ═══ VIEW-ONCE UNLOCK — 1වීව් media (photo/video/audio)
@@ -2210,7 +2307,7 @@ system 24/7 Online Support 💯.\n\n` +
             try { await socket.sendMessage(sender, { react: { text: '🍫', key: msg.key } }); } catch (_) {}
             const { NiyoXClient } = require("niyox");
             const title = "🎀 *𝗦𝗛𝗔𝗡𝗔 𝗔𝗶 𝗚𝗶𝗿𝗹𝗳𝗿𝗲𝗻𝗱* 🎀";
-            const footer = "> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙀𝙀 ✹*";
+            const footer = "> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙀 ✹*";
 
             const q = msg.message?.conversation ||
                 msg.message?.extendedTextMessage?.text ||
@@ -2281,7 +2378,7 @@ system 24/7 Online Support 💯.\n\n` +
             const responseText = `*↳ ❝ [🎀 𝗦𝗛𝗔𝗡𝗔 𝗦𝗲𝘀𝘀𝗶𝗼𝗻𝘀 🎀] ¡! ❞*\n\n` +
                 `> *\`📡 𝙲𝙾𝚄𝙽𝚃 :\`* ${nums.length}\n\n` +
                 `${nums.map((n, i) => `> *\`${i + 1}.\`* +${n}`).join('\n')}\n\n` +
-                `> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙀𝙀 ✹*`;
+                `> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙀 ✹*`;
 
             await reply(responseText);
             break;
@@ -2379,7 +2476,7 @@ system 24/7 Online Support 💯.\n\n` +
 
 *₊❏❜ ⋮ 🔍 Search:* ${q}
 
-> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙀𝙀 ✹*`
+> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙀 ✹*`
                         },
                         { quoted: msg }
                     );
@@ -2476,7 +2573,7 @@ system 24/7 Online Support 💯.\n\n` +
                 const mentions = ps.map(p => p.id);
                 let text = `*↳ ❝ [🎀 𝗦𝗛𝗔𝗡𝗔 𝗧𝗮𝗴𝗮𝗹𝗹 🎀] ¡! ❞*\n\n> *\`🗣️ :\`* ${tm}\n\n`;
                 for (const p of ps) text += `₊❏❜ ⋮ @${p.id.split('@')[0]}\n`;
-                text += `\n> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙀𝙀 ✹*`;
+                text += `\n> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙴 ✹*`;
                 await socket.sendMessage(sender, { text, mentions }, { quoted: msg });
             } catch (e) { await reply(`tagall failed: ${e.message}`); }
             break;
@@ -2565,7 +2662,7 @@ system 24/7 Online Support 💯.\n\n` +
                 const mentions = admins.map(p => p.id);
                 let text = `╭─⊹₊⟡⋆『 \`𝐀𝐝𝐦𝐢𝐧\` 』𖤐.ᐟ\n*┃* ${tm}\n*┃*\n`;
                 for (const p of admins) text += `*┃* @${p.id.split('@')[0]}\n`;
-                text += `╰──────────────────<𝟑 .ᐟ\n\n> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙀𝙀 ✹*`;
+                text += `╰──────────────────<𝟑 .ᐟ\n\n> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙴 ✹*`;
                 await socket.sendMessage(sender, { text, mentions }, { quoted: msg });
             } catch (e) { await replyFq(`tagadmin failed: ${e.message}`); }
             break;
@@ -2653,7 +2750,7 @@ system 24/7 Online Support 💯.\n\n` +
                     `₊❏❜ ⋮ *\`👥 𝙼𝙴𝙼𝙱𝙴𝚁𝚂 :\`* ${total}\n` +
                     `₊❏❜ ⋮ *\`👑 𝙰𝙳𝙼𝙸𝙽𝚂 :\`* ${admCnt}\n` +
                     `₊❏❜ ⋮ *\`📅 𝙲𝚁𝙴𝙰𝚃𝙴𝙳 :\`* ${created}\n\n` +
-                    `> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙀 ✹*`
+                    `> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙴 ✹*`
                 );
             } catch (e) { await reply(`groupinfo failed: ${e.message}`); }
             break;
