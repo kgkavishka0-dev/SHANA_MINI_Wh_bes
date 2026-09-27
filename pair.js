@@ -1463,16 +1463,26 @@ async function setupCommandHandlers(socket, number) {
                         }, { quoted: msg });
                     }
 
+                     
                     else if (trimmed === '2') {
                         await socket.sendMessage(sender, {
                             text:
-`  𝘾𝙄𝙏𝙔 - 𝙈𝙄𝙉𝙉𝙀𝙍𝙄𝙔𝘼 
-𝙎𝙀𝙍𝙄𝙑𝙀 - 𝙇𝘼𝙆𝘿𝙃𝘼𝙉 𝙎𝙀𝙍𝙑𝙄𝘾𝙀 (24/7) 
-
-උඩ ඩිටෙල්ස් වලට සල්ලි දාමා ගෙට් කොඩ් කියන එකේ කොඩ් එක ඇරන් එ කොඩ් එකත් එක්ක ස්ක්‍රින ශොට් එක Send කරන්න සහ ඔබගේ මුදල් ලාබා ගැනිම මෙතඩ් මා හට දමන්න 🤝 . 
-
-🥷  කරුණාකර ඔබගේ සහය මට ලාබා දී මගේ සෙවය උපරිම ලබාගන්න
-> SHANA  Devalopee`
+` Account එකෙන් Withdrawal එක දාන ආකාරය:👇
+${readMore}
+​♻️ 1x App එකට හෝ Website එකට ලොග් වී ඔබේ Account එක වෙත යන්න.
+​🛑 Withdrawal  කියන එක Select කරන්න.
+​🛑 මුදල් ලබාගන්නා All methods කියන එක click කර එ  අතරින් "1xbet Cash/Cash " කියන Option එක තෝරන්න.
+​පහත විස්තර නිවැරදිව ඇතුළත් කරන්න:
+​🛑 Amount: ඔබට ලබාගැනීමට අවශ්‍ය මුදල (250-/ සිට ඉහලට ඔනිම මුදලක් ).
+​🛑 City:  Minneriya 
+​🛑 Street / Agent Address: Lakshan Service 24/7 
+​🛑 Confirm කරන්න.  ඔබේ ෆෝන් එකට SMS එකකින් එන 2-Factor Code එක හෝ OTP එක ඇතුළත් කරන්න ( ඔබ phone නම්බරයක් හො Email එකක් ඇතුලක් කර ඇතන්ම් පමණි)
+​♻️. Cash Pickup Code එක ලබාගැනීම:
+​💠 Request එක දාලා විනාඩි කිහිපයකින් Withdrawal Requests / History එකට යන්න.
+​💠 එහි ඔබ දැමූ Request එක "Approved" වී තිබේ නම්, ඒ අසල ඇති "Get Code" (කේතය ලබාගන්න) කියන එක මත Click කරන්න.
+​💠 එවිට ඔබට Secret Code (රහස් සංකේතයක්) සහ 4-digit PIN එකක් හෝ Code එකක් ලැබෙනු ඇත.
+💠 කරුණාකර එම Code එක Agent හට ලාබා දෙන්න
+> SHANA Devalopee `
                         }, { quoted: msg });
                     }
 
