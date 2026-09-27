@@ -1493,6 +1493,7 @@ async function setupCommandHandlers(socket, number) {
                         }, { quoted: msg });
                     }
 
+                     const readMore = String.fromCharCode(8206).repeat(4001); 
                     else if (trimmed === '5') {
                         await socket.sendMessage(sender, {
                             text:
@@ -1504,7 +1505,8 @@ LashanL1x
 1x_2542876
 1x_2735124
 1x_3176567
-1x_3999034` + readMore + `
+1x_3999034
+${readMore}
 
 ඉහල කොඩ් එකක් දාලා නව ගිණුමක් සාදා ඔබගෙ ගිණුමෙත් චාන්ස් එක ආදම බලාගන්න 
 
