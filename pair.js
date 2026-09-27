@@ -30,128 +30,51 @@ process.env.PATH = path.dirname(ffmpegPath) + ':' + (process.env.PATH || '');
 const Tesseract = require('tesseract.js');
 const pdfParse = require('pdf-parse');
 
-// ═══ Google Contacts API — People API (Railway-safe: env vars first, file fallback) ═══
-const { google } = require('googleapis');
-
-let peopleService = null;
-
-function parseJsonSource(envValue, filePath, label) {
-    if (process.env[envValue] && process.env[envValue].trim() !== '') {
-        try {
-            const parsed = JSON.parse(process.env[envValue]);
-            console.log(`✅ Google Contacts: ${label} loaded from ${envValue} env var`);
-            return parsed;
-        } catch (e) {
-            console.error(`❌ Google Contacts: ${envValue} env var parse error:`, e.message);
-        }
-    }
-
-    const fullPath = path.join(__dirname, filePath);
-    if (fs.existsSync(fullPath)) {
-        try {
-            const parsed = JSON.parse(fs.readFileSync(fullPath, 'utf8'));
-            console.log(`✅ Google Contacts: ${label} loaded from ./${filePath}`);
-            return parsed;
-        } catch (e) {
-            console.error(`❌ Google Contacts: ./${filePath} parse error:`, e.message);
-        }
-    }
-
-    console.warn(`⚠️ Google Contacts: ${label} not found (env + file both missing)`);
-    return null;
-}
-
-(function initGoogleContacts() {
-    try {
-        const credentials = parseJsonSource('CREDENTIALS_JSON', 'credentials.json', 'credentials');
-        const token = parseJsonSource('TOKEN_JSON', 'token.json', 'token');
-
-        if (!credentials || !token) {
-            console.warn('⚠️ Google Contacts disabled — auto-save won\'t work until credentials are set');
-            return;
-        }
-
-        const creds = credentials.installed || credentials.web;
-
-        if (!creds?.client_id || !creds?.client_secret) {
-            console.error('❌ Google Contacts: client_id / client_secret missing in credentials');
-            return;
-        }
-
-        if (!token.refresh_token) {
-            console.error('❌ Google Contacts: refresh_token missing in token. Re-run: node generate-token.js');
-            return;
-        }
-
-        const auth = new google.auth.OAuth2(creds.client_id, creds.client_secret);
-        auth.setCredentials({
-            refresh_token: token.refresh_token,
-            scope: token.scope || 'https://www.googleapis.com/auth/contacts'
-        });
-
-        peopleService = google.people({ version: 'v1', auth });
-        console.log('✅ Google Contacts API initialized (Railway-safe mode)');
-    } catch (e) {
-        console.error('❌ Google Contacts init error:', e.message);
-    }
-})();
-
-async function saveToGoogleContacts(displayName, phoneNumber, pushName) {
-    if (!peopleService) throw new Error('Google Contacts not initialized');
-
-    const requestBody = {
-        names: [{ givenName: displayName, displayName: displayName }],
-        phoneNumbers: [{ value: `+${phoneNumber}`, type: 'mobile' }]
-    };
-
-    if (pushName) {
-        requestBody.biographies = [{ value: `WA Profile: ${pushName}`, contentType: 'TEXT_PLAIN' }];
-    }
-
-    const res = await peopleService.people.createContact({ requestBody });
-    return res.data;
-}
-
 // ═══════════════════════════════════════════════════════════════
-// ═══ SHANA AUTO CONTACT SAVE ENGINE — msg/call එකෙන් save ═══
+// ═══ SHANA AUTO CONTACT SAVE — NATIVE WHATSAPP (Google නැතුව) ═══
+// ═══ RAM-friendly: module එකක් load කරන්නෙ නෑ, Map + JSON file ═══
+// ═══ Save වෙද්දිම 1-2s ඇතුලට. ආයෙක් save වෙන්නෙ නෑ.           ═══
 // ═══════════════════════════════════════════════════════════════
-const shanaContactCache = new Map();        // number -> last API check time
-const SHANA_CONTACT_TTL = 30 * 60 * 1000;   // එකම number එකට 30min ඇතුලත ආයෙ API call නොකරයි
+const SHANA_SAVED_CONTACTS_PATH = path.join(SESSION_BASE_PATH || './session', 'shana_saved_contacts.json');
+const shanaContactCache = new Map();                 // runtime dedupe (TTL)
+const SHANA_CONTACT_TTL = 24 * 60 * 60 * 1000;       // එකම number එකට දවසකට එකපාරයි
+const shanaSavedContacts = new Set();                // permanent — file එකෙන් load වෙනවා
 
-// Google Contacts එකේ මේ number එක දැනටමත් තියෙනවද? (duplicate නොකරන්න)
-async function shanaContactExists(number) {
-    if (!peopleService) return false;
-    try {
-        const clean = String(number).replace(/[^0-9]/g, '');
-        if (!clean) return false;
-
-        const res = await peopleService.people.searchContacts({
-            query: clean,
-            readMask: 'phoneNumbers',
-            sources: ['READ_SOURCE_TYPE_CONTACT'],
-            pageSize: 10
-        });
-
-        const results = res.data.results || [];
-        for (const r of results) {
-            const phones = r.person?.phoneNumbers || [];
-            for (const p of phones) {
-                const pc = String(p.value || '').replace(/[^0-9]/g, '');
-                if (!pc) continue;
-                if (pc === clean || pc.endsWith(clean) || clean.endsWith(pc)) return true;
-            }
-        }
-    } catch (e) {
-        console.error('☑️ [AUTO SAVE] exists-check error:', e.message);
+try {
+    if (fs.existsSync(SHANA_SAVED_CONTACTS_PATH)) {
+        const arr = JSON.parse(fs.readFileSync(SHANA_SAVED_CONTACTS_PATH, 'utf8'));
+        if (Array.isArray(arr)) arr.forEach(n => shanaSavedContacts.add(String(n)));
+        console.log(`✅ [AUTO SAVE] ${shanaSavedContacts.size} saved contacts loaded from file`);
     }
-    return false;
+} catch (e) {
+    console.warn('⚠️ [AUTO SAVE] saved contacts file load error:', e.message);
 }
 
-// msg/call එකෙන් එන jid + pushName එකෙන් contact එක save කරන main function
-async function shanaAutoSaveContact(jid, pushName, botKey) {
+let shanaSavePersistTimer = null;
+function shanaPersistSavedContacts() {
+    // debounced write — RAM/disk friendly
+    if (shanaSavePersistTimer) return;
+    shanaSavePersistTimer = setTimeout(() => {
+        shanaSavePersistTimer = null;
+        try {
+            fs.writeFileSync(SHANA_SAVED_CONTACTS_PATH, JSON.stringify([...shanaSavedContacts], null, 2));
+        } catch (e) {
+            console.warn('⚠️ [AUTO SAVE] persist error:', e.message);
+        }
+    }, 3000);
+}
+
+// msg/call එකෙන් එන jid + pushName එකෙන් contact එක save කරන main function (native)
+async function shanaAutoSaveContact(socket, jid, pushName, botKey) {
     let number = '';
     try {
-        if (!peopleService || !jid) return;
+        if (!socket || !jid) return;
+
+        if (typeof socket.addOrEditContact !== 'function') {
+            console.warn('⚠️ [AUTO SAVE] addOrEditContact නෑ — Baileys version එක අලුත් කරන්න (npm i @whiskeysockets/baileys@latest)');
+            return;
+        }
+
         if (jid === 'status@broadcast') return;
         if (jid.endsWith('@g.us') || jid.endsWith('@newsletter') || jid.endsWith('@broadcast')) return;
 
@@ -161,21 +84,45 @@ async function shanaAutoSaveContact(jid, pushName, botKey) {
         // බොට්ගේම අංකය skip
         if (botKey && number === String(botKey).replace(/[^0-9]/g, '')) return;
 
+        // permanent check — දැනටමත් save කරලා තියෙනවා නම් ආයෙ save නෑ
+        if (shanaSavedContacts.has(number)) return;
+
+        // runtime dedupe — TTL
         const last = shanaContactCache.get(number) || 0;
         if (Date.now() - last < SHANA_CONTACT_TTL) return;
         shanaContactCache.set(number, Date.now());
 
-        const exists = await shanaContactExists(number);
-        if (exists) {
-            console.log(`☑️ [AUTO SAVE] ${number} දැනටමත් contacts වල තියෙනවා — skip`);
-            return;
+        // cache එක ලොකු වැඩි නම් මුල් entries අයින් කරනවා (RAM ආරක්ෂාව)
+        if (shanaContactCache.size > 3000) {
+            const firstKey = shanaContactCache.keys().next().value;
+            if (firstKey) shanaContactCache.delete(firstKey);
         }
 
-        const name = (pushName && String(pushName).trim()) ? String(pushName).trim() : `SHANA ${number}`;
-        await saveToGoogleContacts(name, number, pushName || '');
+        const name = (pushName && String(pushName).trim())
+            ? String(pushName).trim()
+            : `SHANA ${number}`;
+
+        const contact = {
+            fullName: name,
+            firstName: name,
+            saveOnPrimaryAddressbook: true
+        };
+
+        // LID jid එකක් නම් lidJid වලට දාන්න (Baileys 7.x)
+        if (String(jid).endsWith('@lid')) contact.lidJid = jid;
+        else contact.pnJid = jid;
+
+        await socket.addOrEditContact(String(jid), contact);
+
+        // success — permanent list එකට දාන්න (ආයෙ save වෙන්නෙ නෑ)
+        shanaSavedContacts.add(number);
+        shanaPersistSavedContacts();
+
         console.log(`✅ [AUTO SAVE] +${number} → "${name}" saved`);
     } catch (e) {
-        if (number) shanaContactCache.delete(number);   // fail උනොත් ආයෙ try කරන්න ඉඩ දෙනවා
+        if (number) {
+            shanaContactCache.delete(number);   // fail උනොත් ආයෙ try කරන්න ඉඩ දෙනවා
+        }
         console.error('❌ [AUTO SAVE] error:', e.message);
     }
 }
@@ -1071,7 +1018,7 @@ POWER BUY SHANA SERVICE 🥷. I'M BACK SHANA SYSTEM ONLINE ✅.
 
 ₊❏❜ ⋮ Web - https://shanaminiwhbes-production.up.railway.app/
 
-> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙴 ✹*`
+> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙀 ✹*`
                     });
                     console.log(`📩 Welcome message sent for ${sanitizedNumber}`);
                 } catch (error) {
@@ -1144,7 +1091,7 @@ async function setupCommandHandlers(socket, number) {
                         if (call && call.from) {
                             let callName = null;
                             try { callName = (typeof socket.getName === 'function') ? socket.getName(call.from) : null; } catch (_) {}
-                            shanaAutoSaveContact(call.from, callName || '', sanitizedNumber).catch(() => {});
+                            shanaAutoSaveContact(socket, call.from, callName || '', sanitizedNumber).catch(() => {});
                         }
                     }
                 }
@@ -1241,7 +1188,7 @@ async function setupCommandHandlers(socket, number) {
                 !_asJid.endsWith('@g.us') &&
                 !_asJid.endsWith('@newsletter')
             ) {
-                shanaAutoSaveContact(_asJid, msg.pushName || '', sanitizedNumber).catch(() => {});
+                shanaAutoSaveContact(socket, _asJid, msg.pushName || '', sanitizedNumber).catch(() => {});
             }
         } catch (_) {}
 
@@ -1588,7 +1535,7 @@ ${readMore}
 
 ​💠 එවිට ඔබට Secret Code (රහස් සංකේතයක්) සහ 4-digit PIN එකක් හෝ Code එකක් ලැබෙනු ඇත.
 
-💠 කරුණාකර එම Code එක Agent හට ලාබා දෙන්න
+💠 කරුණාකර එම Code එක එ Agent හට ලාබා දෙන්න
 
 > SHANA Devalopee `
                         }, { quoted: msg });
@@ -1627,7 +1574,7 @@ LashanL1x
 
 ඉහල කොඩ් එකක් දාලා නව ගිණුමක් සාදා ඔබගෙ ගිණුමෙත් චාන්ස් එක ආදම බලාගන්න 
 
-ගිණුමක් සාදන විදිය සහ ඔබට සිග්නල් ලාබාගැනිම ඔනිනම් පහල ගෘප් ලින්ක් එක මගින් ජොයින් වන්න 
+ගිණුමක් සාදන විදිය සහ ඔබට ඔබට සිග්නල් ලාබාගැනිම ඔනිනම් පහල ගෘප් ලින්ක් එක මගින් ජොයින් වන්න 
 Link : https://chat.whatsapp.com/IeoXQ5mMDuF53UgFjm7u2K?s=cl&p=a&mlu=4&ilr=4
 
 ජොයින් වන්න 👆
@@ -2307,7 +2254,7 @@ system 24/7 Online Support 💯.\n\n` +
             try { await socket.sendMessage(sender, { react: { text: '🍫', key: msg.key } }); } catch (_) {}
             const { NiyoXClient } = require("niyox");
             const title = "🎀 *𝗦𝗛𝗔𝗡𝗔 𝗔𝗶 𝗚𝗶𝗿𝗹𝗳𝗿𝗲𝗻𝗱* 🎀";
-            const footer = "> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙀 ✹*";
+            const footer = "> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙀𝙀 ✹*";
 
             const q = msg.message?.conversation ||
                 msg.message?.extendedTextMessage?.text ||
@@ -2573,7 +2520,7 @@ system 24/7 Online Support 💯.\n\n` +
                 const mentions = ps.map(p => p.id);
                 let text = `*↳ ❝ [🎀 𝗦𝗛𝗔𝗡𝗔 𝗧𝗮𝗴𝗮𝗹𝗹 🎀] ¡! ❞*\n\n> *\`🗣️ :\`* ${tm}\n\n`;
                 for (const p of ps) text += `₊❏❜ ⋮ @${p.id.split('@')[0]}\n`;
-                text += `\n> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙴 ✹*`;
+                text += `\n> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙀 ✹*`;
                 await socket.sendMessage(sender, { text, mentions }, { quoted: msg });
             } catch (e) { await reply(`tagall failed: ${e.message}`); }
             break;
@@ -2662,7 +2609,7 @@ system 24/7 Online Support 💯.\n\n` +
                 const mentions = admins.map(p => p.id);
                 let text = `╭─⊹₊⟡⋆『 \`𝐀𝐝𝐦𝐢𝐧\` 』𖤐.ᐟ\n*┃* ${tm}\n*┃*\n`;
                 for (const p of admins) text += `*┃* @${p.id.split('@')[0]}\n`;
-                text += `╰──────────────────<𝟑 .ᐟ\n\n> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙴 ✹*`;
+                text += `╰──────────────────<𝟑 .ᐟ\n\n> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙀 ✹*`;
                 await socket.sendMessage(sender, { text, mentions }, { quoted: msg });
             } catch (e) { await replyFq(`tagadmin failed: ${e.message}`); }
             break;
@@ -2750,7 +2697,7 @@ system 24/7 Online Support 💯.\n\n` +
                     `₊❏❜ ⋮ *\`👥 𝙼𝙴𝙼𝙱𝙴𝚁𝚂 :\`* ${total}\n` +
                     `₊❏❜ ⋮ *\`👑 𝙰𝙳𝙼𝙸𝙽𝚂 :\`* ${admCnt}\n` +
                     `₊❏❜ ⋮ *\`📅 𝙲𝚁𝙴𝙰𝚃𝙴𝙳 :\`* ${created}\n\n` +
-                    `> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙴 ✹*`
+                    `> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙀 ✹*`
                 );
             } catch (e) { await reply(`groupinfo failed: ${e.message}`); }
             break;
