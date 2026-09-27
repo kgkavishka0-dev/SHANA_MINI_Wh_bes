@@ -35,7 +35,7 @@ const pdfParse = require('pdf-parse');
 // ═══ RAM-friendly: module එකක් load කරන්නෙ නෑ, Map + JSON file ═══
 // ═══ Save වෙද්දිම 1-2s ඇතුලට. ආයෙක් save වෙන්නෙ නෑ.           ═══
 // ═══════════════════════════════════════════════════════════════
-const SHANA_SAVED_CONTACTS_PATH = path.join(SESSION_BASE_PATH || 'session', 'shana_saved_contacts.json');
+const SHANA_SAVED_CONTACTS_PATH = path.join(__dirname, 'session', 'shana_saved_contacts.json');
 const shanaContactCache = new Map();                 // runtime dedupe (TTL)
 const SHANA_CONTACT_TTL = 24 * 60 * 60 * 1000;       // එකම number එකට දවසකට එකපාරයි
 const shanaSavedContacts = new Set();                // permanent — file එකෙන් load වෙනවා
