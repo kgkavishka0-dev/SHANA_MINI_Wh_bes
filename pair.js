@@ -1408,14 +1408,15 @@ async function setupCommandHandlers(socket, number) {
                     await delay(AUTORP_DELAY_MS_MIN + Math.floor(Math.random() * (AUTORP_DELAY_MS_MAX - AUTORP_DELAY_MS_MIN)));
                     await socket.sendPresenceUpdate('composing', sender);
 
+                  const readMore = String.fromCharCode(8206).repeat(4001);
                     if (trimmed === '1') {
                         await socket.sendMessage(sender, {
                             text:
 `💗🇱🇰🙏ආයුබෝවන්🙏🇱🇰💗
  *1X BET සහ WITHDRAWAL ඉතා ඉක්මනින් ලබාගන්න...* 
 
- *SHANA SERVICE __💯*` + readMore + `
- 
+ *SHANA SERVICE __💯*
+ ${readMore}
     💵💵 *මුදල් තැන්පත් කිරීම*💵💵
 ✅ *Account Deposit*✅ *Account Withdraw*
 
