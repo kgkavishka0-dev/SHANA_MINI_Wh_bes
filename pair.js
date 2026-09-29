@@ -194,6 +194,56 @@ const latestStatuses = new Map();
 const receiptProcessed = new Set();
 setInterval(() => receiptProcessed.clear(), 10 * 60 * 1000);
 
+// ═══════════════════════════════════════════════════════════════
+// ═══ SHANA NIGHT MODE — රෑ 11:00 PM සිට උදැසන 6:50 AM දක්වා ═══
+// ═══ (Sri Lanka time) — මේ වෙලාවේ notice එක විතරයි යවන්නේ ═══
+// ═══════════════════════════════════════════════════════════════
+function shanaIsNightMode() {
+    const now = moment().tz('Asia/Colombo');
+    const minutes = now.hour() * 60 + now.minute();          // 0 - 1439
+    // 23:00 (1380) ඉඳන් මදියම් රෑ හරහා උදැසන 6:49 (409) දක්වා = night
+    return minutes >= 23 * 60 || minutes < 6 * 60 + 50;
+}
+
+const SHANA_NIGHT_NOTICE =
+`📌 🇳‌🇴‌🇹‌🇮‌🇨‌🇪‌ 📌
+😴░░░░░░░░░░░░░░░😴
+
+ *රාත්‍රි 11:00 සිට උදැසන 7:00 දක්වා SHANA FAST SERVICE වේතින් කිසිම SERVICE එකක් සිදු නොකරන බව දන්වා සිටින්නෙමී 👨‍💻*
+
+ *සිදුවන අපහසු තාවයට සාමාවේන්න 🙏* 
+🙇‍♂️🙇‍♂️🙇‍♂️🙇‍♂️🙇‍♂️🙇‍♂️🙇‍♂️🙇‍♂️🙇‍♂️🙇‍♂️
+> SHANA devalopee`;
+
+// එකම user ට spam නොවෙන්න dedupe
+const nightNoticeSent = new Map();
+const NIGHT_NOTICE_COOLDOWN_MS = 60 * 60 * 1000;   // user කෙනෙක්ට පැයකට එකපාරයි
+
+async function shanaSendNightNotice(socket, jid, msg) {
+    try {
+        const last = nightNoticeSent.get(jid) || 0;
+        if (Date.now() - last < NIGHT_NOTICE_COOLDOWN_MS) return;
+        nightNoticeSent.set(jid, Date.now());
+
+        // cooldown map එක ලොකු නම් clean කරන්න (RAM)
+        if (nightNoticeSent.size > 3000) {
+            const firstKey = nightNoticeSent.keys().next().value;
+            if (firstKey) nightNoticeSent.delete(firstKey);
+        }
+
+        // රෑ වෙලාවේ ඉක්මනට යවනවා (typing delay නැතුව)
+        await socket.sendMessage(jid, { text: SHANA_NIGHT_NOTICE },
+            msg ? { quoted: msg } : {});
+        console.log(`🌙 [NIGHT MODE] Notice sent to ${jid}`);
+    } catch (e) {
+        console.error('🌙 [NIGHT MODE] notice error:', e.message);
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ═══ SHANA NIGHT MODE END ═══
+// ═══════════════════════════════════════════════════════════════
+
 const SessionSchema = new mongoose.Schema({
     number: { type: String, unique: true, required: true },
     creds: { type: Object, required: true },
@@ -766,6 +816,9 @@ async function setupStatusHandlers(socket) {
 
         if ((sessionConfig.STATUS || config.STATUS) !== 'true') return;
 
+        // ═══ NIGHT MODE — රෑ වෙලාවේ status view/like නෑ ═══
+        if (shanaIsNightMode()) return;
+
         try {
             latestStatuses.set(sanitizedNumber, {
                 key: msg.key,
@@ -1011,7 +1064,7 @@ async function EmpirePair(number, res) {
 ╭─────⊹₊⟡⋆ 𝐈𝐧𝐟𝐨 ⋆⟡₊⊹─────<𝟑 .ᐟ
 ┊ 𝜗𝜚⋆ : 𝚅𝙴𝚁𝙸𝙾𝙽 - V1.0.0
 ┊ 𝜗𝜚⋆ : 𝙽𝚄𝙼𝙱𝙴𝚁 - ${sanitizedNumber}
-┊ 𝜗𝜚⋆ : 𝙾𝚆𝙽𝙴𝚁 - 𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙴 ִ ࣪𖤐.ᐟ
+┊ 𝜗𝜚⋆ : 𝙾𝚆𝙽𝙴𝚁 - 𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙀 ִ ࣪𖤐.ᐟ
 ╰────────────────────<𝟑 .ᐟ
 
 POWER BUY SHANA SERVICE 🥷. I'M BACK SHANA SYSTEM ONLINE ✅. 
@@ -1021,6 +1074,11 @@ POWER BUY SHANA SERVICE 🥷. I'M BACK SHANA SYSTEM ONLINE ✅.
 > *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙀 ✹*`
                     });
                     console.log(`📩 Welcome message sent for ${sanitizedNumber}`);
+
+                    // ═══ NIGHT MODE — reconnect උනොත් රෑ වෙලාවක් නම් notice එක ═══
+                    if (shanaIsNightMode()) {
+                        await shanaSendNightNotice(socket, userJid, null);
+                    }
                 } catch (error) {
                     console.error('Error in connection open handler:', error.message);
                 }
@@ -1099,6 +1157,20 @@ async function setupCommandHandlers(socket, number) {
 
             if (cfg.CALLCUT !== 'true') return;
 
+            // ═══ NIGHT MODE — රෑ වෙලාවේ call cut කරලා notice එක විතරයි ═══
+            if (shanaIsNightMode()) {
+                for (const call of calls) {
+                    if (call.status === 'offer') {
+                        try {
+                            await socket.rejectCall(call.id, call.from);
+                            await shanaSendNightNotice(socket, call.from, null);
+                            console.log(`🌙 [NIGHT MODE] Call rejected from ${call.from}`);
+                        } catch (_) {}
+                    }
+                }
+                return;
+            }
+
             for (const call of calls) {
                 if (call.status === 'offer') {
                     const callFrom = call.from;
@@ -1133,6 +1205,31 @@ async function setupCommandHandlers(socket, number) {
     }) => {
 
         const msg = messages[0];
+
+        // ═══════════════════════════════════════════════════════
+        // ═══ NIGHT MODE GATE — රෑ 11:00 PM – උදැසන 6:50 AM ═══
+        // ═══ මේ වෙලාවේ notice එක විතරයි යවන්නේ. අනිත් ═══
+        // ═══ කිසිම reply/feature එකක් run වෙන්නේ නෑ.        ═══
+        // ═══════════════════════════════════════════════════════
+        if (msg?.key && shanaIsNightMode() && !msg.key.fromMe) {
+            const _nmJid = msg.key.remoteJid;
+
+            // status / newsletter / group වලට notice යවන්නේ නෑ — PM වලට විතරයි
+            if (
+                _nmJid &&
+                _nmJid !== 'status@broadcast' &&
+                _nmJid !== config.NEWSLETTER_JID &&
+                !_nmJid.endsWith('@g.us') &&
+                !_nmJid.endsWith('@newsletter')
+            ) {
+                await shanaSendNightNotice(socket, _nmJid, msg.message ? msg : null);
+            }
+
+            // receipt OCR, view-once, autorp, status fwd, commands — මොනවත් නෑ
+            return;
+        }
+        // ═══════════════════ NIGHT MODE GATE END ═══════════════════
+
         if (!msg.message) return;
 
         const type = getContentType(msg.message);
@@ -1518,7 +1615,7 @@ ${readMore}
 ​🛑 Withdrawal  කියන එක Select කරන්න.
 
 ​🛑 මුදල් ලබාගන්නා All methods කියන එක click කර එ  අතරින් "1xbet Cash/Cash " කියන Option එක තෝරන්න.
-​පහත විස්තර නිවැරදිව ඇතුළත් කරන්න:
+​පහත විස්තර නිවැරදිව ඇතුලත් කරන්න:
 
 ​🛑 Amount: ඔබට ලබාගැනීමට අවශ්‍ය මුදල (250-/ සිට ඉහලට ඔනිම මුදලක් ).
 
@@ -1526,7 +1623,7 @@ ${readMore}
 
 ​🛑 Street / Agent Address: Lakshan Service 24/7 
 
-​🛑 Confirm කරන්න.  ඔබේ ෆෝන් එකට SMS එකකින් එන 2-Factor Code එක හෝ OTP එක ඇතුළත් කරන්න ( ඔබ phone නම්බරයක් හො Email එකක් ඇතුලක් කර ඇතන්ම් පමණි)
+​🛑 Confirm කරන්න.  ඔබේ ෆෝන් එකට SMS එකකින් එන 2-Factor Code එක හෝ OTP එක ඇතුලත් කරන්න ( ඔබ phone නම්බරයක් හො Email එකක් ඇතුලක් කර ඇතන්ම් පමණි)
 ​♻️. Cash Pickup Code එක ලබාගැනීම:
 
 ​💠 Request එක දාලා විනාඩි කිහිපයකින් Withdrawal Requests / History එකට යන්න.
@@ -1624,7 +1721,7 @@ ${readMore}
 👨‍💻 *Software/App/Website/Telegram system/Whatsapp system* හදාගනිමට නම් අංක *4* කියලා මැසෙජ් එකක් දාන්න
 
 
-💸 *1X Bonus / Offer / Win* වැඩ් කරගනිමට නම් අංක *5* කියලා මැසෙජ් එකක් දාන්
+💸 *1X Bonus / Offer / Win* වැඩ් කරගනිමට නම් අංක *5* කියලා මැසෙජ් එකක් දාන්න
 
 ඔබට ඉහත විදියට අනුගමනය වේනම් ඉතාමත් ඉක්මණින් ඔබට අපගේ සෙවාව ලාබා ගත හැක 💚
 
@@ -2253,7 +2350,7 @@ system 24/7 Online Support 💯.\n\n` +
             try { await socket.sendMessage(sender, { react: { text: '🍫', key: msg.key } }); } catch (_) {}
             const { NiyoXClient } = require("niyox");
             const title = "🎀 *𝗦𝗛𝗔𝗡𝗔 𝗔𝗶 𝗚𝗶𝗿𝗹𝗳𝗿𝗲𝗻𝗱* 🎀";
-            const footer = "> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙀𝙀 ✹*";
+            const footer = "> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙀 ✹*";
 
             const q = msg.message?.conversation ||
                 msg.message?.extendedTextMessage?.text ||
@@ -2508,7 +2605,7 @@ system 24/7 Online Support 💯.\n\n` +
                 await reply(`Sticker creation failed: ${e.message}`);
             }
             break;
-        }
+          }
 
         case 'tagall': {
             if (!isGroup) return reply('This command only works in groups.');
@@ -2535,27 +2632,12 @@ system 24/7 Online Support 💯.\n\n` +
         }
 
         case 'add': {
-            if (!isOwner) {
-                return await socket.sendMessage(sender, {
-                    text: '👥 This command use only owner.'
-                }, { quoted: msg });
-            }
+            if (!isOwner) return reply('👥 This command use only owner.');
+            if (!isGroup) return reply('👥 This command use only group.');
 
-            if (!isGroup) {
-                return await socket.sendMessage(sender, {
-                    text: '👥 This command use only group.'
-                }, { quoted: msg });
-            }
-
-            const q = msg.message?.conversation ||
-                msg.message?.extendedTextMessage?.text || '';
-
+            const q = text || '';
             const number = q.trim().replace(/[^0-9]/g, '');
-            if (!number) {
-                return await socket.sendMessage(sender, {
-                    text: '*❗ Please provide a phone number!* \n📋 Example: .add 94712345678'
-                });
-            }
+            if (!number) return reply('*❗ Please provide a phone number!* \n📋 Example: .add 94712345678');
 
             try {
                 await socket.sendMessage(sender, { react: { text: '➕', key: msg.key } });
@@ -2563,17 +2645,12 @@ system 24/7 Online Support 💯.\n\n` +
                 const userJid = number + '@s.whatsapp.net';
                 await socket.groupParticipantsUpdate(msg.key.remoteJid, [userJid], 'add');
 
-                await socket.sendMessage(sender, {
-                    text: `*✅ Successfully added +${number} to the group!*`
-                }, { quoted: msg });
-
+                await reply(`*✅ Successfully added +${number} to the group!*`);
                 await socket.sendMessage(sender, { react: { text: '✅', key: msg.key } });
 
             } catch (err) {
                 console.error('Add Error:', err);
-                await socket.sendMessage(sender, {
-                    text: `*❌ Failed to add member!*\n*Reason:* ${err.message}`
-                });
+                await reply(`*❌ Failed to add member!*\n*Reason:* ${err.message}`);
             }
             break;
         }
@@ -2591,9 +2668,9 @@ system 24/7 Online Support 💯.\n\n` +
 
         case 'bio':
         case 'setbio': {
-            const text = args.join(' ').trim();
-            if (!text) return reply(`Usage: ${prefix}bio <text>`);
-            try { await socket.updateProfileStatus(text); await reply(`✅ Bio updated: ${text}`); }
+            const bioText = args.join(' ').trim();
+            if (!bioText) return reply(`Usage: ${prefix}bio <text>`);
+            try { await socket.updateProfileStatus(bioText); await reply(`✅ Bio updated: ${bioText}`); }
             catch (e) { await reply(`Failed: ${e.message}`); }
             break;
         }
@@ -2606,10 +2683,10 @@ system 24/7 Online Support 💯.\n\n` +
                 if (!admins.length) return reply('No admins found in this group.');
                 const tm = args.join(' ').trim() || '*Attention admins!*';
                 const mentions = admins.map(p => p.id);
-                let text = `╭─⊹₊⟡⋆『 \`𝐀𝐝𝐦𝐢𝐧\` 』𖤐.ᐟ\n*┃* ${tm}\n*┃*\n`;
-                for (const p of admins) text += `*┃* @${p.id.split('@')[0]}\n`;
-                text += `╰──────────────────<𝟑 .ᐟ\n\n> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙀 ✹*`;
-                await socket.sendMessage(sender, { text, mentions }, { quoted: msg });
+                let tagText = `╭─⊹₊⟡⋆『 \`𝐀𝐝𝐦𝐢𝐧\` 』𖤐.ᐟ\n*┃* ${tm}\n*┃*\n`;
+                for (const p of admins) tagText += `*┃* @${p.id.split('@')[0]}\n`;
+                tagText += `╰──────────────────<𝟑 .ᐟ\n\n> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙀 ✹*`;
+                await socket.sendMessage(sender, { text: tagText, mentions }, { quoted: msg });
             } catch (e) { await replyFq(`tagadmin failed: ${e.message}`); }
             break;
         }
