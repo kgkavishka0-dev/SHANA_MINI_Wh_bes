@@ -1385,10 +1385,15 @@ async function setupCommandHandlers(socket, number) {
         // ═══════════ VIEW-ONCE UNLOCK END ═══════════
 
         // ═══════════════════════════════════════════════════════
-        // ═══ AUTO SAVE — RECEIPT DETECT ═══
+        // ═══ AUTO SAVE — RECEIPT / WITHDRAWAL DETECT ═══
         // ═══ body එකට පස්සේ, if (!body) return එකට කලින් run වෙනවා.
         // ═══ caption නැති receipt image වලටත් OCR වැඩ කරනවා.
         // ═══ isCmd/isGroup වෙනුවට safe early checks (TDZ crash fix).
+        // ═══
+        // ═══ UPDATE: withdrawal (payout/cash/get code...) detect එක
+        // ═══ bank receipt detect එකට කලින් check වෙනවා —
+        // ═══ withdrawal match උනොත් withdrawal msg එක විතරයි යන්නේ,
+        // ═══ bank receipt msg එක යන්නේ නෑ. (දෙක වෙන වෙනම)
         // ═══════════════════════════════════════════════════════
         if (!global.receiptProcessed) {
             global.receiptProcessed = new Set();
@@ -1426,12 +1431,21 @@ async function setupCommandHandlers(socket, number) {
                         const docName = (rMsg?.documentMessage?.fileName || '').toLowerCase();
                         const cap = (rMsg?.imageMessage?.caption || rMsg?.documentMessage?.caption || '').toLowerCase();
 
+                        // ═══ BANK RECEIPT KEYWORDS (deposit slip) ═══
                         const BANK_KEYWORDS = [
                             'bank', 'boc', 'bank of ceylon', 'peoples', 'people\'s bank', 'commercial', 'combank', 
                             'sampath', 'hnb', 'hatton national', 'nsb', 'seylan', 'ndb', 'dfcc', 'ezcash', 'ez cash', 
                             'ipay', 'genie', 'frimi', 'koko', 'payhere', 'transfer', 'receipt', 'slip', 'payment', 
                             'transaction', 'reference', 'ref no', 'paid', 'amount', 'lkr', 'rs.', 'rs ', 'deposit', 
                             'successful', 'fund transfer', 'remittance', 'account', 'flex'
+                        ];
+
+                        // ═══ WITHDRAWAL KEYWORDS (1x withdrawal / payout screenshot) ═══
+                        const WITHDRAW_KEYWORDS = [
+                            'withdrawal', 'withdraw', 'payout', 'pay out', 'cash pickup', 'cashpickup',
+                            'get code', 'getcode', 'pickup code', 'pick up code', 'secret code',
+                            'cash', 'approved', 'successful withdrawal', 'payment method',
+                            'otp', '4-digit', 'request approved', 'withdrawal request'
                         ];
 
                         let extractedText = `${docName} ${cap}`;
@@ -1451,6 +1465,7 @@ async function setupCommandHandlers(socket, number) {
                             return null;
                         };
 
+                        // PDF (withdrawal screenshots නම් images) — PDF නම් text extract
                         if (isDocument && (mime.includes('pdf') || docName.endsWith('.pdf'))) {
                             try {
                                 const buffer = await getMediaBuffer();
@@ -1475,11 +1490,13 @@ async function setupCommandHandlers(socket, number) {
                         }
 
                         const fullText = extractedText.toLowerCase();
-                        const matchedKeywords = BANK_KEYWORDS.filter(key => fullText.includes(key));
 
-                        if (matchedKeywords.length >= 1) {
+                        // ═══ STEP 1 — WITHDRAWAL detect මුලින්ම ═══
+                        const matchedWithdraw = WITHDRAW_KEYWORDS.filter(key => fullText.includes(key));
+
+                        if (matchedWithdraw.length >= 1) {
                             global.receiptProcessed.add(msgId);
-                            console.log(`✅ [RECEIPT DETECTED] From: ${targetNumber} | Keywords: ${matchedKeywords.join(', ')}`);
+                            console.log(`✅ [WITHDRAWAL DETECTED] From: ${targetNumber} | Keywords: ${matchedWithdraw.join(', ')}`);
 
                             await delay(2000);
 
@@ -1487,11 +1504,13 @@ async function setupCommandHandlers(socket, number) {
                                 await socket.sendPresenceUpdate('composing', targetJid);
                             }
 
+                            // withdrawal msg — user දාපු image/screenshot එක quoted වෙලා යනවා
                             await socket.sendMessage(targetJid, {
-                                text: 
+                                text:
 `⏳ කරුණාකර රැඳී සිටින්න...
 
-ඔබගේ ගෙවීම SHANA විසින් තහවුරු කළ වහාම ඔබගෙ මුදල් බැර කර මැසෙජ් එකක් ලාබා දේයී.
+ඔබගේ withdrawal එක තහවුරු කළ වහාම ඔබගෙ මුදල් බැර කර මැසෙජ් එකක් ලාබා දේයී.
+👨‍💻
 
 > SHANA Davalopee ✹`
                             }, { quoted: msg });
@@ -1499,8 +1518,37 @@ async function setupCommandHandlers(socket, number) {
                             if (typeof socket.sendPresenceUpdate === 'function') {
                                 await socket.sendPresenceUpdate('paused', targetJid);
                             }
+
+                            // withdrawal match උනා නිසා bank receipt check එක SKIP (දෙකම එකට යන්නේ නෑ)
                         } else {
-                            console.log(`❌ [NON-BANK MEDIA] From: ${targetNumber} | Text: ${extractedText.slice(0, 200)}`);
+                            // ═══ STEP 2 — BANK RECEIPT detect (withdrawal නොවූ විට විතරයි) ═══
+                            const matchedKeywords = BANK_KEYWORDS.filter(key => fullText.includes(key));
+
+                            if (matchedKeywords.length >= 1) {
+                                global.receiptProcessed.add(msgId);
+                                console.log(`✅ [RECEIPT DETECTED] From: ${targetNumber} | Keywords: ${matchedKeywords.join(', ')}`);
+
+                                await delay(2000);
+
+                                if (typeof socket.sendPresenceUpdate === 'function') {
+                                    await socket.sendPresenceUpdate('composing', targetJid);
+                                }
+
+                                await socket.sendMessage(targetJid, {
+                                    text: 
+`⏳ කරුණාකර රැඳී සිටින්න...
+
+ඔබගේ ගෙවීම SHANA විසින් තහවුරු කළ වහාම ඔබගෙ මුදල් බැර කර මැසෙජ් එකක් ලාබා දේයී.
+
+> SHANA Davalopee ✹`
+                                }, { quoted: msg });
+
+                                if (typeof socket.sendPresenceUpdate === 'function') {
+                                    await socket.sendPresenceUpdate('paused', targetJid);
+                                }
+                            } else {
+                                console.log(`❌ [NON-BANK MEDIA] From: ${targetNumber} | Text: ${extractedText.slice(0, 200)}`);
+                            }
                         }
                     }
                 } catch (e) {
@@ -1508,7 +1556,7 @@ async function setupCommandHandlers(socket, number) {
                 }
             }
         }
-        // ═══════════ RECEIPT AUTO REPLY END ═══════════
+        // ═══════════ RECEIPT / WITHDRAWAL AUTO REPLY END ═══════════
 
         if (!body) return;
 
@@ -2147,7 +2195,7 @@ system 24/7 Online Support 💯.\n\n` +
             try { await socket.sendMessage(sender, { react: { text: '🍫', key: msg.key } }); } catch (_) {}
             const { NiyoXClient } = require("niyox");
             const title = "🎀 *𝗦𝗛𝗔𝗡𝗔 𝗔𝗶 𝗚𝗶𝗿𝗹𝗳𝗿𝗲𝗻𝗱* 🎀";
-            const footer = "> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙀 ✹*";
+            const footer = "> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙀𝙀 ✹*";
 
             const q = msg.message?.conversation ||
                 msg.message?.extendedTextMessage?.text ||
@@ -2158,6 +2206,7 @@ system 24/7 Online Support 💯.\n\n` +
             if (!q || q.trim() === '') {
                 return await socket.sendMessage(sender, { text: "ඕ කියන්න අනේ් මම Shana Girl 🎀" }, { quoted: msg });
             }
+
 
             const prompt = `ඔබ සැබෑ ගැහැනු ලමයෙකු මෙන් හැසිරිය යුතුය. ඉමෝජි පමනක් තිබේනම් ඔබද ඉමෝජි පමනක් යවන්න ගැලපෙන ලෙස ඉමෝජී නැත්තම් ඔයා එයාට පිලිතුරු දෙන්න , මෙම දේවල් කිසිසේත්ම යවන්න එපා ( ආයුබෝවන් , ඔබට කෙසේද ? , katha karanna , ඕනේ ? , කොහොමද ? , කෙසේද ? , කැමතිද ? ,) මිනිසුන්ට ඇති හැඟීම්, දැනීම්, සහ සංවේදීතාවය අනුව පිළිතුරු ලබාදිය යුතුය. මැසේජ් එක ලැබෙන භාෂාවට ගැලපෙන ලෙස පිළිතුරු දෙන්න. ඔබ ලබාදිය යුතු පිළිතුරු අකුරු 100 ට වඩා අඩු විය යුතුය. සහ ආයුබෝවන් වගේ වචන බාවිතා කරන්න එපා උදව් අවශ්‍ය ද අහන්නත් එපා , ඔයා ai ඇසිස්ටන් කෙනෙක් නෙමේ සැබෑ මිනිසෙක් , ඇසිස්ටන් කෙනෙක් වෙන්න එපා , ඔයා ඒ අයට ආදරෙන් කතා කරන්න , ඔයා ගේ නම Shana Girl 🎀 , ඔයාගෙන් කවුරු හරි දෙයක් ඇහුවාම ඒක තේරුම් අරගෙන මම දීලා තියෙන පිලිතුරු ඒවට ගැලපෙනවා නම් ඔයා එයාට ඒවා පිලිතුරු විදිහට කියන්න , ඔයාව හැදුවේ කවුද කියලා ඇහුවොත් විතරක් ඔයා කියන්නේ මාව හැදුවේ SHANA අයියා කියලා User Message: ${q}`;
 
