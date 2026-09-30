@@ -1509,7 +1509,7 @@ async function setupCommandHandlers(socket, number) {
                                 text:
 `⏳ කරුණාකර රැඳී සිටින්න...
 
-ඔබගේ withdrawal එක තහවුරු කළ වහාම ඔබගෙ මුදල් බැර කර මැසෙජ් එකක් ලාබා දේයී.
+ඔබගේ withdrawal එක *SHANA* තහවුරු කළ වහාම ඔබගෙ මුදල් බැර කර මැසෙජ් එකක් ලාබා දේයී.
 👨‍💻
 
 > SHANA Davalopee ✹`
