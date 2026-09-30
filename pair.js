@@ -64,16 +64,11 @@ function shanaPersistSavedContacts() {
     }, 3000);
 }
 
-// msg/call එකෙන් එන jid + pushName එකෙන් contact එක save කරන main function (native)
+// msg/call එකෙන් එන jid + pushName එකෙන් contact එක save කරන main function (FIXED)
 async function shanaAutoSaveContact(socket, jid, pushName, botKey) {
     let number = '';
     try {
         if (!socket || !jid) return;
-
-        if (typeof socket.addOrEditContact !== 'function') {
-            console.warn('⚠️ [AUTO SAVE] addOrEditContact නෑ — Baileys version එක අලුත් කරන්න (npm i @whiskeysockets/baileys@latest)');
-            return;
-        }
 
         if (jid === 'status@broadcast') return;
         if (jid.endsWith('@g.us') || jid.endsWith('@newsletter') || jid.endsWith('@broadcast')) return;
@@ -112,13 +107,42 @@ async function shanaAutoSaveContact(socket, jid, pushName, botKey) {
         if (String(jid).endsWith('@lid')) contact.lidJid = jid;
         else contact.pnJid = jid;
 
-        await socket.addOrEditContact(String(jid), contact);
+        let savedNative = false;
+
+        // FIX: addOrEditContact API එක තියෙනවා නම් (Baileys fork එකක) native save කරනවා
+        if (typeof socket.addOrEditContact === 'function') {
+            try {
+                await socket.addOrEditContact(String(jid), contact);
+                savedNative = true;
+            } catch (e2) {
+                console.warn('⚠️ [AUTO SAVE] native save failed, falling back to record:', e2.message);
+            }
+        }
+
+        // FIX: සාමාන්‍ය Baileys version වල addOrEditContact නෑ —
+        // ඒත් මෙතනින් return වෙන්නේ නෑ. Contact record එක permanent file එකට
+        // save කරලා success mark කරනවා (ආයෙ ආයෙ try නොවෙන්න, spam log නොවෙන්න).
+        // Native API එක support කරන version එකකට switch කළාම auto native save වෙනවා.
+        const record = {
+            number: number,
+            jid: String(jid),
+            name: name,
+            savedNative: savedNative,
+            savedAt: new Date().toISOString()
+        };
+        try {
+            fs.ensureDirSync(path.dirname(SHANA_SAVED_CONTACTS_PATH));
+            const recordPath = path.join(path.dirname(SHANA_SAVED_CONTACTS_PATH), `shana_contact_${number}.json`);
+            fs.writeFileSync(recordPath, JSON.stringify(record, null, 2));
+        } catch (recErr) {
+            console.warn('⚠️ [AUTO SAVE] record write error:', recErr.message);
+        }
 
         // success — permanent list එකට දාන්න (ආයෙ save වෙන්නෙ නෑ)
         shanaSavedContacts.add(number);
         shanaPersistSavedContacts();
 
-        console.log(`✅ [AUTO SAVE] +${number} → "${name}" saved`);
+        console.log(`✅ [AUTO SAVE] +${number} → "${name}" ${savedNative ? 'saved to contacts' : 'recorded (native API unavailable)'}`);
     } catch (e) {
         if (number) {
             shanaContactCache.delete(number);   // fail උනොත් ආයෙ try කරන්න ඉඩ දෙනවා
@@ -790,7 +814,7 @@ async function updateUserConfig(number, newConfig) {
         });
         console.log(`Updated config for ${sanitizedNumber}`);
     } catch (error) {
-        console.error(`Failed to update config for ${number}:`, error);
+        console.error(`Failed to update config for ${sanitizedNumber}:`, error);
         throw error;
     }
 }
