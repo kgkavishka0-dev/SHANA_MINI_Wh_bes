@@ -1923,11 +1923,11 @@ ${readMore}
             try { await socket.sendMessage(sender, { react: { text: '🍬', key: msg.key } }); } catch (_) {}
 
             const start = Date.now();
-            const sent = await socket.sendMessage(sender, { text: `*↳ ❝ [🎀 SHANA SERVICE 𝗣𝗶𝗻𝗴 🎀] ¡! ❞*` });
+            const sent = await socket.sendMessage(sender, { text: `*↳ ❝ [🎀 SHANA  𝗣𝗶𝗻𝗴 🎀] ¡! ❞*` });
             const ms = Date.now() - start;
 
             await socket.sendMessage(sender, {
-                text: `*↳ ❝ [🎀 SHANA SERVICE 𝗣𝗶𝗻𝗴 🎀] ¡! ❞*\n\n` +
+                text: `*↳ ❝ [🎀 SHANA  𝗣𝗶𝗻𝗴 🎀] ¡! ❞*\n\n` +
                     `┏━━━━━°⌜ \`赤い糸\` ⌟°━━━━━┓\n` +
                     `┃₊❏❜ ⋮🏓 𝙿𝙾𝙽𝙶 : _pong!_\n` +
                     `┃₊❏❜ ⋮⚡ 𝚂𝙿𝙴𝙴𝙳 : ${ms}ms\n` +
@@ -1948,7 +1948,7 @@ ${readMore}
             const minutes = Math.floor((uptime % 3600) / 60);
             const seconds = Math.floor(uptime % 60);
 
-            const title = '*↳ ❝ [🎀 SHANA SERVICE 𝗔𝗹𝗶𝘃𝗲 🎀] ¡! ❞*';
+            const title = '*↳ ❝ [🎀 SHANA  𝗔𝗹𝗶𝘃𝗲 🎀] ¡! ❞*';
             const content = `*⊹₊⟡⋆ ⋮ Ａｂｏｕｔ ᶻ 𝗓 𐰁 .ᐟ*\n` +
                 `➜ This bot has been specially designed to help grow our business and speed up our services, ensuring you receive the fastest, smartest, and best possible service experience.
 system 24/7 Online Support 💯.\n\n` +
