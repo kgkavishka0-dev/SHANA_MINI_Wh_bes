@@ -1912,7 +1912,7 @@ ${readMore}
 ╰──────────────────<𝟑 .ᐟ
 
 
-> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙀 ✹*`,
+> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙀𝙀 ✹*`,
                 contextInfo: arabianCtx()
             }, { quoted: msg });
 
@@ -2142,209 +2142,6 @@ system 24/7 Online Support 💯.\n\n` +
             break;
         }
 
-        case 'song':
-        case 'ytmp3': {
-            try {
-                const query = args.join(' ');
-                if (!query) return reply("🎵 *Plz Send Me A Song Name !*");
-
-                try { await socket.sendMessage(sender, { react: { text: '🔎', key: msg.key } }); } catch (_) {}
-
-                const search = await yts(query);
-                const video = search.videos[0];
-                if (!video) return reply("❌ *I Cant Find It !*");
-
-                const slDate = moment().tz('Asia/Colombo').format('YYYY-MM-DD');
-                const slTimeNow = moment().tz('Asia/Colombo').format('HH:mm:ss');
-
-                const caption = `*↳ ❝ [🎀 𝗦𝗛𝗔𝗡𝗔 𝗦𝗼𝗻𝗴 🎀] ¡! ❞*\n\n` +
-                    `> *\`🎵 𝚃𝙸𝚃𝙻𝙴 :\`* ${video.title}\n` +
-                    `> *\`👤 𝙲𝙷𝙰𝙽𝙽𝙴𝙻 :\`* ${video.author.name}\n` +
-                    `> *\`⏱️ 𝙳𝚄𝚁𝙰𝚃𝙸𝙾𝙽 :\`* ${video.timestamp}\n` +
-                    `> *\`👀 𝚅𝙸𝙴𝚆𝚂 :\`* ${video.views.toLocaleString()}\n` +
-                    `> *\`📅 𝙳𝙰𝚃𝙴 :\`* ${slDate}\n` +
-                    `> *\`⌚ 𝚃𝙸𝙼𝙴 :\`* ${slTimeNow}\n\n` +
-                    `> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙀 ✹*`;
-
-                await socket.sendMessage(sender, {
-                    image: { url: video.thumbnail },
-                    caption: caption,
-                    contextInfo: arabianCtx()
-                }, { quoted: msg });
-
-                try { await socket.sendMessage(sender, { react: { text: '📥', key: msg.key } }); } catch (_) {}
-
-                const outPath = path.join(os.tmpdir(), `shana_song_${Date.now()}`);
-                const filePath = await ytdlpDownload(video.url, 'mp3', outPath);
-
-                await socket.sendMessage(sender, {
-                    audio: { url: filePath },
-                    mimetype: 'audio/mpeg',
-                    ptt: false,
-                    fileName: `${video.title}.mp3`
-                }, { quoted: msg });
-
-                fs.removeSync(filePath);
-                try { await socket.sendMessage(sender, { react: { text: '✅', key: msg.key } }); } catch (_) {}
-
-            } catch (e) {
-                console.log("SONG CMD ERROR:", e);
-                reply("❌ *Error: " + e.message + "*");
-            }
-            break;
-        }
-
-        case 'video':
-        case 'ytmp4':
-        case 'playvid': {
-            try {
-                const vidText = args.join(' ');
-                if (!vidText) return reply("🎥 *Send me a video name or yt link !*");
-
-                try { await socket.sendMessage(sender, { react: { text: '🔍', key: msg.key } }); } catch (_) {}
-
-                let videoUrl, video = null;
-
-                if (vidText.includes('youtu')) {
-                    videoUrl = vidText.trim();
-                } else {
-                    const search = await yts(vidText);
-                    video = search.videos[0];
-                    if (!video) return reply("❌ *I cant get video*");
-                    videoUrl = video.url;
-                }
-
-                const title = video ? video.title : 'YouTube Video';
-                const timestamp = video ? video.timestamp : 'N/A';
-                const channel = video ? video.author.name : 'Unknown';
-
-                const slDate = moment().tz('Asia/Colombo').format('YYYY-MM-DD');
-                const slTimeNow = moment().tz('Asia/Colombo').format('HH:mm:ss');
-
-                const caption = `*↳ ❝ [🎀 𝗦𝗛𝗔𝗡𝗔 𝗩𝗶𝗱𝗲𝗼 🎀] ¡! ❞*\n\n` +
-                    `🎬 *TITLE :* ${title}\n` +
-                    `👤 *CHANNEL :* ${channel}\n` +
-                    `⏱️ *DURATION :* ${timestamp}\n` +
-                    `📽️ *QUALITY :* 720p\n` +
-                    `__________________________\n\n` +
-                    `📅 *DATE :* ${slDate} | ⌚ *TIME :* ${slTimeNow}\n\n` +
-                    `> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙀 ✹*`;
-
-                try { await socket.sendMessage(sender, { react: { text: '📥', key: msg.key } }); } catch (_) {}
-
-                const outPath = path.join(os.tmpdir(), `shana_vid_${Date.now()}`);
-                const filePath = await ytdlpDownload(videoUrl, 'mp4', outPath);
-
-                await socket.sendMessage(sender, {
-                    video: { url: filePath },
-                    mimetype: 'video/mp4',
-                    caption: caption,
-                    fileName: `${title}.mp4`
-                }, { quoted: msg });
-
-                fs.removeSync(filePath);
-                try { await socket.sendMessage(sender, { react: { text: '✅', key: msg.key } }); } catch (_) {}
-
-            } catch (e) {
-                console.log("VIDEO CMD ERROR:", e);
-                reply("❌ *ERROR try again later !*");
-                try { await socket.sendMessage(sender, { react: { text: '❌', key: msg.key } }); } catch (_) {}
-            }
-            break;
-        }
-
-        case 'fb':
-        case 'facebook': {
-            try {
-                const query = args.join(' ');
-                if (!query) return reply("🔗 *Send me a video link !*");
-
-                if (!query.includes('facebook.com') && !query.includes('fb.watch')) {
-                    return reply("❌ *This Not Valid Facebook Link !*");
-                }
-
-                try { await socket.sendMessage(sender, { react: { text: '📥', key: msg.key } }); } catch (_) {}
-
-                const slDate = moment().tz('Asia/Colombo').format('YYYY-MM-DD');
-                const slTimeNow = moment().tz('Asia/Colombo').format('HH:mm:ss');
-
-                const outPath = path.join(os.tmpdir(), `shana_fb_${Date.now()}`);
-                const filePath = await ytdlpDownload(query, 'mp4', outPath);
-
-                const fileSizeMB = (fs.statSync(filePath).length / (1024 * 1024)).toFixed(2);
-
-                const caption = `*↳ ❝ [🎀 𝗦𝗛𝗔𝗡𝗔 𝗙𝗮𝗰𝗲𝗯𝗼𝗼𝗸 🎀] ¡! ❞*\n\n` +
-                    `🎬 *TITLE :* Facebook Video\n` +
-                    `📺 *QUALITY :* Best Available\n` +
-                    `⚖️ *SIZE :* ${fileSizeMB} MB\n` +
-                    `__________________________\n\n` +
-                    `📅 *DATE :* ${slDate} | ⌚ *TIME :* ${slTimeNow}\n\n` +
-                    `> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙀 ✹*`;
-
-                await socket.sendMessage(sender, {
-                    video: { url: filePath },
-                    mimetype: 'video/mp4',
-                    caption: caption,
-                    fileName: `fb_video_${slTimeNow}.mp4`
-                }, { quoted: msg });
-
-                fs.removeSync(filePath);
-                try { await socket.sendMessage(sender, { react: { text: '✅', key: msg.key } }); } catch (_) {}
-
-            } catch (e) {
-                console.log("FB CMD ERROR:", e);
-                reply("❌ *API error !* — " + e.message);
-                try { await socket.sendMessage(sender, { react: { text: '❌', key: msg.key } }); } catch (_) {}
-            }
-            break;
-        }
-
-        case 'tiktok':
-        case 'tt': {
-            try {
-                const query = args.join(' ');
-                if (!query) return reply("🔗 *Send me a tiktok link !*");
-
-                if (!query.includes('tiktok.com')) {
-                    return reply("❌ *This is not valid tiktok link !*");
-                }
-
-                try { await socket.sendMessage(sender, { react: { text: '📥', key: msg.key } }); } catch (_) {}
-
-                const slDate = moment().tz('Asia/Colombo').format('YYYY-MM-DD');
-                const slTimeNow = moment().tz('Asia/Colombo').format('HH:mm:ss');
-
-                const outPath = path.join(os.tmpdir(), `shana_tt_${Date.now()}`);
-                const filePath = await ytdlpDownload(query, 'mp4', outPath);
-
-                const fileSizeMB = (fs.statSync(filePath).length / (1024 * 1024)).toFixed(2);
-
-                const caption = `*↳ ❝ [🎀 𝗦𝗛𝗔𝗡𝗔 𝗧𝗶𝗸𝗧𝗼𝗸 🎀] ¡! ❞*\n\n` +
-                    `🎬 *TITLE :* TikTok Video\n` +
-                    `⚖️ *SIZE :* ${fileSizeMB} MB\n` +
-                    `🚫 *WATERMARK :* No\n` +
-                    `__________________________\n\n` +
-                    `📅 *DATE :* ${slDate} | ⌚ *TIME :* ${slTimeNow}\n\n` +
-                    `> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙀 ✹*`;
-
-                await socket.sendMessage(sender, {
-                    video: { url: filePath },
-                    mimetype: 'video/mp4',
-                    caption: caption,
-                    fileName: `tiktok_video_${slTimeNow}.mp4`
-                }, { quoted: msg });
-
-                fs.removeSync(filePath);
-                try { await socket.sendMessage(sender, { react: { text: '✅', key: msg.key } }); } catch (_) {}
-
-            } catch (e) {
-                console.log("TIKTOK CMD ERROR:", e);
-                reply("❌ *Known Error — " + e.message + "*");
-                try { await socket.sendMessage(sender, { react: { text: '❌', key: msg.key } }); } catch (_) {}
-            }
-            break;
-        }
-
         case 'ai':
         case 'akira': {
             try { await socket.sendMessage(sender, { react: { text: '🍫', key: msg.key } }); } catch (_) {}
@@ -2427,35 +2224,6 @@ system 24/7 Online Support 💯.\n\n` +
             break;
         }
 
-        case 'npm': {
-            const pkg = args[0]?.trim();
-            if (!pkg) return reply(`Usage: .npm <package>`);
-
-            try {
-                const res = await axios.get(`https://registry.npmjs.org/${pkg}`, { timeout: 10000 });
-                const d = res.data;
-
-                const npmInfo = `*↳ ❝ [🎀 𝗦𝗛𝗔𝗡𝗔 𝗡𝗣𝗠 🎀] ¡! ❞*\n` +
-                    `⊹₊⟡⋆ 𝗡𝗮𝗺𝗲 - ${d.name} 𝜗𝜚⋆\n\n` +
-                    `> *\`📦 𝚅𝙴𝚁𝙸𝙾𝙽 :\`* ${d['dist-tags']?.latest || 'N/A'}\n` +
-                    `> *\`📝 𝙳𝙴𝚂𝙲 :\`* ${(d.description || 'N/A').slice(0, 100)}\n` +
-                    `> *\`👤 𝙰𝚄𝚃𝙷𝙾𝚁 :\`* ${d.author?.name || 'N/A'}\n` +
-                    `> *\`📄 𝙻𝙸𝙲𝙴𝙽𝙲𝙴 :\`* ${d.license || 'N/A'}\n` +
-                    `> *\`🔗 𝙻𝙸𝙽𝙺 :\`* https://npmjs.com/package/${d.name}\n\n` +
-                    `> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙀 ✹*`;
-
-                await socket.sendMessage(sender, {
-                    image: { url: SHANA_IMG },
-                    caption: npmInfo,
-                    contextInfo: arabianCtx()
-                }, { quoted: msg });
-
-            } catch (e) {
-                await reply(`Package not found: ${pkg}`);
-            }
-            break;
-        }
-
         case 'mode':
         case 'wtype': {
             if (!isOwner) return reply('Owner only.');
@@ -2484,86 +2252,6 @@ system 24/7 Online Support 💯.\n\n` +
             } catch (e) {
                 console.error(e);
                 await reply(`Error: ${e.message}`);
-            }
-            break;
-        }
-
-        case 'gimg':
-        case 'img': {
-            const q = args.join(' ').trim();
-            if (!q) return reply(`Usage: .gimg <query>`);
-            try {
-                await socket.sendMessage(sender, {
-                    react: { text: '🖼️', key: msg.key }
-                });
-            } catch (_) {}
-
-            try {
-                const res = await axios.get(
-                    `https://www.movanest.xyz/v2/pinterest?query=${encodeURIComponent(q)}&pageSize=10`
-                );
-
-                if (res.data && res.data.results && res.data.results.length > 0) {
-                    const random =
-                        res.data.results[
-                            Math.floor(Math.random() * res.data.results.length)
-                        ];
-
-                    const imgUrl = random.image;
-                    await socket.sendMessage(
-                        sender,
-                        {
-                            image: { url: imgUrl },
-                            caption:
-`*↳ ❝ [🎀 𝗦𝗛𝗔𝗡𝗔 𝗜𝗠𝗚𝘀 🎀] ¡! ❞*
-
-*₊❏❜ ⋮ 🔍 Search:* ${q}
-
-> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙀 ✹*`
-                        },
-                        { quoted: msg }
-                    );
-                } else {
-                    await reply(`I cant find it !`);
-                }
-            } catch (e) {
-                console.error(e);
-                await reply(`Image search failed:\n${e.message}`);
-            }
-            break;
-        }
-
-        case 'getdp':
-        case 'pfp': {
-            try {
-                const qCtx = msg.message?.extendedTextMessage?.contextInfo;
-                let target;
-                if (qCtx?.mentionedJid?.[0]) {
-                    target = qCtx.mentionedJid[0];
-                } else if (qCtx?.participant) {
-                    target = qCtx.participant;
-                } else if (args[0]?.replace(/[^0-9]/g, '')) {
-                    target = args[0].replace(/[^0-9]/g, '') + '@s.whatsapp.net';
-                } else {
-                    target = sender;
-                }
-
-                let dpUrl;
-                try {
-                    dpUrl = await socket.profilePictureUrl(target, 'image');
-                } catch (e) {
-                    return reply('No DP or Privacy protected');
-                }
-
-                await socket.sendMessage(sender, {
-                    image: { url: dpUrl },
-                    caption: `*↳ ❝ [🎀 𝗦𝗛𝗔𝗡𝗔 𝗗𝗣 🎀] ¡! ❞*\n\n📷 Profile picture of @${target.split('@')[0]}`,
-                    mentions: [target]
-                }, { quoted: msg });
-
-            } catch (err) {
-                console.error(err);
-                reply('Known Error');
             }
             break;
         }
@@ -2606,21 +2294,6 @@ system 24/7 Online Support 💯.\n\n` +
             }
             break;
           }
-
-        case 'tagall': {
-            if (!isGroup) return reply('This command only works in groups.');
-            try {
-                const gm = await socket.groupMetadata(sender);
-                const ps = gm.participants || [];
-                const tm = args.join(' ').trim() || '*Attention everyone!*';
-                const mentions = ps.map(p => p.id);
-                let text = `*↳ ❝ [🎀 𝗦𝗛𝗔𝗡𝗔 𝗧𝗮𝗴𝗮𝗹𝗹 🎀] ¡! ❞*\n\n> *\`🗣️ :\`* ${tm}\n\n`;
-                for (const p of ps) text += `₊❏❜ ⋮ @${p.id.split('@')[0]}\n`;
-                text += `\n> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙀 ✹*`;
-                await socket.sendMessage(sender, { text, mentions }, { quoted: msg });
-            } catch (e) { await reply(`tagall failed: ${e.message}`); }
-            break;
-        }
 
         case 'hidetag': {
             if (!isGroup) return reply('*Groups only.*');
@@ -2685,7 +2358,7 @@ system 24/7 Online Support 💯.\n\n` +
                 const mentions = admins.map(p => p.id);
                 let tagText = `╭─⊹₊⟡⋆『 \`𝐀𝐝𝐦𝐢𝐧\` 』𖤐.ᐟ\n*┃* ${tm}\n*┃*\n`;
                 for (const p of admins) tagText += `*┃* @${p.id.split('@')[0]}\n`;
-                tagText += `╰──────────────────<𝟑 .ᐟ\n\n> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙀 ✹*`;
+                tagText += `╰──────────────────<𝟑 .ᐟ\n\n> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙀𝙀 ✹*`;
                 await socket.sendMessage(sender, { text: tagText, mentions }, { quoted: msg });
             } catch (e) { await replyFq(`tagadmin failed: ${e.message}`); }
             break;
