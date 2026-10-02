@@ -152,7 +152,7 @@ async function shanaAutoSaveContact(socket, jid, pushName, botKey) {
 }
 
 // ═══ SHANA IMAGE — හැම තැනම මේ එකම image එක ═══
-const SHANA_IMG = 'https://files.catbox.moe/4k20j0.png';
+const SHANA_IMG = 'https://files.catbox.moe/fa6ve2.png';
 const akira = SHANA_IMG;
 
 // ═══ AUTO SAVE STATE ═══
@@ -191,8 +191,8 @@ const config = {
     PREFIX: '.',
     MAX_RETRIES: 3,
     ADMIN_LIST_PATH: './admin.json',
-    AKIRA_IMG: 'https://files.catbox.moe/4k20j0.png',
-    AUTORP_IMG: 'https://files.catbox.moe/4k20j0.png',
+    AKIRA_IMG: 'https://files.catbox.moe/fa6ve2.png',
+    AUTORP_IMG: 'https://files.catbox.moe/fa6ve2.png',
     NEWSLETTER_JID: '120363419619460838@newsletter',
     NEWSLETTER_LIST: [
         '120363425584831057@newsletter',
