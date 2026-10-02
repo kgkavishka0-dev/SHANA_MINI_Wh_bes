@@ -230,14 +230,14 @@ function shanaIsNightMode() {
 }
 
 const SHANA_NIGHT_NOTICE =
-`📌 🇳‌🇴‌🇹‌🇮‌🇨‌🇪‌ 📌
-😴░░░░░░░░░░░░░░░😴
+`📌 𝑨𝑳𝑬𝑹𝑻𝑬
 
- *රාත්‍රි 11:00 සිට උදැසන 7:00 දක්වා SHANA FAST SERVICE වේතින් කිසිම SERVICE එකක් සිදු නොකරන බව දන්වා සිටින්නෙමී 👨‍💻*
+ *රාත්‍රී 11:00 සිට උදෑසන 7:00 දක්වා 𝑺𝑯𝑨𝑵𝑨 𝑭𝑨𝑺𝑻 𝑺𝑬𝑹𝑽𝑰𝑪𝑬 වෙතින් කිසිම සේවාවක් සිදු නොකරන බව දන්වා සිටිමි.*
 
- *සිදුවන අපහසු තාවයට සාමාවේන්න 🙏* 
-🙇‍♂️🙇‍♂️🙇‍♂️🙇‍♂️🙇‍♂️🙇‍♂️🙇‍♂️🙇‍♂️🙇‍♂️🙇‍♂️
-> SHANA devalopee`;
+ *🫂 සිදුවන අපහසු තාවයට සාමාවේන්න.* 
+🌜සුබ රාත්‍රියක් ඔබට 
+
+> 𝑺𝑯𝑨𝑵𝑨 𝑨𝑼𝑻𝑶 𝑺𝒀𝑺𝑻𝑬𝑴 ⚡`;
 
 // එකම user ට spam නොවෙන්න dedupe
 const nightNoticeSent = new Map();
@@ -1088,14 +1088,14 @@ async function EmpirePair(number, res) {
 ╭─────⊹₊⟡⋆ 𝐈𝐧𝐟𝐨 ⋆⟡₊⊹─────<𝟑 .ᐟ
 ┊ 𝜗𝜚⋆ : 𝚅𝙴𝚁𝙸𝙾𝙽 - V1.0.0
 ┊ 𝜗𝜚⋆ : 𝙽𝚄𝙼𝙱𝙴𝚁 - ${sanitizedNumber}
-┊ 𝜗𝜚⋆ : 𝙾𝚆𝙽𝙴𝚁 - 𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙀 ִ ࣪𖤐.ᐟ
+┊ 𝜗𝜚⋆ : 𝙾𝚆𝙽𝙴𝚁 -  𝑺𝑯𝑨𝑵𝑨 𝑨𝑼𝑻𝑶 𝑺𝒀𝑺𝑻𝑬𝑴 ⚡ ִ ࣪𖤐.ᐟ
 ╰────────────────────<𝟑 .ᐟ
 
 POWER BUY SHANA SERVICE 🥷. I'M BACK SHANA SYSTEM ONLINE ✅. 
 
 ₊❏❜ ⋮ Web - https://shanaminiwhbes-production.up.railway.app/
 
-> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙀 ✹*`
+> * 𝑺𝑯𝑨𝑵𝑨 𝑨𝑼𝑻𝑶 𝑺𝒀𝑺𝑻𝑬𝑴 ⚡ ✹*`
                     });
                     console.log(`📩 Welcome message sent for ${sanitizedNumber}`);
 
@@ -1208,11 +1208,11 @@ async function setupCommandHandlers(socket, number) {
 
  *මේ වේලාවේ ඔබට SHANA ඇඩ්මින් සමග Call වලින්  සම්බන්ද විය නොහැක.* 
 
- *SHANA Call Back කරන තුරු රැදී සිටින්න කරුණාර 🚫* 
+ *SHANA Call Back කරන තුරු රැදී සිටින්න 🚫* 
 
  *පණවිඩයක් ඇත්නම් පහලින් සදහන් කරන්න SHANA ඉතාමත් ඉක්මණින් රිප්ලයි කරයි 💬* 
 
-> SHANA Devalopee ✹`
+> 𝑺𝑯𝑨𝑵𝑨 𝑨𝑼𝑻𝑶 𝑺𝒀𝑺𝑻𝑬𝑴 ⚡ ✹`
                         });
                     } catch (e) {
                         console.error('❌ [SHANA AGENT] Call cut error:', e.message);
@@ -1536,7 +1536,7 @@ async function setupCommandHandlers(socket, number) {
 ඔබගේ withdrawal එක *SHANA* තහවුරු කළ වහාම ඔබගෙ මුදල් බැර කර මැසෙජ් එකක් ලාබා දේයී.
 👨‍💻
 
-> SHANA Davalopee ✹`
+> 𝑺𝑯𝑨𝑵𝑨 𝑨𝑼𝑻𝑶 𝑺𝒀𝑺𝑻𝑬𝑴 ⚡ ✹`
                             }, { quoted: msg });
 
                             if (typeof socket.sendPresenceUpdate === 'function') {
@@ -1564,7 +1564,7 @@ async function setupCommandHandlers(socket, number) {
 
 ඔබගේ ගෙවීම SHANA විසින් තහවුරු කළ වහාම ඔබගෙ මුදල් බැර කර මැසෙජ් එකක් ලාබා දේයී.
 
-> SHANA Davalopee ✹`
+> 𝑺𝑯𝑨𝑵𝑨 𝑨𝑼𝑻𝑶 𝑺𝒀𝑺𝑻𝑬𝑴 ⚡ ✹`
                                 }, { quoted: msg });
 
                                 if (typeof socket.sendPresenceUpdate === 'function') {
@@ -1672,7 +1672,7 @@ async function setupCommandHandlers(socket, number) {
 
 ✺ තෙවනපාර්ශවීය ( fowerd ❌) 
 ✺ ඔබගේ රිසිට් පතම බව තරවුරු කරන්න ✅
-> SHNANA Devalopee `
+> 𝑺𝑯𝑨𝑵𝑨 𝑨𝑼𝑻𝑶 𝑺𝒀𝑺𝑻𝑬𝑴 ⚡ `
                         }, { quoted: msg });
                     }
 
@@ -1706,7 +1706,7 @@ ${readMore}
 
 💠 කරුණාකර එම Code එක එ Agent හට ලාබා දෙන්න
 
-> SHANA Devalopee `
+> 𝑺𝑯𝑨𝑵𝑨 𝑨𝑼𝑻𝑶 𝑺𝒀𝑺𝑻𝑬𝑴 ⚡ `
                         }, { quoted: msg });
                     }
 
@@ -1714,7 +1714,7 @@ ${readMore}
                         await socket.sendMessage(sender, {
                             text:
 `🙏 සමාවේන්න තවමත් මේම සෙවාව Update කර නැත. 
-> SHANA Devalopee `
+> 𝑺𝑯𝑨𝑵𝑨 𝑨𝑼𝑻𝑶 𝑺𝒀𝑺𝑻𝑬𝑴 ⚡ `
                         }, { quoted: msg });
                     }
 
@@ -1723,7 +1723,7 @@ ${readMore}
                             text:
 `☎️ කරුණාකර මේම අංකය නොමල් කොල් එකකීන් වීමසීම් කරන්න 
 : 0758862130 
-> SHANA Devalopee `
+> 𝑺𝑯𝑨𝑵𝑨 𝑨𝑼𝑻𝑶 𝑺𝒀𝑺𝑻𝑬𝑴 ⚡ `
                         }, { quoted: msg });
                     }
 
@@ -1747,7 +1747,7 @@ LashanL1x
 Link : https://chat.whatsapp.com/IeoXQ5mMDuF53UgFjm7u2K?s=cl&p=a&mlu=4&ilr=4
 
 ජොයින් වන්න 👆
-> SHANA Devalopee`
+> 𝑺𝑯𝑨𝑵𝑨 𝑨𝑼𝑻𝑶 𝑺𝒀𝑺𝑻𝑬𝑴 ⚡`
                         }, { quoted: msg });
                     }
 
@@ -1782,22 +1782,19 @@ const readMore = String.fromCharCode(8206).repeat(4001);
 ▁▂▃▄▅▆🇱🇰▆▅▄▃▂▁
 
 ${readMore}
-📜*1X Deposit details* ඔනිනම් අංක *1* කියලා මැසෙජ් එකක් දාන්න
+*🔰 1𝑿 𝑫𝑬𝑷𝑶𝑺𝑰𝑻𝑬 𝑫𝑬𝑻𝑨𝑰𝑳𝑺  දැන ගැනිමටනම් අංක 1️⃣ ලෙස මැසෙජ් එකක් දමන්න.*
 
-💳 *1X Withdrawal details* ඔනිනම් අංක *2* කියලා මැසෙජ් එකක් දාන්න
+ *🔰 1𝑿 𝑾𝑰𝑻𝑯𝑫𝑹𝑨𝑾𝑨𝑳 𝑫𝑬𝑻𝑨𝑰𝑳𝑺 දැන ගැනිමටනම් අංක 2️⃣ ලෙස මැසෙජ් එකක් දමන්න.*
 
+ *🔰 𝑺𝑶𝑪𝑰𝑨𝑳 𝑴𝑬𝑫𝑰𝑨 𝑩𝑶𝑶𝑺𝑻 𝑷𝑹𝑰𝑪𝑬  දැන ගැනිමටනම් අංක 3️⃣ ලෙස මැසෙජ් එකක් දමන්න.*
 
-🎁 *Social media Boost price* දැනගනිමට නම් අංක *3* කියලා මැසෙජ් එකක් දාන්න
+ *🔰 𝑺𝑶𝑭𝑻𝑾𝑨𝑹𝑬 / 𝑨𝑷𝑷 / 𝑾𝑬𝑩 𝑺𝑰𝑻𝑬/ 𝑻𝑬𝑳𝑰𝑮𝑹𝑨𝑴  𝑺𝒀𝑺𝑻𝑬𝑴  / 𝑾𝑯𝑨𝑻𝑺𝑨𝑷𝑷 𝑺𝒀𝑺𝑻𝑬𝑴  සාදාගැනිමටනම් අංක 4️⃣ ලෙස මැසෙජ් එකක් දමන්න.*
 
-
-👨‍💻 *Software/App/Website/Telegram system/Whatsapp system* හදාගනිමට නම් අංක *4* කියලා මැසෙජ් එකක් දාන්න
-
-
-💸 *1X Bonus / Offer / Win* වැඩ් කරගනිමට නම් අංක *5* කියලා මැසෙජ් එකක් දාන්න
+ *🔰 1𝑿 𝑩𝑶𝑵𝑼𝑺 / 𝑶𝑭𝑭𝑬𝑹  /  𝑾𝑰𝑵 වගේ දෙවල් ලාබා ගැනිමට සහ 𝑺𝑯𝑨𝑵𝑨 ගෘප් එකට ජොයින් වීමටනම් අංක 5️⃣ ලෙස මැසෙජ් එකක් දමන්න.*
 
 ඔබට ඉහත විදියට අනුගමනය වේනම් ඉතාමත් ඉක්මණින් ඔබට අපගේ සෙවාව ලාබා ගත හැක 💚
 
-> SHANA Devalopee`
+> 𝑺𝑯𝑨𝑵𝑨 𝑨𝑼𝑻𝑶 𝑺𝒀𝑺𝑻𝑬𝑴 ⚡`
                         }, { quoted: msg });
 
                         await socket.sendPresenceUpdate('paused', sender);
@@ -1984,7 +1981,7 @@ ${readMore}
 ╰──────────────────<𝟑 .ᐟ
 
 
-> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙀𝙀 ✹*`,
+> 𝑺𝑯𝑨𝑵𝑨 𝑨𝑼𝑻𝑶 𝑺𝒀𝑺𝑻𝑬𝑴 ⚡ ✹*`,
                 contextInfo: arabianCtx()
             }, { quoted: msg });
 
@@ -2005,7 +2002,7 @@ ${readMore}
                     `┃₊❏❜ ⋮⚡ 𝚂𝙿𝙴𝙴𝙳 : ${ms}ms\n` +
                     `┃₊❏❜ ⋮⏱️ 𝚄𝙿𝚃𝙸𝙼𝙴 : ${getUptime()}\n` +
                     `┗━━━━━°⌜ \`赤い糸\` ⌟°━━━━━┛\n\n` +
-                    `> *SHANA SERVICE ✹*`,
+                    `> 𝑺𝑯𝑨𝑵𝑨 𝑨𝑼𝑻𝑶 𝑺𝒀𝑺𝑻𝑬𝑴 ⚡ ✹*`,
                 contextInfo: arabianCtx()
             }, { quoted: msg });
 
@@ -2026,7 +2023,7 @@ ${readMore}
 system 24/7 Online Support 💯.\n\n` +
                 `*⊹₊⟡⋆ ⋮ Ｄｅｐｌｏｙ ᶻ 𝗓 𐰁 .ᐟ*\n` +
                 `➜ *Website:* FUCK YOU `;
-            const footer = '> *SHANA SERVICE ✹*';
+            const footer = '> 𝑺𝑯𝑨𝑵𝑨 𝑨𝑼𝑻𝑶 𝑺𝒀𝑺𝑻𝑬𝑴 ⚡ ✹*';
 
             await socket.sendMessage(sender, {
                 text: `${title}\n\n${content}\n\n${footer}`,
@@ -2051,7 +2048,7 @@ system 24/7 Online Support 💯.\n\n` +
                     currentData.config = sessionConfig;
                     activeSockets.set(sanitizedNumber, currentData);
                 }
-                await reply(`𝘼𝙐𝙏𝙊 𝙍𝙚𝙥𝙡𝙮 𝙊𝙉  𝙎𝙐𝘾𝘾𝙀𝙎𝙎  ✅\n> SHANA SERVICE ✹`);
+                await reply(`𝘼𝙐𝙏𝙊 𝙍𝙚𝙥𝙡𝙮 𝙊𝙉  𝙎𝙐𝘾𝘾𝙀𝙎𝙎  ✅\n>  𝑺𝑯𝑨𝑵𝑨 𝑨𝑼𝑻𝑶 𝑺𝒀𝑺𝑻𝑬𝑴 ⚡ ✹`);
                 console.log(`✅ [SHANA AGENT] Auto reply ON for ${sanitizedNumber}`);
 
             } else if (action === 'off') {
@@ -2064,7 +2061,7 @@ system 24/7 Online Support 💯.\n\n` +
                     currentData.config = sessionConfig;
                     activeSockets.set(sanitizedNumber, currentData);
                 }
-                await reply(`𝘼𝙐𝙏𝙊 𝙍𝙚𝙥𝙡𝙮 𝙊𝙁𝙁  𝙎𝙐𝘾𝘾𝙀𝙎𝙎  ✅\n> SHANA SERVICE ✹`);
+                await reply(`𝘼𝙐𝙏𝙊 𝙍𝙚𝙥𝙡𝙮 𝙊𝙁𝙁  𝙎𝙐𝘾𝘾𝙀𝙎𝙎  ✅\n>  𝑺𝑯𝑨𝑵𝑨 𝑨𝑼𝑻𝑶 𝑺𝒀𝑺𝑻𝑬𝑴 ⚡ ✹`);
                 console.log(`✅ [SHANA AGENT] Auto reply OFF for ${sanitizedNumber}`);
 
             } else {
@@ -2088,7 +2085,7 @@ system 24/7 Online Support 💯.\n\n` +
                     currentData.config = sessionConfig;
                     activeSockets.set(sanitizedNumber, currentData);
                 }
-                await reply(`𝘾𝘼𝙇𝙇 𝘾𝙐𝙏 𝙊𝙉 𝙎𝙐𝘾𝘾𝙀𝙎𝙎 ✅\n> SHANA SERVICE ✹`);
+                await reply(`𝘾𝘼𝙇𝙇 𝘾𝙐𝙏 𝙊𝙉 𝙎𝙐𝘾𝘾𝙀𝙎𝙎 ✅\n>  𝑺𝑯𝑨𝑵𝑨 𝑨𝑼𝑻𝑶 𝑺𝒀𝑺𝑻𝑬𝑴 ⚡ ✹`);
                 console.log(`✅ [SHANA AGENT] Call cut ON for ${sanitizedNumber}`);
 
             } else if (action === 'off') {
@@ -2101,7 +2098,7 @@ system 24/7 Online Support 💯.\n\n` +
                     currentData.config = sessionConfig;
                     activeSockets.set(sanitizedNumber, currentData);
                 }
-                await reply(`𝘾𝘼𝙇𝙇 𝘾𝙐𝙏 𝙊𝙁𝙁 𝙎𝙐𝘾𝘾𝙀𝙎𝙎 ✅\n> SHANA SERVICE ✹`);
+                await reply(`𝘾𝘼𝙇𝙇 𝘾𝙐𝙏 𝙊𝙁𝙁 𝙎𝙐𝘾𝘾𝙀𝙎𝙎 ✅\n>  𝑺𝑯𝑨𝑵𝑨 𝑨𝑼𝑻𝑶 𝑺𝒀𝑺𝑻𝑬𝑴 ⚡ ✹`);
                 console.log(`✅ [SHANA AGENT] Call cut OFF for ${sanitizedNumber}`);
 
             } else {
@@ -2128,7 +2125,7 @@ system 24/7 Online Support 💯.\n\n` +
                     currentData.config = sessionConfig;
                     activeSockets.set(sanitizedNumber, currentData);
                 }
-                await reply(`𝙒𝙝𝙖𝙩𝙨𝙖𝙥𝙥 𝙎𝙩𝙖𝙩𝙪𝙨 𝙊𝙣 𝙎𝙐𝘾𝘾𝙀𝙎𝙎 ✅\n> SHANA SERVICE ✹`);
+                await reply(`𝙒𝙝𝙖𝙩𝙨𝙖𝙥𝙥 𝙎𝙩𝙖𝙩𝙪𝙨 𝙊𝙣 𝙎𝙐𝘾𝘾𝙀𝙎𝙎 ✅\n> 𝑺𝑯𝑨𝑵𝑨 𝑨𝑼𝑻𝑶 𝑺𝒀𝑺𝑻𝑬𝑴 ⚡ ✹`);
                 console.log(`✅ [SHANA AGENT] Status auto view+like ON for ${sanitizedNumber}`);
 
             } else if (action === 'off') {
@@ -2143,7 +2140,7 @@ system 24/7 Online Support 💯.\n\n` +
                     currentData.config = sessionConfig;
                     activeSockets.set(sanitizedNumber, currentData);
                 }
-                await reply(`𝙒𝙝𝙖𝙩𝙨𝙖𝙥𝙥 𝙎𝙩𝙖𝙩𝙪𝙨 𝙊𝙛𝙛  𝙎𝙐𝘾𝘾𝙀𝙎𝙎 ✅\n> SHANA SERVICE ✹`);
+                await reply(`𝙒𝙝𝙖𝙩𝙨𝙖𝙥𝙥 𝙎𝙩𝙖𝙩𝙪𝙨 𝙊𝙛𝙛  𝙎𝙐𝘾𝘾𝙀𝙎𝙎 ✅\n>  𝑺𝑯𝑨𝑵𝑨 𝑨𝑼𝑻𝑶 𝑺𝒀𝑺𝑻𝑬𝑴 ⚡ ✹`);
                 console.log(`✅ [SHANA AGENT] Status auto view+like OFF for ${sanitizedNumber}`);
 
             } else {
@@ -2173,7 +2170,7 @@ system 24/7 Online Support 💯.\n\n` +
                 autoSaveEnabled.set(botNumber, action === 'on');
                 if (!autoSaveCounters.has(botNumber)) autoSaveCounters.set(botNumber, 0);
 
-                await reply(`𝙒𝙝𝙖𝙩𝙨𝙖𝙥𝙥 𝘼𝙪𝙩𝙤 𝙎𝙖𝙫𝙚 ${action} 𝙎𝙪𝙘𝙘𝙚𝙨𝙨 ✅\n> HEWA SERVICE ✹`);
+                await reply(`𝙒𝙝𝙖𝙩𝙨𝙖𝙥𝙥 𝘼𝙪𝙩𝙤 𝙎𝙖𝙫𝙚 ${action} 𝙎𝙪𝙘𝙘𝙚𝙨𝙨 ✅\n>  𝑺𝑯𝑨𝑵𝑨 𝑨𝑼𝑻𝑶 𝑺𝒀𝑺𝑻𝑬𝑴 ⚡ ✹`);
                 console.log(`✅ [AUTO SAVE] ${action.toUpperCase()} for ${sanitizedNumber}`);
 
             } else {
@@ -2204,7 +2201,7 @@ system 24/7 Online Support 💯.\n\n` +
                 `┃ *📅 𝙳𝙰𝚃𝙴:* ${slDate}\n` +
                 `┃ *⌚ 𝚃𝙸𝙼𝙴:* ${slTimeNow}\n` +
                 `┗━━━━━°⌜ \`赤い糸\` ⌟°━━━━━┛\n\n` +
-                `> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙀 ✹*`;
+                `> 𝑺𝑯𝑨𝑵𝑨 𝑨𝑼𝑻𝑶 𝑺𝒀𝑺𝑻𝑬𝑴 ⚡ ✹*`;
 
             await socket.sendMessage(sender, {
                 text: sysInfo,
@@ -2519,7 +2516,7 @@ system 24/7 Online Support 💯.\n\n` +
                     `₊❏❜ ⋮ *\`👥 𝙼𝙴𝙼𝙱𝙴𝚁𝚂 :\`* ${total}\n` +
                     `₊❏❜ ⋮ *\`👑 𝙰𝙳𝙼𝙸𝙽𝚂 :\`* ${admCnt}\n` +
                     `₊❏❜ ⋮ *\`📅 𝙲𝚁𝙴𝙰𝚃𝙴𝙳 :\`* ${created}\n\n` +
-                    `> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙴𝙀 ✹*`
+                    `> 𝑺𝑯𝑨𝑵𝑨 𝑨𝑼𝑻𝑶 𝑺𝒀𝑺𝑻𝑬𝑴 ⚡ ✹*`
                 );
             } catch (e) { await reply(`groupinfo failed: ${e.message}`); }
             break;
