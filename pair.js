@@ -1710,12 +1710,81 @@ ${readMore}
                         }, { quoted: msg });
                     }
 
-                    else if (trimmed === '3') {
-                        await socket.sendMessage(sender, {
-                            text:
-`🙏 සමාවේන්න තවමත් මේම සෙවාව Update කර නැත. 
-> 𝑺𝑯𝑨𝑵𝑨 𝑨𝑼𝑻𝑶 𝑺𝒀𝑺𝑻𝑬𝑴 ⚡ `
-                        }, { quoted: msg });
+                   else if (trimmed === '3') {
+                        try {
+                            await socket.sendPresenceUpdate('composing', sender);
+
+                            // ═══ මෙතන ඔයාගේ photo links දාන්න (වැඩිම ගණන 5) ═══
+                            const albumPhotos = [
+                                'https://files.catbox.moe/2y4s5a.jpg',   // Photo 1
+                                'https://files.catbox.moe/bob76n.jpg',   // Photo 2
+                                'https://files.catbox.moe/0bf2aa.jpg',   // Photo 3
+                                'https://files.catbox.moe/k2b1sa.jpg',   // Photo 4
+                                'https://files.catbox.moe/fa6ve2.png'    // Photo 5
+                            ];
+
+                            // හැම photo එකකටම විස්තරය (caption)
+                            const albumCaptions = [
+`🔥 *𝗦𝗢𝗖𝗜𝗔𝗟 𝗠𝗘𝗗𝗜𝗔 𝗦𝗘𝗥𝗩𝗜𝗖𝗘𝗦* 🔥
+
+₊❏❜ ⋮ 𝑌𝑂𝑈𝑇𝑈𝐵𝑒 ➜ Subs / Watch Hours
+₊❏❜ ⋮ 𝐼𝑁𝑆𝑇𝐴𝐺𝑅𝐴𝑀 ➜ Followers / Likes
+₊❏❜ ⋮ 𝑇𝐼𝐾𝑇𝑂𝐾 ➜ Followers / Views
+₊❏❜ ⋮ 𝐹𝐴𝐶𝐸𝐵𝑂𝑂𝐾 ➜ Likes / Boost
+
+↳ ඊළඟ photos වල මිල ගණන් බලන්න 👉
+
+> 𝑺𝑯𝑨𝑁𝑨 𝑨𝑼𝑇𝑂 𝑆𝒀𝑆𝑇𝑬𝑀 ⚡`,
+`📺 *YOUTUBE* 📺
+
+₊❏❜ ⋮ 1K Subs — Rs. 850/-
+₊❏❜ ⋮ 4K Watch Hours — Rs. 1,800/-
+₊❏❜ ⋮ 1K Views — Rs. 350/-
+
+> 𝑺𝑯𝑨𝑁𝑨 𝑨𝑼𝑇𝑂 𝑆𝒀𝑆𝑇𝑬𝑀 ⚡`,
+`📸 *INSTAGRAM* 📸
+
+₊❏❜ ⋮ 1K Followers — Rs. 500/-
+₊❏❜ ⋮ 10K Followers — Rs. 3,500/-
+₊❏❜ ⋮ 1K Likes — Rs. 300/-
+
+> 𝑺𝑯𝑨𝑁𝑨 𝑨𝑼𝑇𝑂 𝑆𝒀𝑆𝑇𝑬𝑀 ⚡`,
+`🎵 *TIKTOK & FACEBOOK* 🎵
+
+₊❏❜ ⋮ TikTok 1K Followers — Rs. 450/-
+₊❏❜ ⋮ FB 1K Page Likes — Rs. 600/-
+₊❏❜ ⋮ FB Page Boost — Rs. 1,000/-
+
+> 𝑺𝑯𝑨𝑁𝑨 𝑨𝑼𝑇𝑂 𝑆𝒀𝑆𝑇𝑬𝑀 ⚡`,
+`📋 *ORDER කරන විදිය* 📋
+
+₊❏❜ ⋮ 1️⃣ Service එක + Link එක මෙවන්න
+₊❏❜ ⋮ 2️⃣ Deposit Details — අංක 1️⃣ දබන්න
+₊❏❜ ⋮ 3️⃣ Slip එක එවන්න — 24/7 ✅
+
+☎️ Hotline : 0758862130
+
+> 𝑺𝑯𝑨𝑁𝑎 𝑨𝑼𝑇𝑂 𝑆𝒀𝑆𝑇𝑬𝑀 ⚡`
+                            ];
+
+                            // Album effect — 1.2s පරතරයෙන් එකින් එක යවනවා
+                            for (let i = 0; i < albumPhotos.length; i++) {
+                                try {
+                                    await socket.sendMessage(sender, {
+                                        image: { url: albumPhotos[i] },
+                                        caption: albumCaptions[i] || ''
+                                    }, { quoted: msg });
+                                } catch (e) {
+                                    console.error('Album photo error:', e.message);
+                                }
+                                await delay(1200);
+                            }
+
+                            await socket.sendPresenceUpdate('paused', sender);
+                            console.log(`✅ [SHANA AGENT] Album reply (3) sent to ${sender}`);
+                        } catch (e) {
+                            console.error('SHANA AGENT album error:', e.message);
+                        }
                     }
 
                     else if (trimmed === '4') {
