@@ -2267,73 +2267,6 @@ system 24/7 Online Support 💯.\n\n` +
             break;
         }
 
-        case 'ai':
-        case 'akira': {
-            try { await socket.sendMessage(sender, { react: { text: '🍫', key: msg.key } }); } catch (_) {}
-            const { NiyoXClient } = require("niyox");
-            const title = "🎀 *𝗦𝗛𝗔𝗡𝗔 𝗔𝗶 𝗚𝗶𝗿𝗹𝗳𝗿𝗲𝗻𝗱* 🎀";
-            const footer = "> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙀𝙀 ✹*";
-
-            const q = msg.message?.conversation ||
-                msg.message?.extendedTextMessage?.text ||
-                msg.message?.imageMessage?.caption ||
-                msg.message?.videoMessage?.caption ||
-                '';
-
-            if (!q || q.trim() === '') {
-                return await socket.sendMessage(sender, { text: "ඕ කියන්න අනේ් මම Shana Girl 🎀" }, { quoted: msg });
-            }
-
-
-            const prompt = `ඔබ සැබෑ ගැහැනු ලමයෙකු මෙන් හැසිරිය යුතුය. ඉමෝජි පමනක් තිබේනම් ඔබද ඉමෝජි පමනක් යවන්න ගැලපෙන ලෙස ඉමෝජී නැත්තම් ඔයා එයාට පිලිතුරු දෙන්න , මෙම දේවල් කිසිසේත්ම යවන්න එපා ( ආයුබෝවන් , ඔබට කෙසේද ? , katha karanna , ඕනේ ? , කොහොමද ? , කෙසේද ? , කැමතිද ? ,) මිනිසුන්ට ඇති හැඟීම්, දැනීම්, සහ සංවේදීතාවය අනුව පිළිතුරු ලබාදිය යුතුය. මැසේජ් එක ලැබෙන භාෂාවට ගැලපෙන ලෙස පිළිතුරු දෙන්න. ඔබ ලබාදිය යුතු පිළිතුරු අකුරු 100 ට වඩා අඩු විය යුතුය. සහ ආයුබෝවන් වගේ වචන බාවිතා කරන්න එපා උදව් අවශ්‍ය ද අහන්නත් එපා , ඔයා ai ඇසිස්ටන් කෙනෙක් නෙමේ සැබෑ මිනිසෙක් , ඇසිස්ටන් කෙනෙක් වෙන්න එපා , ඔයා ඒ අයට ආදරෙන් කතා කරන්න , ඔයා ගේ නම Shana Girl 🎀 , ඔයාගෙන් කවුරු හරි දෙයක් ඇහුවාම ඒක තේරුම් අරගෙන මම දීලා තියෙන පිලිතුරු ඒවට ගැලපෙනවා නම් ඔයා එයාට ඒවා පිලිතුරු විදිහට කියන්න , ඔයාව හැදුවේ කවුද කියලා ඇහුවොත් විතරක් ඔයා කියන්නේ මාව හැදුවේ SHANA අයියා කියලා User Message: ${q}`;
-
-            try {
-                const client = new NiyoXClient({ sessionId: sender, timeout: 15000 });
-                const response = await client.chat(prompt);
-
-                const aiResponse = response?.result;
-
-                if (!aiResponse) {
-                    return await socket.sendMessage(sender, { text: "❌ Sorry honey known error" }, { quoted: msg });
-                }
-
-                await socket.sendMessage(sender, {
-                    image: { url: SHANA_IMG },
-                    caption: `${title}\n\n${aiResponse}\n\n${footer}`,
-                    contextInfo: arabianCtx()
-                }, { quoted: msg });
-
-            } catch (err) {
-                console.error("NiyoX Error:", err.message);
-                await socket.sendMessage(sender, { text: "❌ I need cooldown time" }, { quoted: msg });
-            }
-            break;
-        }
-
-        case 'vv': {
-            const quoted = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage;
-            if (!quoted) return reply(`Reply to a view-once message with *.vv*`);
-            try {
-                const media = await downloadQuotedMedia(quoted);
-                if (!media?.buffer) return reply('Could not download that media.');
-                const qt = MEDIA_TYPES.find(t => quoted[t]);
-
-                if (qt === 'imageMessage') {
-                    await socket.sendMessage(sender, { image: media.buffer, caption: 'View-once unlocked 👀', contextInfo: arabianCtx() }, { quoted: msg });
-                } else if (qt === 'videoMessage') {
-                    await socket.sendMessage(sender, { video: media.buffer, caption: 'View-once unlocked 👀', contextInfo: arabianCtx() }, { quoted: msg });
-                } else if (qt === 'audioMessage') {
-                    await socket.sendMessage(sender, { audio: media.buffer, mimetype: media.mime || 'audio/mpeg', ptt: quoted.audioMessage?.ptt, contextInfo: arabianCtx() }, { quoted: msg });
-                } else if (qt === 'stickerMessage') {
-                    await socket.sendMessage(sender, { sticker: media.buffer, contextInfo: arabianCtx() }, { quoted: msg });
-                } else {
-                    await socket.sendMessage(sender, { document: media.buffer, mimetype: media.mime || 'application/octet-stream', fileName: media.fileName || 'file', contextInfo: arabianCtx() }, { quoted: msg });
-                }
-
-                try { await socket.sendMessage(sender, { react: { text: '✅', key: msg.key } }); } catch (_) {}
-            } catch (e) { await reply(`Failed: ${e.message}`); }
-            break;
-        }
 
         case 'active': {
             if (!isOwner) return reply('Owner only.');
@@ -2381,181 +2314,14 @@ system 24/7 Online Support 💯.\n\n` +
             }
             break;
         }
+      
 
-        case 'sticker':
-        case 'stiker':
-        case 's': {
-            try {
-                await socket.sendMessage(sender, { react: { text: '🎨', key: msg.key } });
-            } catch (_) {}
+     
+          
 
-            const qCtx = msg.message?.extendedTextMessage?.contextInfo;
-            const quoted = qCtx?.quotedMessage;
+        
 
-            if (!quoted || (!quoted.imageMessage && !quoted.videoMessage)) {
-                return reply(`Reply to an image or short video with *.sticker*`);
-            }
-
-            try {
-                const { default: WASticker, StickerTypes } = require('wa-sticker-formatter');
-
-                const media = await downloadQuotedMedia(quoted);
-                if (!media?.buffer) return reply('Could not download media.');
-
-                const sticker = new WASticker(media.buffer, {
-                    pack: 'SHANA',
-                    author: 'SHANA Devalopee',
-                    type: StickerTypes.FULL,
-                    categories: ['🤩'],
-                    id: '12345',
-                    quality: 50
-                });
-
-                const buffer = await sticker.toBuffer();
-                await socket.sendMessage(sender, { sticker: buffer }, { quoted: msg });
-
-            } catch (e) {
-                console.error(e);
-                await reply(`Sticker creation failed: ${e.message}`);
-            }
-            break;
-          }
-
-        case 'hidetag': {
-            if (!isGroup) return reply('*Groups only.*');
-            try {
-                const gm = await socket.groupMetadata(sender);
-                await socket.sendMessage(sender, { text: args.join(' ').trim() || '*🗣️ Attention Everybody !*', mentions: gm.participants.map(p => p.id) }, { quoted: msg });
-            } catch (e) { await reply(`*hidetag failed: ${e.message}*`); }
-            break;
-        }
-
-        case 'add': {
-            if (!isOwner) return reply('👥 This command use only owner.');
-            if (!isGroup) return reply('👥 This command use only group.');
-
-            const q = text || '';
-            const number = q.trim().replace(/[^0-9]/g, '');
-            if (!number) return reply('*❗ Please provide a phone number!* \n📋 Example: .add 94712345678');
-
-            try {
-                await socket.sendMessage(sender, { react: { text: '➕', key: msg.key } });
-
-                const userJid = number + '@s.whatsapp.net';
-                await socket.groupParticipantsUpdate(msg.key.remoteJid, [userJid], 'add');
-
-                await reply(`*✅ Successfully added +${number} to the group!*`);
-                await socket.sendMessage(sender, { react: { text: '✅', key: msg.key } });
-
-            } catch (err) {
-                console.error('Add Error:', err);
-                await reply(`*❌ Failed to add member!*\n*Reason:* ${err.message}`);
-            }
-            break;
-        }
-
-        case 'kick':
-        case 'remove': {
-            if (!isGroup) return reply('Groups only.');
-            const qCtx = msg.message?.extendedTextMessage?.contextInfo;
-            const target = qCtx?.participant || (args[0]?.replace(/[^0-9]/g, '') ? args[0].replace(/[^0-9]/g, '') + '@s.whatsapp.net' : null);
-            if (!target) return reply(`Reply to a user's message or use: ${prefix}kick <number>`);
-            try { await socket.groupParticipantsUpdate(sender, [target], 'remove'); await reply(`✅ Removed ${target.split('@')[0]}`); }
-            catch (e) { await reply(`Kick failed: ${e.message}`); }
-            break;
-        }
-
-        case 'bio':
-        case 'setbio': {
-            const bioText = args.join(' ').trim();
-            if (!bioText) return reply(`Usage: ${prefix}bio <text>`);
-            try { await socket.updateProfileStatus(bioText); await reply(`✅ Bio updated: ${bioText}`); }
-            catch (e) { await reply(`Failed: ${e.message}`); }
-            break;
-        }
-
-        case 'tagadmin': {
-            if (!isGroup) return reply('This command only works in groups.');
-            try {
-                const gm = await socket.groupMetadata(sender);
-                const admins = gm.participants.filter(p => p.admin);
-                if (!admins.length) return reply('No admins found in this group.');
-                const tm = args.join(' ').trim() || '*Attention admins!*';
-                const mentions = admins.map(p => p.id);
-                let tagText = `╭─⊹₊⟡⋆『 \`𝐀𝐝𝐦𝐢𝐧\` 』𖤐.ᐟ\n*┃* ${tm}\n*┃*\n`;
-                for (const p of admins) tagText += `*┃* @${p.id.split('@')[0]}\n`;
-                tagText += `╰──────────────────<𝟑 .ᐟ\n\n> *𝐒𝐇𝐀𝐍𝐀 𝐃𝐄𝐕𝙰𝙻𝙾𝙿𝙀𝙀 ✹*`;
-                await socket.sendMessage(sender, { text: tagText, mentions }, { quoted: msg });
-            } catch (e) { await replyFq(`tagadmin failed: ${e.message}`); }
-            break;
-        }
-
-        case 'promote': {
-            if (!isGroup) return reply('Groups only.');
-            const qCtxP = msg.message?.extendedTextMessage?.contextInfo;
-            const targetP = qCtxP?.participant || (args[0]?.replace(/[^0-9]/g, '') ? args[0].replace(/[^0-9]/g, '') + '@s.whatsapp.net' : null);
-            if (!targetP) return reply(`Reply to a user's message or use: ${prefix}promote <number>`);
-            try {
-                await socket.groupParticipantsUpdate(sender, [targetP], 'promote');
-                await reply(`✅ @${targetP.split('@')[0]} has been promoted to admin.`);
-            } catch (e) { await reply(`Promote failed: ${e.message}`); }
-            break;
-        }
-
-        case 'demote': {
-            if (!isGroup) return reply('Groups only.');
-            const qCtxD = msg.message?.extendedTextMessage?.contextInfo;
-            const targetD = qCtxD?.participant || (args[0]?.replace(/[^0-9]/g, '') ? args[0].replace(/[^0-9]/g, '') + '@s.whatsapp.net' : null);
-            if (!targetD) return reply(`Reply to a user's message or use: ${prefix}demote <number>`);
-            try {
-                await socket.groupParticipantsUpdate(sender, [targetD], 'demote');
-                await reply(`✅ @${targetD.split('@')[0]} has been demoted.`);
-            } catch (e) { await reply(`Demote failed: ${e.message}`); }
-            break;
-        }
-
-        case 'lockgroup': {
-            if (!isGroup) return reply('Groups only.');
-            try {
-                await socket.groupSettingUpdate(sender, 'announcement');
-                await reply('🔒 Group locked — only admins can send messages.');
-            } catch (e) { await replyFq(`Lock failed: ${e.message}`); }
-            break;
-        }
-
-        case 'unlockgroup': {
-            if (!isGroup) return replyFq('Groups only.');
-            try {
-                await socket.groupSettingUpdate(sender, 'not_announcement');
-                await reply('🔓 Group unlocked — everyone can send messages.');
-            } catch (e) { await reply(`Unlock failed: ${e.message}`); }
-            break;
-        }
-
-        case 'mute': {
-            if (!isGroup) return reply('Groups only.');
-            const durStr = (args[0] || '').toLowerCase();
-            const durMap = { '1h': 3600, '6h': 21600, '1d': 86400, '7d': 604800 };
-            const secs = durMap[durStr];
-            if (!secs) return reply(`Usage: .mute <1h|6h|1d|7d>`);
-            try {
-                await socket.groupSettingUpdate(sender, 'announcement');
-                await reply(`🔇 Group muted for *${durStr}*. Use *.unmute* to restore early.`);
-                setTimeout(async () => {
-                    try { await socket.groupSettingUpdate(sender, 'not_announcement'); } catch (_) {}
-                }, secs * 1000);
-            } catch (e) { await reply(`Mute failed: ${e.message}`); }
-            break;
-        }
-
-        case 'unmute': {
-            if (!isGroup) return reply('Groups only.');
-            try {
-                await socket.groupSettingUpdate(sender, 'not_announcement');
-                await reply('🔊 Group unmuted — everyone can send messages.');
-            } catch (e) { await reply(`Unmute failed: ${e.message}`); }
-            break;
-        }
+        
 
         case 'groupinfo': {
             if (!isGroup) return reply('Groups only.');
@@ -2578,27 +2344,9 @@ system 24/7 Online Support 💯.\n\n` +
             break;
         }
 
-        case 'setname': {
-            if (!isGroup) return reply('Groups only.');
-            const newName = args.join(' ').trim();
-            if (!newName) return reply(`Usage: .setname <new name>`);
-            try {
-                await socket.groupUpdateSubject(sender, newName);
-                await reply(`✅ Group name changed to: *${newName}*`);
-            } catch (e) { await reply(`setname failed: ${e.message}`); }
-            break;
-        }
+        
 
-        case 'setdesc': {
-            if (!isGroup) return reply('Groups only.');
-            const newDesc = args.join(' ').trim();
-            if (!newDesc) return reply(`Usage: .setdesc <description>`);
-            try {
-                await socket.groupUpdateDescription(sender, newDesc);
-                await reply(`✅ Group description updated.`);
-            } catch (e) { await reply(`setdesc failed: ${e.message}`); }
-            break;
-        }
+      
 
         case 'seticon': {
             if (!isGroup) return reply('Groups only.');
